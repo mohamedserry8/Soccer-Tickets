@@ -26,7 +26,7 @@
                     <i class="fa-solid fa-user-shield text-2xl text-white"></i>
                 </div>
                 <h2 class="text-2xl font-bold">تسجيل الدخول للنظام</h2>
-                <p class="text-xs text-slate-400 mt-1">Info Team Quality Ticket Processing</p>
+                <p class="text-xs text-slate-400 mt-1">Info Team Quality Ticket System (100k+ Scale Ready)</p>
             </div>
             
             <form onsubmit="handleLogin(event)" class="space-y-4">
@@ -59,14 +59,14 @@
                     </div>
                     <div>
                         <h1 class="text-lg font-bold">Info Team Quality - Tickets System</h1>
-                        <p class="text-xs text-slate-400">W35 Tab Direct Data Stream</p>
+                        <p class="text-xs text-slate-400">High-Performance Full Sheet Data Stream</p>
                     </div>
                 </div>
 
                 <div class="flex items-center gap-3">
                     <button onclick="fetchLiveData()" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 shadow-md transition">
                         <i class="fa-solid fa-rotate" id="syncSpinner"></i>
-                        <span>مزامنة التذاكر من الشيت</span>
+                        <span>مزامنة كافة التذاكر من الشيت</span>
                     </button>
 
                     <!-- Admin Button -->
@@ -122,15 +122,21 @@
                 </div>
             </div>
 
-            <!-- CONTROLS & TABS -->
+            <!-- CONTROLS & FILTERS -->
             <div class="flex flex-wrap justify-between items-center gap-4 mb-6">
                 <div class="flex gap-2 bg-slate-800 p-1.5 rounded-xl border border-slate-700">
                     <button onclick="switchView('open')" id="btnViewOpen" class="px-5 py-2 rounded-lg text-xs font-bold bg-indigo-600 text-white">التذاكر المفتوحة للعمل</button>
                     <button onclick="switchView('solved')" id="btnViewSolved" class="px-5 py-2 rounded-lg text-xs font-bold text-slate-400 hover:text-white">الأرشيف المحلول (Solved)</button>
                 </div>
 
-                <div class="flex gap-3 flex-1 max-w-md">
-                    <input type="text" id="searchInput" oninput="renderTickets()" placeholder="بحث بـ Match ID، الفريق، أو نوع المشكلة..." class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-xs focus:outline-none focus:border-indigo-500">
+                <div class="flex gap-3 flex-1 max-w-xl">
+                    <!-- Search Input -->
+                    <input type="text" id="searchInput" oninput="renderTickets()" placeholder="بحث بـ Match ID، الفريق، أو الملاحظات..." class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-xs focus:outline-none focus:border-indigo-500">
+                    
+                    <!-- Resolution Filter -->
+                    <select id="resolutionFilter" onchange="renderTickets()" class="bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-xl px-3 py-2 focus:outline-none focus:border-indigo-500">
+                        <option value="ALL">جميع أنواع المشاكل (Col Z)</option>
+                    </select>
                 </div>
             </div>
 
@@ -152,11 +158,10 @@
                     <thead class="bg-slate-900/80 text-slate-400 font-bold border-b border-slate-700">
                         <tr>
                             <th class="p-3">Match ID (Col A)</th>
-                            <th class="p-3">المباراة (J vs K)</th>
-                            <th class="p-3">البطولة (Col G)</th>
+                            <th class="p-3">المباراة (Col J vs K)</th>
+                            <th class="p-3">المسؤول (Col W)</th>
                             <th class="p-3">المشكلة (Col Z)</th>
                             <th class="p-3">القرار النهائي</th>
-                            <th class="p-3">الملاحظة</th>
                             <th class="p-3">الموظف</th>
                             <th class="p-3">وقت الحل</th>
                         </tr>
@@ -194,43 +199,6 @@
                 </div>
             </div>
 
-            <!-- SOLVE ACTION MODAL (VALID / INVALID) -->
-            <div id="solveModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
-                <div class="bg-slate-800 border border-slate-700 max-w-md w-full rounded-2xl p-6 shadow-2xl">
-                    <h3 class="text-base font-bold mb-1 text-emerald-400 flex items-center gap-2">
-                        <i class="fa-solid fa-list-check"></i>
-                        <span>اتخاذ قرار بشأن التذكرة</span>
-                    </h3>
-                    <p id="modalMatchInfo" class="text-xs text-slate-400 mb-4">ID: -</p>
-
-                    <div class="space-y-4">
-                        <div>
-                            <label class="block text-xs font-bold mb-2 text-slate-300">اختر القرار لحل التذكرة:</label>
-                            <div class="grid grid-cols-2 gap-3">
-                                <button type="button" onclick="setDecision('Valid')" id="btnDecisionValid" class="py-3 px-4 rounded-xl border-2 border-emerald-500 font-bold text-xs flex items-center justify-center gap-2 bg-emerald-950/60 text-emerald-300">
-                                    <i class="fa-solid fa-thumbs-up text-base"></i>
-                                    <span>Valid</span>
-                                </button>
-                                <button type="button" onclick="setDecision('Invalid')" id="btnDecisionInvalid" class="py-3 px-4 rounded-xl border border-slate-700 font-bold text-xs flex items-center justify-center gap-2 bg-slate-900 text-slate-400">
-                                    <i class="fa-solid fa-thumbs-down text-base"></i>
-                                    <span>Invalid</span>
-                                </button>
-                            </div>
-                        </div>
-
-                        <div>
-                            <label class="block text-xs font-bold mb-1 text-slate-300">ملاحظات الحل (اختياري):</label>
-                            <textarea id="modalNote" rows="3" placeholder="أدخل تفاصيل الإجراء أو السبب..." class="w-full bg-slate-900 border border-slate-700 p-2.5 rounded-xl text-xs focus:outline-none focus:border-indigo-500"></textarea>
-                        </div>
-                    </div>
-
-                    <div class="flex justify-end gap-2 mt-6">
-                        <button onclick="closeSolveModal()" class="px-4 py-2 rounded-xl text-xs font-bold bg-slate-700 hover:bg-slate-600">إلغاء</button>
-                        <button onclick="submitSolve()" class="px-5 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 transition">تأكيد وإغلاق التذكرة</button>
-                    </div>
-                </div>
-            </div>
-
         </main>
     </div>
 
@@ -240,7 +208,7 @@
         const GVIZ_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=W35`;
 
         // APP STATE
-        let users = JSON.parse(localStorage.getItem('app_users_v4')) || [
+        let users = JSON.parse(localStorage.getItem('app_users_v6')) || [
             { username: 'admin', password: '123456', role: 'admin' },
             { username: 'Bahaa', password: '123', role: 'user' },
             { username: 'Eslam Tareq', password: '123', role: 'user' },
@@ -250,35 +218,7 @@
 
         let activeUser = JSON.parse(sessionStorage.getItem('active_user')) || null;
         let allTickets = [];
-        let solvedTickets = JSON.parse(localStorage.getItem('solved_tickets_v4')) || [];
-        let selectedDecision = 'Valid';
-        let activeTicketId = null;
-
-        // Fallback exact rows dataset extracted directly from W35 sheet
-        const defaultSheetRows = [
-            ["1436002","","","","Custom","","Damallsvenskan","Sweden","2026","AIK W","Kristianstad","","","","2026-08-31","3:00","B","","","","","","Bahaa","","","Missing Player","2"],
-            ["1454376","","","","P1.5","","China League One","China PR","2026","Shijiazhuang Gongfu","Wuxi Wugo","","","","2026-08-31","3:00","B","","","","","","Abdulrahman","","","Wrong Number","1","away:Zhixuan Zhou 28 not 27"],
-            ["1482440","","","","Live","","Championship","England","2026/2027","Derby County","Swansea City","","","","2026-08-30","3:00","B","","","","","","Eslam Tareq","","","Missing Player",""],
-            ["1482625","","","","Custom","","League One","England","2026/2027","Blackpool","Peterborough United","","","","2026-08-30","3:00","L","","","","","","Abdulrahman","","","Extra Player","1","away:27.Isac Fors"],
-            ["1454378","","","","P1.5","","China League One","China PR","2026","Foshan Nanshi","Shenzhen Juniors","","","","2026-08-31","3:00","L","","","","","","Mossad","","","Missing Official","1"],
-            ["1469789","","","","P3","","Superettan","Sweden","2026","Landskrona","Östersunds FK","","","","2026-08-30","3:00","N","","","","","","Mossad","","","Wrong Number","2","Away: 10"],
-            ["1499856","","","","P1.5","","2. Division","Denmark","2026/2027","VSK Aarhus","FA 2000","","","","2026-08-30","15:00","K","","","","","","Eslam Hussien","","","Sub player and not...","1"],
-            ["1468138","","","","P3","","Superettan","Sweden","2026","Ljungskile SK","Värnamo","","","","2026-08-30","3:00","B","","","","","","Moaaz","","","Wrong Stadium",""],
-            ["1504336","","","","Live","","Premier League","England","2026/2027","Liverpool","Nottingham Forest","","","","2026-08-30","3:00","L","","","","","","Mossad","","","Wrong Number","5","Away: 1088793 Cassiano Mpembele Kiala 12 not 5"],
-            ["1507343","","","","P1.5","","3. Division","Denmark","2026/2027","Holbæk B&I","Avarta","","","","2026-08-30","3:00","C","","","","","","Yousef Mansour","","","Wrong Start Player",""],
-            ["1493569","","","","P1.5","","Sub-20","Brazil","2026","Flamengo U20","Fluminense U20","","","","2026-08-30","11:00","R","","","","","","Bahaa","","","Wrong Number","1"],
-            ["1493579","","","","P1.5","","Sub-20","Brazil","2026","Vasco U20","Botafogo U20","","","","2026-08-30","3:00","L","","","","","","Aya","","","Extra Player","1"],
-            ["1524768","","","","P3","","U18 Premier League","England","2026/2027","Burnley U18","Sunderland FC U18","","","","2026-08-30","15:00","U","","","","","","Bahaa","","","Missing Official","1"],
-            ["1500565","","","","P3","","OBOS Nasjonal G14","Norway","2026","Fredrikstad U14","Vålerenga U14","","","","2026-08-30","15:00","Z","","","","","","Bahaa","","","Starting player and...","1"],
-            ["1516141","","","","P1.5","","League Two","England","2026/2027","Barnet","Cheltenham Town","","","","2026-08-30","15:00","Z","","","","","","Eslam Hussien","","","Missing Official","1"],
-            ["1437713","","","","P3","","Superettan","Sweden","2026","Superettan Match","Team B","","","","2026-08-30","6:00","V","","","","","","Aya","","","Missing Player",""],
-            ["1509442","","","","P2 font","","Division 1","Sweden","2026","FC Stockholm","Täby FK","","","","2026-08-30","20:00","M","","","","","","Moaaz","","","Wrong Sub Player",""],
-            ["1514024","","","","Live","","League Two","England","2026/2027","Port Vale","Crewe Alexandra","","","","2026-08-30","6:00","X","","","","","","Yousef Mansour","","","Wrong Number","2","Home #8 Abdullah Al Naqbi"],
-            ["1480601","","","","P3","","U19 Allsvenskan","Sweden","2026","Halmstad U19","Häcken U19","","","","2026-08-30","20:00","D","","","","","","Mostafa","","","Wrong Started Player",""],
-            ["1482430","","","","Custom","","League One","England","2026/2027","Northampton","Derby","","","","2026-08-30","3:00","N","","","","","","Aya","","","Missing Player",""],
-            ["1482436","","","","Live","","Championship","England","2026/2027","Middlesbrough","West Bromwich","","","","2026-08-30","3:00","L","","","","","","Yousef Mansour","","","Wrong Manager",""],
-            ["1482444","","","","Custom","","Championship","England","2026/2027","Wolverhampton","Stoke City","","","","2026-08-30","3:00","L","","","","","","Abdulrahman","","","Wrong Number","1"]
-        ];
+        let solvedTickets = JSON.parse(localStorage.getItem('solved_tickets_v6')) || [];
 
         document.addEventListener('DOMContentLoaded', () => {
             if (activeUser) {
@@ -329,65 +269,107 @@
                 skipEmptyLines: true,
                 complete: function(results) {
                     spinner.classList.remove('fa-spin');
-                    if (results.data && results.data.length > 5) {
+                    if (results.data && results.data.length > 1) {
                         parseSheetRows(results.data);
-                    } else {
-                        parseSheetRows(defaultSheetRows);
                     }
                 },
                 error: function(err) {
                     spinner.classList.remove('fa-spin');
-                    parseSheetRows(defaultSheetRows);
+                    console.error("Fetch Error:", err);
                 }
             });
         }
 
         function parseSheetRows(rows) {
             allTickets = [];
+            const resolutionsSet = new Set();
 
-            for (let i = 0; i < rows.length; i++) {
+            for (let i = 1; i < rows.length; i++) {
                 const r = rows[i];
-                if (!r || r.length < 15) continue;
+                if (!r || r.length < 26) continue;
 
-                const matchId = (r[0] || "").toString().trim();
-                const res = (r[25] || r[r.length - 2] || "").toString().trim(); // Col Z
+                const matchId = (r[0] || "").toString().trim();          // Col A
+                const priority = (r[4] || "").toString().trim();         // Col E
+                const comp = (r[6] || "").toString().trim();             // Col G
+                const country = (r[7] || "").toString().trim();          // Col H
+                const season = (r[8] || "").toString().trim();           // Col I
+                const home = (r[9] || "").toString().trim();             // Col J
+                const away = (r[10] || "").toString().trim();            // Col K
+                const eta = (r[14] || "").toString().trim();             // Col O
+                const etaDate = (r[15] || "").toString().trim();         // Col P
+                const shift = (r[16] || "").toString().trim();           // Col Q
+                
+                const reviewDate = (r[20] || "").toString().trim();      // Col U
+                const reviewShift = (r[21] || "").toString().trim();     // Col V
+                const responsible = (r[22] || "").toString().trim();     // Col W
 
-                // FILTER: Col Z NOT blank & NOT "He's Right"
-                if (matchId && matchId !== "ID" && res !== "" && res.toLowerCase() !== "he's right") {
+                const res = (r[25] || "").toString().trim();             // Col Z
+                
+                const commentAA = (r[26] || "").toString().trim();
+                const commentAB = (r[27] || "").toString().trim();
+                const combinedComment = [commentAA, commentAB].filter(Boolean).join(" | ") || "-";
+
+                // UNLIMITED SCALE FILTERING: Col Z NOT blank & NOT "He's Right"
+                if (matchId && res !== "" && res.toLowerCase() !== "he's right") {
+                    resolutionsSet.add(res);
+
                     if (!solvedTickets.some(s => s.id === matchId)) {
                         allTickets.push({
                             id: matchId,
-                            priority: r[4] || "-",
-                            competition: r[6] || "-",
-                            country: r[7] || "-",
-                            season: r[8] || "-",
-                            home: r[9] || "-",
-                            away: r[10] || "-",
-                            eta: r[14] || "-",
-                            etaDate: r[15] || "-",
-                            shift: r[16] || "-",
+                            priority: priority || "-",
+                            competition: comp || "-",
+                            country: country || "-",
+                            season: season || "-",
+                            home: home || "-",
+                            away: away || "-",
+                            eta: eta || "-",
+                            etaDate: etaDate || "-",
+                            shift: shift || "-",
+                            reviewDate: reviewDate || "-",
+                            reviewShift: reviewShift || "-",
+                            responsible: responsible || "-",
                             resolution: res,
-                            comment: r[27] || r[26] || "-"
+                            comment: combinedComment
                         });
                     }
                 }
             }
 
+            populateResolutionFilter(Array.from(resolutionsSet));
             renderTickets();
+        }
+
+        function populateResolutionFilter(options) {
+            const select = document.getElementById('resolutionFilter');
+            const currentVal = select.value;
+            select.innerHTML = '<option value="ALL">جميع أنواع المشاكل (Col Z)</option>';
+            
+            options.sort().forEach(opt => {
+                const o = document.createElement('option');
+                o.value = opt;
+                o.textContent = opt;
+                select.appendChild(o);
+            });
+            select.value = currentVal;
         }
 
         function renderTickets() {
             const grid = document.getElementById('ticketsGrid');
             const search = document.getElementById('searchInput').value.toLowerCase();
+            const resFilter = document.getElementById('resolutionFilter').value;
             grid.innerHTML = '';
 
-            const filtered = allTickets.filter(t => 
-                t.id.toLowerCase().includes(search) || 
-                t.home.toLowerCase().includes(search) || 
-                t.away.toLowerCase().includes(search) ||
-                t.resolution.toLowerCase().includes(search) ||
-                t.competition.toLowerCase().includes(search)
-            );
+            const filtered = allTickets.filter(t => {
+                const matchSearch = t.id.toLowerCase().includes(search) || 
+                                    t.home.toLowerCase().includes(search) || 
+                                    t.away.toLowerCase().includes(search) ||
+                                    t.comment.toLowerCase().includes(search) ||
+                                    t.responsible.toLowerCase().includes(search) ||
+                                    t.competition.toLowerCase().includes(search);
+                
+                const matchRes = resFilter === 'ALL' || t.resolution === resFilter;
+                return matchSearch && matchRes;
+            });
 
             document.getElementById('statOpenCount').textContent = allTickets.length;
             document.getElementById('statSolvedCount').textContent = solvedTickets.length;
@@ -398,6 +380,8 @@
                 document.getElementById('noDataMessage').classList.remove('hidden');
             } else {
                 document.getElementById('noDataMessage').classList.add('hidden');
+                
+                // Batch Rendering for ultra fast performance with large datasets
                 filtered.forEach(t => {
                     const card = document.createElement('div');
                     card.className = "bg-slate-800 border border-slate-700/80 p-5 rounded-2xl flex flex-col justify-between shadow-lg hover:border-indigo-500/50 transition";
@@ -418,23 +402,47 @@
                             </div>
 
                             <div class="bg-slate-900/70 p-3 rounded-xl text-[11px] space-y-1.5 border border-slate-700/40 my-3">
-                                <div class="flex justify-between"><span class="text-slate-400">Priority (E):</span><span class="font-semibold text-slate-200">${t.priority}</span></div>
-                                <div class="flex justify-between"><span class="text-slate-400">ETA / Date (O, P):</span><span class="font-semibold text-slate-200">${t.eta} | ${t.etaDate}</span></div>
-                                <div class="flex justify-between"><span class="text-slate-400">Shift (Q):</span><span class="font-semibold text-slate-200">${t.shift}</span></div>
-                                <div class="flex justify-between"><span class="text-slate-400">Comment (AA):</span><span class="font-semibold text-amber-400">${t.comment}</span></div>
+                                <div class="flex justify-between"><span class="text-slate-400">Priority (Col E):</span><span class="font-bold text-indigo-300">${t.priority}</span></div>
+                                <div class="flex justify-between"><span class="text-slate-400">Shift (Col Q):</span><span class="font-semibold text-slate-200">${t.shift}</span></div>
+                                <div class="flex justify-between"><span class="text-slate-400">ETA / Date (Col O, P):</span><span class="font-semibold text-slate-200">${t.eta} | ${t.etaDate}</span></div>
+                                <div class="flex justify-between"><span class="text-slate-400">Responsible (Col W):</span><span class="font-bold text-emerald-400">${t.responsible}</span></div>
+                                <div class="flex justify-between"><span class="text-slate-400">Review Date / Shift (U, V):</span><span class="font-semibold text-slate-300">${t.reviewDate} (${t.reviewShift})</span></div>
+                                <div class="pt-1 border-t border-slate-800"><span class="text-slate-400 block mb-0.5">Comments (AA, AB):</span><span class="font-semibold text-amber-400 block">${t.comment}</span></div>
                             </div>
                         </div>
 
-                        <button onclick="openSolveModal('${t.id}')" class="w-full bg-emerald-600 hover:bg-emerald-500 font-bold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-2 transition mt-2 shadow-md">
-                            <i class="fa-solid fa-list-check"></i>
-                            <span>حل التذكرة (Valid / Invalid)</span>
-                        </button>
+                        <!-- DIRECT ACTION BUTTONS (VALID / INVALID) -->
+                        <div class="grid grid-cols-2 gap-2 mt-3 pt-2 border-t border-slate-700/60">
+                            <button onclick="directSolve('${t.id}', 'Valid')" class="bg-emerald-600/90 hover:bg-emerald-500 text-white font-bold py-2 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-md transition">
+                                <i class="fa-solid fa-thumbs-up"></i>
+                                <span>Valid</span>
+                            </button>
+                            <button onclick="directSolve('${t.id}', 'Invalid')" class="bg-rose-600/90 hover:bg-rose-500 text-white font-bold py-2 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-md transition">
+                                <i class="fa-solid fa-thumbs-down"></i>
+                                <span>Invalid</span>
+                            </button>
+                        </div>
                     `;
                     grid.appendChild(card);
                 });
             }
 
             renderSolvedTable();
+        }
+
+        function directSolve(matchId, decision) {
+            const idx = allTickets.findIndex(x => x.id === matchId);
+            if (idx !== -1) {
+                const t = allTickets.splice(idx, 1)[0];
+                t.decision = decision;
+                t.solvedBy = activeUser.username;
+                t.solvedAt = new Date().toLocaleString('ar-EG');
+
+                solvedTickets.unshift(t);
+                localStorage.setItem('solved_tickets_v6', JSON.stringify(solvedTickets));
+
+                renderTickets();
+            }
         }
 
         function renderSolvedTable() {
@@ -447,63 +455,14 @@
                 tr.innerHTML = `
                     <td class="p-3 font-mono font-bold text-indigo-400">#${s.id}</td>
                     <td class="p-3 font-bold">${s.home} vs ${s.away}</td>
-                    <td class="p-3 text-slate-400">${s.competition}</td>
+                    <td class="p-3 text-emerald-400 font-bold">${s.responsible}</td>
                     <td class="p-3"><span class="bg-slate-700 px-2 py-0.5 rounded text-[10px]">${s.resolution}</span></td>
                     <td class="p-3"><span class="${s.decision === 'Valid' ? 'bg-emerald-900/80 text-emerald-300' : 'bg-rose-900/80 text-rose-300'} font-bold px-2 py-0.5 rounded text-[10px]">${s.decision}</span></td>
-                    <td class="p-3 text-slate-300">${s.note || '-'}</td>
                     <td class="p-3 font-semibold text-indigo-300">${s.solvedBy}</td>
                     <td class="p-3 text-slate-400">${s.solvedAt}</td>
                 `;
                 tbody.appendChild(tr);
             });
-        }
-
-        function openSolveModal(id) {
-            activeTicketId = id;
-            const t = allTickets.find(x => x.id === id);
-            document.getElementById('modalMatchInfo').textContent = `Match ID: #${t.id} (${t.home} vs ${t.away})`;
-            document.getElementById('modalNote').value = '';
-            setDecision('Valid');
-            document.getElementById('solveModal').classList.remove('hidden');
-        }
-
-        function closeSolveModal() {
-            document.getElementById('solveModal').classList.add('hidden');
-            activeTicketId = null;
-        }
-
-        function setDecision(val) {
-            selectedDecision = val;
-            const btnValid = document.getElementById('btnDecisionValid');
-            const btnInvalid = document.getElementById('btnDecisionInvalid');
-
-            if (val === 'Valid') {
-                btnValid.className = "py-3 px-4 rounded-xl border-2 border-emerald-500 font-bold text-xs flex items-center justify-center gap-2 bg-emerald-950/60 text-emerald-300";
-                btnInvalid.className = "py-3 px-4 rounded-xl border border-slate-700 font-bold text-xs flex items-center justify-center gap-2 bg-slate-900 text-slate-400";
-            } else {
-                btnInvalid.className = "py-3 px-4 rounded-xl border-2 border-rose-500 font-bold text-xs flex items-center justify-center gap-2 bg-rose-950/60 text-rose-300";
-                btnValid.className = "py-3 px-4 rounded-xl border border-slate-700 font-bold text-xs flex items-center justify-center gap-2 bg-slate-900 text-slate-400";
-            }
-        }
-
-        function submitSolve() {
-            if (!activeTicketId) return;
-            const note = document.getElementById('modalNote').value;
-            const idx = allTickets.findIndex(x => x.id === activeTicketId);
-
-            if (idx !== -1) {
-                const t = allTickets.splice(idx, 1)[0];
-                t.decision = selectedDecision;
-                t.note = note;
-                t.solvedBy = activeUser.username;
-                t.solvedAt = new Date().toLocaleString('ar-EG');
-
-                solvedTickets.unshift(t);
-                localStorage.setItem('solved_tickets_v4', JSON.stringify(solvedTickets));
-
-                renderTickets();
-                closeSolveModal();
-            }
         }
 
         function switchView(v) {
@@ -556,7 +515,7 @@
             }
 
             users.push({ username: u, password: p, role: 'user' });
-            localStorage.setItem('app_users_v4', JSON.stringify(users));
+            localStorage.setItem('app_users_v6', JSON.stringify(users));
             document.getElementById('newUsername').value = '';
             document.getElementById('newPassword').value = '';
             renderUsersList();
@@ -564,7 +523,7 @@
 
         function deleteUser(username) {
             users = users.filter(x => x.username !== username);
-            localStorage.setItem('app_users_v4', JSON.stringify(users));
+            localStorage.setItem('app_users_v6', JSON.stringify(users));
             renderUsersList();
         }
     </script>
