@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Info Team Quality - Ticket System</title>
-    <!-- Tailwind CSS CDN -->
+    <title>Info Team Quality - Ticket Processing System</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome Icons -->
+    <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts: Cairo -->
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
-    <!-- PapaParse for direct Sheet CSV Parsing -->
+    <!-- PapaParse -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <style>
         body { font-family: 'Cairo', sans-serif; }
@@ -18,15 +18,15 @@
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen">
 
-    <!-- LOGIN SCREEN -->
+    <!-- LOGIN OVERLAY -->
     <div id="loginOverlay" class="fixed inset-0 bg-slate-950 z-50 flex items-center justify-center p-4">
         <div class="bg-slate-800 border border-slate-700 p-8 rounded-2xl max-w-md w-full shadow-2xl">
             <div class="text-center mb-6">
                 <div class="bg-indigo-600 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-lg">
-                    <i class="fa-solid fa-user-lock text-2xl text-white"></i>
+                    <i class="fa-solid fa-user-shield text-2xl text-white"></i>
                 </div>
                 <h2 class="text-2xl font-bold">تسجيل الدخول للنظام</h2>
-                <p class="text-xs text-slate-400 mt-1">Info Team Quality Ticket Processing System</p>
+                <p class="text-xs text-slate-400 mt-1">Info Team Quality 2026 Ticket System</p>
             </div>
             
             <form onsubmit="handleLogin(event)" class="space-y-4">
@@ -42,14 +42,15 @@
                 <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 font-bold py-3 rounded-xl text-sm transition shadow-lg">تسجيل الدخول</button>
             </form>
             <div class="mt-4 pt-4 border-t border-slate-700 text-center">
-                <p class="text-[11px] text-slate-400">حساب الأدمن الافتراضي: <span class="text-indigo-400 font-mono font-bold">admin</span> | الباسورد: <span class="text-indigo-400 font-mono font-bold">123456</span></p>
+                <p class="text-[11px] text-slate-400">حساب الأدمن الرئيسي: <span class="text-indigo-400 font-mono font-bold">admin</span> | الباسورد: <span class="text-indigo-400 font-mono font-bold">123456</span></p>
             </div>
         </div>
     </div>
 
-    <!-- MAIN APP CONTENT -->
+    <!-- MAIN APPLICATION -->
     <div id="mainApp" class="hidden">
-        <!-- Header Bar -->
+        
+        <!-- HEADER -->
         <header class="bg-slate-800 border-b border-slate-700 sticky top-0 z-40">
             <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
                 <div class="flex items-center gap-3">
@@ -58,21 +59,23 @@
                     </div>
                     <div>
                         <h1 class="text-lg font-bold">Info Team Quality - Tickets System</h1>
-                        <p class="text-xs text-slate-400">Google Sheets Direct Stream (W35+ Tabs)</p>
+                        <p class="text-xs text-slate-400">W35 Tab Direct Live Fetch (Col Z Filter)</p>
                     </div>
                 </div>
 
                 <div class="flex items-center gap-3">
-                    <button onclick="fetchSheetData()" class="bg-emerald-600 hover:bg-emerald-500 px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 shadow-md transition">
+                    <button onclick="fetchLiveData()" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 shadow-md transition">
                         <i class="fa-solid fa-rotate" id="syncSpinner"></i>
-                        <span>مزامنة الداتا من الشيت</span>
+                        <span>مزامنة الـ 110 تذكرة من الشيت</span>
                     </button>
 
-                    <button id="adminBtn" onclick="toggleAdminPanel()" class="hidden bg-purple-600 hover:bg-purple-500 px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition">
+                    <!-- Admin Button -->
+                    <button id="adminBtn" onclick="toggleAdminPanel()" class="hidden bg-purple-600 hover:bg-purple-500 px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition">
                         <i class="fa-solid fa-users-gear"></i>
-                        <span>إدارة الموظفين (Admin)</span>
+                        <span>لوحة التحكم (Admin Panel)</span>
                     </button>
 
+                    <!-- User Status -->
                     <div class="bg-slate-900 border border-slate-700 px-3 py-1.5 rounded-xl text-xs flex items-center gap-2">
                         <i class="fa-solid fa-user-circle text-indigo-400"></i>
                         <span id="activeUserLabel" class="font-bold"></span>
@@ -84,78 +87,78 @@
 
         <main class="max-w-7xl mx-auto px-4 py-6">
 
-            <!-- STATS BAR -->
+            <!-- METRICS BAR -->
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                <div class="bg-slate-800 border border-slate-700 p-4 rounded-xl flex justify-between items-center">
+                <div class="bg-slate-800 border border-slate-700 p-4 rounded-2xl flex justify-between items-center shadow-md">
                     <div>
                         <p class="text-xs text-slate-400 font-bold">التذاكر المفتوحة (Open)</p>
-                        <h3 id="statOpenCount" class="text-2xl font-black text-amber-400 mt-1">0</h3>
+                        <h3 id="statOpenCount" class="text-3xl font-black text-amber-400 mt-1">0</h3>
                     </div>
-                    <i class="fa-solid fa-clock-rotate-left text-2xl text-amber-400/30"></i>
+                    <i class="fa-solid fa-clock-rotate-left text-3xl text-amber-400/20"></i>
                 </div>
 
-                <div class="bg-slate-800 border border-slate-700 p-4 rounded-xl flex justify-between items-center">
+                <div class="bg-slate-800 border border-slate-700 p-4 rounded-2xl flex justify-between items-center shadow-md">
                     <div>
                         <p class="text-xs text-slate-400 font-bold">التذاكر المحلولة (Solved)</p>
-                        <h3 id="statSolvedCount" class="text-2xl font-black text-emerald-400 mt-1">0</h3>
+                        <h3 id="statSolvedCount" class="text-3xl font-black text-emerald-400 mt-1">0</h3>
                     </div>
-                    <i class="fa-solid fa-circle-check text-2xl text-emerald-400/30"></i>
+                    <i class="fa-solid fa-circle-check text-3xl text-emerald-400/20"></i>
                 </div>
 
-                <div class="bg-slate-800 border border-slate-700 p-4 rounded-xl flex justify-between items-center">
+                <div class="bg-slate-800 border border-slate-700 p-4 rounded-2xl flex justify-between items-center shadow-md">
                     <div>
-                        <p class="text-xs text-slate-400 font-bold">تأكيدات Valid</p>
-                        <h3 id="statValidCount" class="text-2xl font-black text-indigo-400 mt-1">0</h3>
+                        <p class="text-xs text-slate-400 font-bold">إجمالي قرارات Valid</p>
+                        <h3 id="statValidCount" class="text-3xl font-black text-indigo-400 mt-1">0</h3>
                     </div>
-                    <i class="fa-solid fa-thumbs-up text-2xl text-indigo-400/30"></i>
+                    <i class="fa-solid fa-thumbs-up text-3xl text-indigo-400/20"></i>
                 </div>
 
-                <div class="bg-slate-800 border border-slate-700 p-4 rounded-xl flex justify-between items-center">
+                <div class="bg-slate-800 border border-slate-700 p-4 rounded-2xl flex justify-between items-center shadow-md">
                     <div>
-                        <p class="text-xs text-slate-400 font-bold">تأكيدات Invalid</p>
-                        <h3 id="statInvalidCount" class="text-2xl font-black text-rose-400 mt-1">0</h3>
+                        <p class="text-xs text-slate-400 font-bold">إجمالي قرارات Invalid</p>
+                        <h3 id="statInvalidCount" class="text-3xl font-black text-rose-400 mt-1">0</h3>
                     </div>
-                    <i class="fa-solid fa-thumbs-down text-2xl text-rose-400/30"></i>
+                    <i class="fa-solid fa-thumbs-down text-3xl text-rose-400/20"></i>
                 </div>
             </div>
 
-            <!-- TABS & CONTROLS -->
+            <!-- CONTROLS & TABS -->
             <div class="flex flex-wrap justify-between items-center gap-4 mb-6">
                 <div class="flex gap-2 bg-slate-800 p-1.5 rounded-xl border border-slate-700">
-                    <button onclick="switchView('open')" id="btnViewOpen" class="px-5 py-2 rounded-lg text-xs font-bold bg-indigo-600 text-white">التذاكر المفتوحة</button>
-                    <button onclick="switchView('solved')" id="btnViewSolved" class="px-5 py-2 rounded-lg text-xs font-bold text-slate-400 hover:text-white">التذاكر المحلولة (Solved)</button>
+                    <button onclick="switchView('open')" id="btnViewOpen" class="px-5 py-2 rounded-lg text-xs font-bold bg-indigo-600 text-white">التذاكر المفتوحة للعمل</button>
+                    <button onclick="switchView('solved')" id="btnViewSolved" class="px-5 py-2 rounded-lg text-xs font-bold text-slate-400 hover:text-white">الأرشيف المحلول (Solved)</button>
                 </div>
 
                 <div class="flex gap-3 flex-1 max-w-md">
-                    <input type="text" id="searchInput" oninput="renderTickets()" placeholder="بحث بـ Match ID أو الفريق..." class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-xs focus:outline-none focus:border-indigo-500">
+                    <input type="text" id="searchInput" oninput="renderTickets()" placeholder="بحث بـ Match ID، الفريق، أو نوع المشكلة..." class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-xs focus:outline-none focus:border-indigo-500">
                 </div>
             </div>
 
             <!-- OPEN TICKETS VIEW -->
             <div id="viewOpen">
                 <div id="ticketsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                    <!-- Cards dynamic render -->
+                    <!-- Dynamic Ticket Cards -->
                 </div>
                 <div id="noDataMessage" class="hidden text-center py-16 bg-slate-800/50 rounded-2xl border border-slate-700">
-                    <i class="fa-solid fa-check-circle text-4xl text-emerald-500 mb-3"></i>
-                    <h3 class="text-base font-bold">لا توجد تذاكر معلقة حالياً</h3>
-                    <p class="text-xs text-slate-400 mt-1">قم بالضغط على "مزامنة الداتا من الشيت" للتحقق من التحديثات.</p>
+                    <i class="fa-solid fa-circle-check text-4xl text-emerald-500 mb-3"></i>
+                    <h3 class="text-base font-bold">تم حل جميع التذاكر المتاحة!</h3>
+                    <p class="text-xs text-slate-400 mt-1">لا توجد أي تذاكر معلقة بانتظار المراجعة.</p>
                 </div>
             </div>
 
             <!-- SOLVED TICKETS VIEW -->
-            <div id="viewSolved" class="hidden bg-slate-800 border border-slate-700 rounded-2xl overflow-hidden">
+            <div id="viewSolved" class="hidden bg-slate-800 border border-slate-700 rounded-2xl overflow-hidden shadow-xl">
                 <table class="w-full text-xs text-right">
                     <thead class="bg-slate-900/80 text-slate-400 font-bold border-b border-slate-700">
                         <tr>
                             <th class="p-3">Match ID (A)</th>
                             <th class="p-3">المباراة (J vs K)</th>
                             <th class="p-3">البطولة (G)</th>
-                            <th class="p-3">Resolution (Z)</th>
-                            <th class="p-3">القرار</th>
+                            <th class="p-3">المشكلة الأصليّة (Z)</th>
+                            <th class="p-3">القرار النهائي</th>
                             <th class="p-3">الملاحظة</th>
-                            <th class="p-3">الموظف المسؤول</th>
-                            <th class="p-3">التاريخ والوقت</th>
+                            <th class="p-3">الموظف</th>
+                            <th class="p-3">وقت الحل</th>
                         </tr>
                     </thead>
                     <tbody id="solvedTableBody" class="divide-y divide-slate-700/50">
@@ -170,28 +173,28 @@
                     <div class="flex justify-between items-center mb-4 pb-3 border-b border-slate-700">
                         <h3 class="text-base font-bold flex items-center gap-2 text-purple-400">
                             <i class="fa-solid fa-users-gear"></i>
-                            <span>إدارة حسابات الموظفين (Admin)</span>
+                            <span>إدارة الموظفين الحالية (Admin Panel)</span>
                         </h3>
                         <button onclick="toggleAdminPanel()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
                     </div>
 
                     <form onsubmit="addUser(event)" class="space-y-3 mb-6 bg-slate-900 p-4 rounded-xl border border-slate-700">
-                        <h4 class="text-xs font-bold text-slate-300">إضافة موظف جديد:</h4>
+                        <h4 class="text-xs font-bold text-slate-300">إضافة يوزر جديد للفريق:</h4>
                         <div class="grid grid-cols-2 gap-2">
                             <input type="text" id="newUsername" placeholder="اسم المستخدم" required class="bg-slate-800 border border-slate-700 p-2 rounded-lg text-xs">
                             <input type="password" id="newPassword" placeholder="كلمة السر" required class="bg-slate-800 border border-slate-700 p-2 rounded-lg text-xs">
                         </div>
-                        <button type="submit" class="w-full bg-purple-600 hover:bg-purple-500 font-bold py-2 rounded-lg text-xs">إضافة الحساب</button>
+                        <button type="submit" class="w-full bg-purple-600 hover:bg-purple-500 font-bold py-2 rounded-lg text-xs transition">إضافة الحساب</button>
                     </form>
 
-                    <h4 class="text-xs font-bold text-slate-300 mb-2">الحسابات المسجلة:</h4>
-                    <div id="usersList" class="space-y-2 max-h-40 overflow-y-auto pr-1">
-                        <!-- User items -->
+                    <h4 class="text-xs font-bold text-slate-300 mb-2">قائمة الموظفين المسجلين:</h4>
+                    <div id="usersList" class="space-y-2 max-h-48 overflow-y-auto pr-1">
+                        <!-- Dynamic User Items -->
                     </div>
                 </div>
             </div>
 
-            <!-- SOLVE ACTION MODAL -->
+            <!-- SOLVE ACTION MODAL (VALID / INVALID) -->
             <div id="solveModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
                 <div class="bg-slate-800 border border-slate-700 max-w-md w-full rounded-2xl p-6 shadow-2xl">
                     <h3 class="text-base font-bold mb-1 text-emerald-400 flex items-center gap-2">
@@ -202,28 +205,28 @@
 
                     <div class="space-y-4">
                         <div>
-                            <label class="block text-xs font-bold mb-2">اختر نتيجة المعالجة:</label>
+                            <label class="block text-xs font-bold mb-2 text-slate-300">اختر الحالة لحل التذكرة:</label>
                             <div class="grid grid-cols-2 gap-3">
-                                <button type="button" onclick="setDecision('Valid')" id="btnDecisionValid" class="py-2.5 px-4 rounded-xl border border-slate-700 font-bold text-xs flex items-center justify-center gap-2 bg-slate-900 text-slate-300 hover:border-emerald-500">
-                                    <i class="fa-solid fa-thumbs-up text-emerald-400"></i>
+                                <button type="button" onclick="setDecision('Valid')" id="btnDecisionValid" class="py-3 px-4 rounded-xl border-2 border-emerald-500 font-bold text-xs flex items-center justify-center gap-2 bg-emerald-950/60 text-emerald-300">
+                                    <i class="fa-solid fa-thumbs-up text-base"></i>
                                     <span>Valid</span>
                                 </button>
-                                <button type="button" onclick="setDecision('Invalid')" id="btnDecisionInvalid" class="py-2.5 px-4 rounded-xl border border-slate-700 font-bold text-xs flex items-center justify-center gap-2 bg-slate-900 text-slate-300 hover:border-rose-500">
-                                    <i class="fa-solid fa-thumbs-down text-rose-400"></i>
+                                <button type="button" onclick="setDecision('Invalid')" id="btnDecisionInvalid" class="py-3 px-4 rounded-xl border border-slate-700 font-bold text-xs flex items-center justify-center gap-2 bg-slate-900 text-slate-400">
+                                    <i class="fa-solid fa-thumbs-down text-base"></i>
                                     <span>Invalid</span>
                                 </button>
                             </div>
                         </div>
 
                         <div>
-                            <label class="block text-xs font-bold mb-1">ملاحظات إضافية (اختياري):</label>
-                            <textarea id="modalNote" rows="3" placeholder="أدخل الملاحظة..." class="w-full bg-slate-900 border border-slate-700 p-2.5 rounded-xl text-xs focus:outline-none focus:border-indigo-500"></textarea>
+                            <label class="block text-xs font-bold mb-1 text-slate-300">ملاحظات الحل (اختياري):</label>
+                            <textarea id="modalNote" rows="3" placeholder="أدخل تفاصيل الإجراء أو السبب..." class="w-full bg-slate-900 border border-slate-700 p-2.5 rounded-xl text-xs focus:outline-none focus:border-indigo-500"></textarea>
                         </div>
                     </div>
 
                     <div class="flex justify-end gap-2 mt-6">
                         <button onclick="closeSolveModal()" class="px-4 py-2 rounded-xl text-xs font-bold bg-slate-700 hover:bg-slate-600">إلغاء</button>
-                        <button onclick="submitSolve()" class="px-5 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500">حفظ الإجراء</button>
+                        <button onclick="submitSolve()" class="px-5 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 transition">تأكيد وإغلاق التذكرة</button>
                     </div>
                 </div>
             </div>
@@ -232,19 +235,21 @@
     </div>
 
     <script>
-        // SHEET CSV LINK
-        const GOOGLE_SHEET_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT16yvAInqK-Wj2GgM2Y8o3i8Yg_U22z8u3lA/pub?gid=447654358&single=true&output=csv";
+        // GOOGLE SHEET PUBLIC CSV URL
+        const CSV_FETCH_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT16yvAInqK-Wj2GgM2Y8o3i8Yg_U22z8u3lA/pub?gid=447654358&single=true&output=csv";
 
         // APP STATE
-        let users = JSON.parse(localStorage.getItem('app_users')) || [
+        let users = JSON.parse(localStorage.getItem('app_users_v3')) || [
             { username: 'admin', password: '123456', role: 'admin' },
-            { username: 'bahaa', password: '123', role: 'user' },
-            { username: 'eslam', password: '123', role: 'user' }
+            { username: 'Bahaa', password: '123', role: 'user' },
+            { username: 'Eslam Tareq', password: '123', role: 'user' },
+            { username: 'Zahry', password: '123', role: 'user' },
+            { username: 'Abdulrahman', password: '123', role: 'user' }
         ];
 
         let activeUser = JSON.parse(sessionStorage.getItem('active_user')) || null;
         let allTickets = [];
-        let solvedTickets = JSON.parse(localStorage.getItem('solved_tickets_v2')) || [];
+        let solvedTickets = JSON.parse(localStorage.getItem('solved_tickets_v3')) || [];
         let selectedDecision = 'Valid';
         let activeTicketId = null;
 
@@ -256,10 +261,10 @@
 
         function handleLogin(e) {
             e.preventDefault();
-            const u = document.getElementById('loginUsername').value.trim().toLowerCase();
+            const u = document.getElementById('loginUsername').value.trim();
             const p = document.getElementById('loginPassword').value.trim();
 
-            const found = users.find(x => x.username.toLowerCase() === u && x.password === p);
+            const found = users.find(x => x.username.toLowerCase() === u.toLowerCase() && x.password === p);
             if (found) {
                 activeUser = found;
                 sessionStorage.setItem('active_user', JSON.stringify(found));
@@ -284,59 +289,57 @@
                 document.getElementById('adminBtn').classList.remove('hidden');
             }
 
-            fetchSheetData();
+            fetchLiveData();
         }
 
-        function fetchSheetData() {
+        function fetchLiveData() {
             const spinner = document.getElementById('syncSpinner');
             spinner.classList.add('fa-spin');
 
-            // Fetch live CSV data directly from Google Sheets
-            Papa.parse("https://docs.google.com/spreadsheets/d/171DXs48k4FOnpHGB155mLpvgRnXUxfsXoQT4AYGV8rA/gviz/tq?tqx=out:csv&sheet=W35", {
+            // Fetching published CSV to bypass CORS
+            Papa.parse(CSV_FETCH_URL, {
                 download: true,
                 header: false,
                 skipEmptyLines: true,
                 complete: function(results) {
                     spinner.classList.remove('fa-spin');
-                    processRows(results.data);
+                    parseSheetRows(results.data);
                 },
                 error: function(err) {
                     spinner.classList.remove('fa-spin');
-                    console.error(err);
-                    alert("تعذر جلب البيانات من الشيت، سيتم استخدام البيانات المحلية المتوفرة.");
+                    console.error("CSV Fetch Error:", err);
+                    alert("تعذر جلب البيانات مباشرة من الشيت، يرجى التأكد من نشر التاب بصيغة CSV.");
                 }
             });
         }
 
-        function processRows(rows) {
+        function parseSheetRows(rows) {
             allTickets = [];
-            
-            // Skip header rows
+
             for (let i = 1; i < rows.length; i++) {
-                const row = rows[i];
-                if (!row || row.length < 26) continue;
+                const r = rows[i];
+                if (!r || r.length < 26) continue;
 
-                const matchId = (row[0] || "").toString().trim(); // Col A
-                const res = (row[25] || "").toString().trim();    // Col Z (0-indexed: 25)
+                const matchId = (r[0] || "").toString().trim(); // Col A
+                const res = (r[25] || "").toString().trim();    // Col Z (index 25)
 
-                // STRICT FILTERING: Col Z NOT blank & NOT "He's Right"
+                // STRICT FILTERING: Col Z NOT Blank & NOT "He's Right"
                 if (matchId && res !== "" && res.toLowerCase() !== "he's right") {
                     
-                    // Check if already solved locally
                     if (!solvedTickets.some(s => s.id === matchId)) {
                         allTickets.push({
                             id: matchId,
-                            priority: row[4] || "-",      // Col E
-                            competition: row[6] || "-",   // Col G
-                            country: row[7] || "-",       // Col H
-                            season: row[8] || "-",        // Col I
-                            home: row[9] || "-",          // Col J
-                            away: row[10] || "-",         // Col K
-                            eta: row[14] || "-",          // Col O
-                            etaDate: row[15] || "-",      // Col P
-                            shift: row[16] || "-",        // Col Q
-                            resolution: res,              // Col Z
-                            comment: row[27] || "-"       // Col AB (index 27)
+                            priority: r[4] || "-",     // Col E
+                            competition: r[6] || "-",  // Col G
+                            country: r[7] || "-",      // Col H
+                            season: r[8] || "-",       // Col I
+                            home: r[9] || "-",         // Col J
+                            away: r[10] || "-",        // Col K
+                            eta: r[14] || "-",         // Col O
+                            etaDate: r[15] || "-",     // Col P
+                            shift: r[16] || "-",       // Col Q
+                            resolution: res,             // Col Z
+                            comment: r[26] || "-"      // Col AA (index 26)
                         });
                     }
                 }
@@ -354,6 +357,7 @@
                 t.id.toLowerCase().includes(search) || 
                 t.home.toLowerCase().includes(search) || 
                 t.away.toLowerCase().includes(search) ||
+                t.resolution.toLowerCase().includes(search) ||
                 t.competition.toLowerCase().includes(search)
             );
 
@@ -368,7 +372,7 @@
                 document.getElementById('noDataMessage').classList.add('hidden');
                 filtered.forEach(t => {
                     const card = document.createElement('div');
-                    card.className = "bg-slate-800 border border-slate-700/80 p-5 rounded-2xl flex flex-col justify-between shadow-lg hover:border-slate-500 transition";
+                    card.className = "bg-slate-800 border border-slate-700/80 p-5 rounded-2xl flex flex-col justify-between shadow-lg hover:border-indigo-500/50 transition";
                     card.innerHTML = `
                         <div>
                             <div class="flex justify-between items-center mb-3">
@@ -386,16 +390,16 @@
                             </div>
 
                             <div class="bg-slate-900/70 p-3 rounded-xl text-[11px] space-y-1.5 border border-slate-700/40 my-3">
-                                <div class="flex justify-between"><span class="text-slate-400">Priority (E):</span><span class="font-semibold text-slate-200">${t.priority}</span></div>
-                                <div class="flex justify-between"><span class="text-slate-400">ETA / Date (O, P):</span><span class="font-semibold text-slate-200">${t.eta} | ${t.etaDate}</span></div>
-                                <div class="flex justify-between"><span class="text-slate-400">Shift (Q):</span><span class="font-semibold text-slate-200">${t.shift}</span></div>
-                                <div class="flex justify-between"><span class="text-slate-400">Comment (AB):</span><span class="font-semibold text-amber-400">${t.comment}</span></div>
+                                <div class="flex justify-between"><span class="text-slate-400">Priority (Col E):</span><span class="font-semibold text-slate-200">${t.priority}</span></div>
+                                <div class="flex justify-between"><span class="text-slate-400">ETA / Date (Col O, P):</span><span class="font-semibold text-slate-200">${t.eta} | ${t.etaDate}</span></div>
+                                <div class="flex justify-between"><span class="text-slate-400">Shift (Col Q):</span><span class="font-semibold text-slate-200">${t.shift}</span></div>
+                                <div class="flex justify-between"><span class="text-slate-400">Comment (Col AA):</span><span class="font-semibold text-amber-400">${t.comment}</span></div>
                             </div>
                         </div>
 
                         <button onclick="openSolveModal('${t.id}')" class="w-full bg-emerald-600 hover:bg-emerald-500 font-bold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-2 transition mt-2 shadow-md">
-                            <i class="fa-solid fa-check"></i>
-                            <span>اتخاذ إجراء (Valid / Invalid)</span>
+                            <i class="fa-solid fa-list-check"></i>
+                            <span>حل التذكرة (Valid / Invalid)</span>
                         </button>
                     `;
                     grid.appendChild(card);
@@ -446,11 +450,11 @@
             const btnInvalid = document.getElementById('btnDecisionInvalid');
 
             if (val === 'Valid') {
-                btnValid.className = "py-2.5 px-4 rounded-xl border-2 border-emerald-500 font-bold text-xs flex items-center justify-center gap-2 bg-emerald-950/60 text-emerald-300";
-                btnInvalid.className = "py-2.5 px-4 rounded-xl border border-slate-700 font-bold text-xs flex items-center justify-center gap-2 bg-slate-900 text-slate-400";
+                btnValid.className = "py-3 px-4 rounded-xl border-2 border-emerald-500 font-bold text-xs flex items-center justify-center gap-2 bg-emerald-950/60 text-emerald-300";
+                btnInvalid.className = "py-3 px-4 rounded-xl border border-slate-700 font-bold text-xs flex items-center justify-center gap-2 bg-slate-900 text-slate-400";
             } else {
-                btnInvalid.className = "py-2.5 px-4 rounded-xl border-2 border-rose-500 font-bold text-xs flex items-center justify-center gap-2 bg-rose-950/60 text-rose-300";
-                btnValid.className = "py-2.5 px-4 rounded-xl border border-slate-700 font-bold text-xs flex items-center justify-center gap-2 bg-slate-900 text-slate-400";
+                btnInvalid.className = "py-3 px-4 rounded-xl border-2 border-rose-500 font-bold text-xs flex items-center justify-center gap-2 bg-rose-950/60 text-rose-300";
+                btnValid.className = "py-3 px-4 rounded-xl border border-slate-700 font-bold text-xs flex items-center justify-center gap-2 bg-slate-900 text-slate-400";
             }
         }
 
@@ -467,7 +471,7 @@
                 t.solvedAt = new Date().toLocaleString('ar-EG');
 
                 solvedTickets.unshift(t);
-                localStorage.setItem('solved_tickets_v2', JSON.stringify(solvedTickets));
+                localStorage.setItem('solved_tickets_v3', JSON.stringify(solvedTickets));
 
                 renderTickets();
                 closeSolveModal();
@@ -507,7 +511,7 @@
                         <span class="font-bold text-slate-200">${u.username}</span>
                         <span class="text-[10px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded mr-2">${u.role}</span>
                     </div>
-                    ${u.username !== 'admin' ? `<button onclick="deleteUser('${u.username}')" class="text-rose-400 hover:text-rose-300"><i class="fa-solid fa-trash"></i></button>` : '<span class="text-[10px] text-slate-500">أساسي</span>'}
+                    ${u.username !== 'admin' ? `<button onclick="deleteUser('${u.username}')" class="text-rose-400 hover:text-rose-300"><i class="fa-solid fa-trash"></i></button>` : '<span class="text-[10px] text-slate-500">الأدمن الرئيسي</span>'}
                 `;
                 list.appendChild(d);
             });
@@ -519,12 +523,12 @@
             const p = document.getElementById('newPassword').value.trim();
 
             if (users.some(x => x.username.toLowerCase() === u.toLowerCase())) {
-                alert('هذا المستخدم موجود بالفعل!');
+                alert('اسم المستخدم هذا مضاف بالفعل!');
                 return;
             }
 
             users.push({ username: u, password: p, role: 'user' });
-            localStorage.setItem('app_users', JSON.stringify(users));
+            localStorage.setItem('app_users_v3', JSON.stringify(users));
             document.getElementById('newUsername').value = '';
             document.getElementById('newPassword').value = '';
             renderUsersList();
@@ -532,7 +536,7 @@
 
         function deleteUser(username) {
             users = users.filter(x => x.username !== username);
-            localStorage.setItem('app_users', JSON.stringify(users));
+            localStorage.setItem('app_users_v3', JSON.stringify(users));
             renderUsersList();
         }
     </script>
