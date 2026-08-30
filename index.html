@@ -3,20 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Info Team Quality - Tickets System</title>
+    <title>Info Team Quality - Dynamic Live Tickets System</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts: Cairo -->
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
-    <!-- PapaParse for CSV Parsing -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <style>
         body { font-family: 'Cairo', sans-serif; }
     </style>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen">
+
+    <script>
+        const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw6tU2RQSs_FHdXeUeCz7WO7TEdyeu5NsN8fC2Evi6OIRZ1JLG2ZZ-2KvgBNGSRYNFicg/exec";
+    </script>
 
     <!-- LOGIN OVERLAY -->
     <div id="loginOverlay" class="fixed inset-0 bg-slate-950 z-50 flex items-center justify-center p-4">
@@ -26,7 +28,7 @@
                     <i class="fa-solid fa-user-shield text-2xl text-white"></i>
                 </div>
                 <h2 class="text-2xl font-bold">تسجيل الدخول للنظام</h2>
-                <p class="text-xs text-slate-400 mt-1">Info Team Quality Ticket System</p>
+                <p class="text-xs text-slate-400 mt-1">Info Team Quality Dynamic Ticket Engine</p>
             </div>
             
             <form onsubmit="handleLogin(event)" class="space-y-4">
@@ -59,21 +61,14 @@
                     </div>
                     <div>
                         <h1 class="text-lg font-bold">Info Team Quality - Tickets System</h1>
-                        <p class="text-xs text-slate-400">Direct 139+ Ticket Filter Engine</p>
+                        <p class="text-xs text-slate-400">Live Dynamic JSONP Stream (W35, W36, W37...)</p>
                     </div>
                 </div>
 
                 <div class="flex items-center gap-3">
-                    <!-- File Upload Button for unlimited CSV import -->
-                    <label class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 shadow-md transition cursor-pointer">
-                        <i class="fa-solid fa-file-import"></i>
-                        <span>رفع شيت CSV (139+ سطر)</span>
-                        <input type="file" id="csvFileInput" accept=".csv" class="hidden" onchange="importCSVFile(event)">
-                    </label>
-
-                    <button onclick="resetData()" class="bg-slate-700 hover:bg-slate-600 px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition" title="استعادة الـ 139 تذكرة الافتراضية">
-                        <i class="fa-solid fa-rotate-left"></i>
-                        <span>استعادة الكل (139)</span>
+                    <button onclick="fetchSheetDataDynamic()" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 shadow-md transition">
+                        <i class="fa-solid fa-rotate" id="syncSpinner"></i>
+                        <span>مزامنة دقيقة حية من الشيت</span>
                     </button>
 
                     <!-- Admin Button -->
@@ -166,7 +161,7 @@
                 <div id="noDataMessage" class="hidden text-center py-16 bg-slate-800/50 rounded-2xl border border-slate-700">
                     <i class="fa-solid fa-circle-check text-4xl text-emerald-500 mb-3"></i>
                     <h3 class="text-base font-bold">تم حل جميع التذاكر المتاحة!</h3>
-                    <p class="text-xs text-slate-400 mt-1">اضغط على "استعادة الكل (139)" لإعادة تحميل القائمة المكتملة.</p>
+                    <p class="text-xs text-slate-400 mt-1">انقر على "مزامنة دقيقة حية من الشيت" للتحقق من أحدث الإضافات.</p>
                 </div>
             </div>
 
@@ -223,34 +218,8 @@
     </div>
 
     <script>
-        // FULL 139 ROWS DATASET EXTRACTED DIRECTLY FROM SHEET FILTER
-        const full139Dataset = [
-            { tab: "W35", id: "1436002", priority: "Custom", competition: "Damallsvenskan", country: "Sweden", season: "2026", home: "AIK W", away: "Kristianstad", eta: "2026-08-31", etaDate: "3:00", shift: "B", reviewDate: "2026-08-29", reviewShift: "M", responsible: "Bahaa", resolution: "Missing Player", comment: "2" },
-            { tab: "W35", id: "1454376", priority: "P1.5", competition: "China League One", country: "China PR", season: "2026", home: "Shijiazhuang Gongfu", away: "Wuxi Wugo", eta: "2026-08-31", etaDate: "3:00", shift: "B", reviewDate: "2026-08-30", reviewShift: "M", responsible: "Abdulrahman", resolution: "Wrong Number", comment: "1 | away:Zhixuan Zhou 28 not 27" },
-            { tab: "W35", id: "1482440", priority: "Live", competition: "Championship", country: "England", season: "2026/2027", home: "Derby County", away: "Swansea City", eta: "2026-08-30", etaDate: "3:00", shift: "B", reviewDate: "2026-08-29", reviewShift: "M", responsible: "Eslam Tareq", resolution: "Missing Player", comment: "-" },
-            { tab: "W35", id: "1482625", priority: "Custom", competition: "League One", country: "England", season: "2026/2027", home: "Blackpool", away: "Peterborough United", eta: "2026-08-30", etaDate: "3:00", shift: "L", reviewDate: "2026-08-29", reviewShift: "N", responsible: "Abdulrahman", resolution: "Extra Player", comment: "1 | away:27.Isac Fors" },
-            { tab: "W35", id: "1454378", priority: "P1.5", competition: "China League One", country: "China PR", season: "2026", home: "Jiangxi Dingnan United", away: "Suzhou Dongwu", eta: "2026-08-31", etaDate: "3:00", shift: "L", reviewDate: "2026-08-30", reviewShift: "N", responsible: "Mossad", resolution: "Wrong Number", comment: "1" },
-            { tab: "W35", id: "1469789", priority: "Custom", competition: "1st Division", country: "Denmark", season: "2026/2027", home: "Aalborg BK", away: "HB Køge", eta: "2026-08-30", etaDate: "3:00", shift: "N", reviewDate: "2026-08-29", reviewShift: "N", responsible: "Mossad", resolution: "Wrong Number", comment: "2" },
-            { tab: "W35", id: "1499856", priority: "Custom", competition: "2. Division", country: "Denmark", season: "2026/2027", home: "Hellerup", away: "Middelfart", eta: "2026-08-30", etaDate: "15:00", shift: "K", reviewDate: "2026-08-29", reviewShift: "O", responsible: "Eslam Hussien", resolution: "Sub Player Wrong", comment: "1" },
-            { tab: "W35", id: "1468138", priority: "Live", competition: "Ligue 2", country: "France", season: "2026/2027", home: "Red Star FC", away: "Stade de Reims", eta: "2026-08-30", etaDate: "3:00", shift: "B", reviewDate: "2026-08-29", reviewShift: "M", responsible: "Moaaz", resolution: "Wrong Stadium", comment: "-" },
-            { tab: "W35", id: "1504336", priority: "Custom", competition: "Regionalliga Bayern", country: "Germany", season: "2026/2027", home: "Illertissen", away: "FC Bayern München II", eta: "2026-08-30", etaDate: "3:00", shift: "L", reviewDate: "2026-08-29", reviewShift: "N", responsible: "Mossad", resolution: "Wrong Number", comment: "5 | Away: 1088793 Cassiano Mpembele Kiala 12 not 5" },
-            { tab: "W35", id: "1507343", priority: "WS Customer", competition: "Regionalliga Südwest", country: "Germany", season: "2026/2027", home: "Eintracht Trier", away: "Sandhausen", eta: "2026-08-30", etaDate: "3:00", shift: "C", reviewDate: "2026-08-29", reviewShift: "N", responsible: "Yousef Mansour", resolution: "Wrong Start Player", comment: "-" },
-            { tab: "W35", id: "1493569", priority: "P1", competition: "Ligue 3", country: "France", season: "2026/2027", home: "Stade Malherbe Caen", away: "Bastia", eta: "2026-08-30", etaDate: "11:00", shift: "R", reviewDate: "2026-08-30", reviewShift: "O", responsible: "Bahaa", resolution: "Wrong Number", comment: "1" },
-            { tab: "W35", id: "1493579", priority: "Custom", competition: "Ligue 3", country: "France", season: "2026/2027", home: "Valenciennes", away: "Concarneau", eta: "2026-08-30", etaDate: "3:00", shift: "L", reviewDate: "2026-08-29", reviewShift: "N", responsible: "Aya", resolution: "Extra Player", comment: "1" },
-            { tab: "W35", id: "1524768", priority: "P1", competition: "Jugendliga U18: LASK", country: "Austria", season: "2026/2027", home: "Lask U18", away: "Tirol U18", eta: "2026-08-30", etaDate: "15:00", shift: "U", reviewDate: "2026-08-30", reviewShift: "O", responsible: "Bahaa", resolution: "Missing Official", comment: "1" },
-            { tab: "W35", id: "1500565", priority: "P1", competition: "Jugendliga U18: RB Salzburg", country: "Austria", season: "2026/2027", home: "St. Pölten NÖ U18", away: "Red Bull Salzburg U18", eta: "2026-08-30", etaDate: "15:00", shift: "Z", reviewDate: "2026-08-30", reviewShift: "O", responsible: "Bahaa", resolution: "Starting Player Error", comment: "1" },
-            { tab: "W35", id: "1516141", priority: "P1", competition: "Super League", country: "Malaysia", season: "2026/2027", home: "Kelantan Red Warriors", away: "Kuching City FC", eta: "2026-08-30", etaDate: "15:00", shift: "Z", reviewDate: "2026-08-29", reviewShift: "N", responsible: "Eslam Hussien", resolution: "Missing Official", comment: "1" },
-            { tab: "W35", id: "1437713", priority: "Custom", competition: "Superettan", country: "Sweden", season: "2026", home: "Falkenberg", away: "Brage", eta: "2026-08-30", etaDate: "6:00", shift: "V", reviewDate: "2026-08-29", reviewShift: "N", responsible: "Aya", resolution: "Missing Player", comment: "-" },
-            { tab: "W35", id: "1509442", priority: "Custom", competition: "A-Liga Women", country: "Denmark", season: "2026/2027", home: "Brøndby IF WFC", away: "FC København W", eta: "2026-08-30", etaDate: "20:00", shift: "M", reviewDate: "2026-08-30", reviewShift: "M", responsible: "Moaaz", resolution: "Wrong Sub Player", comment: "-" },
-            { tab: "W35", id: "1514024", priority: "Custom", competition: "UAE Pro League", country: "United Arab Emirates", season: "2026/2027", home: "Khorfakkan Club", away: "Al Dhafra FC", eta: "2026-08-30", etaDate: "6:00", shift: "X", reviewDate: "2026-08-29", reviewShift: "N", responsible: "Yousef Mansour", resolution: "Wrong Number", comment: "2 | Home #8 Abdullah Al Naqbi" },
-            { tab: "W35", id: "1480601", priority: "WS Customer", competition: "Chance Narodni Liga", country: "Czech Republic", season: "2026/2027", home: "FK Arsenal Česká Lípa", away: "Sellier & Bellot Vlašim", eta: "2026-08-30", etaDate: "20:00", shift: "D'", reviewDate: "2026-08-30", reviewShift: "M", responsible: "Mostafa", resolution: "Wrong Started Player", comment: "-" },
-            { tab: "W35", id: "1482430", priority: "Live", competition: "Championship", country: "England", season: "2026/2027", home: "Blackburn Rovers", away: "Queens Park Rangers", eta: "2026-08-30", etaDate: "3:00", shift: "N", reviewDate: "2026-08-29", reviewShift: "N", responsible: "Aya", resolution: "Missing Player", comment: "-" },
-            { tab: "W35", id: "1482436", priority: "Live", competition: "Championship", country: "England", season: "2026/2027", home: "Cardiff City", away: "Sheffield United", eta: "2026-08-30", etaDate: "3:00", shift: "L", reviewDate: "2026-08-29", reviewShift: "N", responsible: "Yousef Mansour", resolution: "Wrong Manager", comment: "-" },
-            { tab: "W35", id: "1482444", priority: "Live", competition: "Championship", country: "England", season: "2026/2027", home: "Norwich City", away: "Burnley", eta: "2026-08-30", etaDate: "3:00", shift: "L", reviewDate: "2026-08-29", reviewShift: "N", responsible: "Abdulrahman", resolution: "Wrong Number", comment: "1" }
-        ];
-
-        // APP STATE
-        let users = JSON.parse(localStorage.getItem('app_users_v13')) || [
+        // APP STATE & STORAGE
+        let users = JSON.parse(localStorage.getItem('app_users_v14')) || [
             { username: 'admin', password: '123456', role: 'admin' },
             { username: 'Bahaa', password: '123', role: 'user' },
             { username: 'Eslam Tareq', password: '123', role: 'user' },
@@ -259,23 +228,8 @@
         ];
 
         let activeUser = JSON.parse(sessionStorage.getItem('active_user')) || null;
-        let solvedTickets = JSON.parse(localStorage.getItem('solved_tickets_v13')) || [];
-        let allTickets = JSON.parse(localStorage.getItem('open_tickets_v13')) || generate139Items();
-
-        function generate139Items() {
-            let list = [...full139Dataset];
-            // Multiply data with unique IDs to match the exact 139 rows in sheet filter
-            let currentCount = list.length;
-            let targetCount = 139;
-
-            for (let i = 0; i < (targetCount - currentCount); i++) {
-                let base = full139Dataset[i % full139Dataset.length];
-                let clone = JSON.parse(JSON.stringify(base));
-                clone.id = (parseInt(base.id) + 1000 + i).toString();
-                list.push(clone);
-            }
-            return list;
-        }
+        let allTickets = JSON.parse(localStorage.getItem('dyn_cached_tickets')) || [];
+        let solvedTickets = JSON.parse(localStorage.getItem('solved_tickets_v14')) || [];
 
         document.addEventListener('DOMContentLoaded', () => {
             if (activeUser) {
@@ -313,71 +267,46 @@
                 document.getElementById('adminBtn').classList.remove('hidden');
             }
 
-            populateFilters();
-            renderTickets();
-        }
-
-        function resetData() {
-            allTickets = generate139Items();
-            solvedTickets = [];
-            localStorage.setItem('open_tickets_v13', JSON.stringify(allTickets));
-            localStorage.setItem('solved_tickets_v13', JSON.stringify(solvedTickets));
-            populateFilters();
-            renderTickets();
-        }
-
-        function importCSVFile(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            Papa.parse(file, {
-                header: false,
-                skipEmptyLines: true,
-                complete: function(results) {
-                    parseCustomCSV(results.data);
-                }
-            });
-        }
-
-        function parseCustomCSV(rows) {
-            let imported = [];
-            for (let i = 1; i < rows.length; i++) {
-                const r = rows[i];
-                if (!r || r.length < 25) continue;
-
-                const matchId = (r[0] || "").toString().trim();
-                const res = (r[25] || "").toString().trim();
-
-                if (matchId && matchId.toLowerCase() !== "id" && res !== "" && res.toLowerCase() !== "he's right") {
-                    imported.push({
-                        tab: "W35",
-                        id: matchId,
-                        priority: r[4] || "-",
-                        competition: r[6] || "-",
-                        country: r[7] || "-",
-                        season: r[8] || "-",
-                        home: r[9] || "-",
-                        away: r[10] || "-",
-                        eta: r[14] || "-",
-                        etaDate: r[15] || "-",
-                        shift: r[16] || "-",
-                        reviewDate: r[20] || "-",
-                        reviewShift: r[21] || "-",
-                        responsible: r[22] || "-",
-                        resolution: res,
-                        comment: [r[26], r[27]].filter(Boolean).join(" | ") || "-"
-                    });
-                }
-            }
-
-            if (imported.length > 0) {
-                allTickets = imported;
-                localStorage.setItem('open_tickets_v13', JSON.stringify(allTickets));
+            if (allTickets.length > 0) {
                 populateFilters();
                 renderTickets();
-                alert(`تم استيراد ${imported.length} تذكرة بنجاح من شيت الـ CSV!`);
             }
+            
+            fetchSheetDataDynamic();
         }
+
+        // JSONP DIRECT BYPASS ENGINE
+        function fetchSheetDataDynamic() {
+            const spinner = document.getElementById('syncSpinner');
+            spinner.classList.add('fa-spin');
+
+            const oldScript = document.getElementById('jsonp_script');
+            if (oldScript) oldScript.remove();
+
+            const script = document.createElement('script');
+            script.id = 'jsonp_script';
+            script.src = APPS_SCRIPT_URL + '?callback=handleDynamicResponse&t=' + new Date().getTime();
+            
+            script.onerror = function() {
+                spinner.classList.remove('fa-spin');
+                console.error("JSONP script load error.");
+            };
+
+            document.body.appendChild(script);
+        }
+
+        // JSONP CALLBACK FUNCTION
+        window.handleDynamicResponse = function(data) {
+            const spinner = document.getElementById('syncSpinner');
+            if (spinner) spinner.classList.remove('fa-spin');
+
+            if (Array.isArray(data)) {
+                allTickets = data.filter(t => !solvedTickets.some(s => s.id === t.id));
+                localStorage.setItem('dyn_cached_tickets', JSON.stringify(allTickets));
+                populateFilters();
+                renderTickets();
+            }
+        };
 
         function populateFilters() {
             const tabSelect = document.getElementById('tabFilter');
@@ -494,8 +423,8 @@
                 t.solvedAt = new Date().toLocaleString('ar-EG');
 
                 solvedTickets.unshift(t);
-                localStorage.setItem('open_tickets_v13', JSON.stringify(allTickets));
-                localStorage.setItem('solved_tickets_v13', JSON.stringify(solvedTickets));
+                localStorage.setItem('dyn_cached_tickets', JSON.stringify(allTickets));
+                localStorage.setItem('solved_tickets_v14', JSON.stringify(solvedTickets));
 
                 renderTickets();
             }
@@ -510,8 +439,8 @@
                 delete t.solvedAt;
 
                 allTickets.unshift(t);
-                localStorage.setItem('open_tickets_v13', JSON.stringify(allTickets));
-                localStorage.setItem('solved_tickets_v13', JSON.stringify(solvedTickets));
+                localStorage.setItem('dyn_cached_tickets', JSON.stringify(allTickets));
+                localStorage.setItem('solved_tickets_v14', JSON.stringify(solvedTickets));
 
                 renderTickets();
             }
@@ -628,7 +557,7 @@
             }
 
             users.push({ username: u, password: p, role: 'user' });
-            localStorage.setItem('app_users_v13', JSON.stringify(users));
+            localStorage.setItem('app_users_v14', JSON.stringify(users));
             document.getElementById('newUsername').value = '';
             document.getElementById('newPassword').value = '';
             renderUsersList();
@@ -636,7 +565,7 @@
 
         function deleteUser(username) {
             users = users.filter(x => x.username !== username);
-            localStorage.setItem('app_users_v13', JSON.stringify(users));
+            localStorage.setItem('app_users_v14', JSON.stringify(users));
             renderUsersList();
         }
     </script>
