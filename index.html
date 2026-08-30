@@ -1,905 +1,540 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl" class="dark">
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام تذاكر جودة البيانات | Info Team Quality 2026</title>
+    <title>Info Team Quality - Ticket System</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome Pro / Free CDN -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <!-- Google Fonts: Cairo & Inter -->
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        slate: {
-                            850: '#0f172a',
-                            900: '#0b1329',
-                            950: '#050a18',
-                        },
-                        brand: {
-                            50: '#eef2ff',
-                            500: '#6366f1',
-                            600: '#4f46e5',
-                            700: '#4338ca',
-                        }
-                    },
-                    fontFamily: {
-                        sans: ['Cairo', 'Inter', 'sans-serif'],
-                        mono: ['JetBrains Mono', 'Consolas', 'monospace']
-                    }
-                }
-            }
-        }
-    </script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Cairo -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <!-- PapaParse for direct Sheet CSV Parsing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <style>
-        body {
-            font-family: 'Cairo', sans-serif;
-            background-color: #080d1a;
-            color: #f1f5f9;
-        }
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #0b1329;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #1e293b;
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #334155;
-        }
-        .badge-live {
-            box-shadow: 0 0 12px rgba(239, 68, 68, 0.4);
-        }
-        .glass-panel {
-            background: rgba(15, 23, 42, 0.75);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.07);
-        }
-        .glass-panel-hover:hover {
-            border-color: rgba(99, 102, 241, 0.4);
-            box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.5);
-        }
+        body { font-family: 'Cairo', sans-serif; }
     </style>
 </head>
-<body class="min-h-screen flex flex-col justify-between antialiased selection:bg-brand-500 selection:text-white">
+<body class="bg-slate-900 text-slate-100 min-h-screen">
 
-    <!-- Toast Notification Container -->
-    <div id="toastContainer" class="fixed top-5 left-5 z-50 flex flex-col gap-2 max-w-md w-full pointer-events-none"></div>
-
-    <header class="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 shadow-lg">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between h-16">
-                <!-- App Title and Info -->
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-brand-500 to-emerald-400 p-0.5 shadow-md flex items-center justify-center">
-                        <div class="w-full h-full bg-slate-900 rounded-[10px] flex items-center justify-center">
-                            <i class="fa-solid fa-futbol text-brand-500 text-lg"></i>
-                        </div>
-                    </div>
-                    <div>
-                        <div class="flex items-center gap-2">
-                            <h1 class="text-base sm:text-lg font-black tracking-tight text-white">نظام جودة المباريات والتذاكر</h1>
-                            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 font-mono">Info Quality 2026</span>
-                        </div>
-                        <p class="text-xs text-slate-400 hidden sm:block">تصفية وحل التذاكر تلقائياً (W35+ Tabs | Col Z ≠ He's Right)</p>
-                    </div>
+    <!-- LOGIN SCREEN -->
+    <div id="loginOverlay" class="fixed inset-0 bg-slate-950 z-50 flex items-center justify-center p-4">
+        <div class="bg-slate-800 border border-slate-700 p-8 rounded-2xl max-w-md w-full shadow-2xl">
+            <div class="text-center mb-6">
+                <div class="bg-indigo-600 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-lg">
+                    <i class="fa-solid fa-user-lock text-2xl text-white"></i>
                 </div>
-
-                <!-- Active Specialist Selector & Global Actions -->
-                <div class="flex items-center gap-3">
-                    <div class="flex items-center bg-slate-800/80 border border-slate-700/80 rounded-xl px-3 py-1.5 gap-2">
-                        <i class="fa-solid fa-user-gear text-emerald-400 text-xs"></i>
-                        <span class="text-xs text-slate-400 font-medium hidden sm:inline">أخصائي الجودة:</span>
-                        <select id="activeUserSelect" onchange="changeActiveUser(this.value)" class="bg-transparent text-xs sm:text-sm font-bold text-white focus:outline-none cursor-pointer">
-                            <option value="Bahaa" class="bg-slate-900">Bahaa</option>
-                            <option value="Zahry" class="bg-slate-900">Zahry</option>
-                            <option value="Eslam Tareq" class="bg-slate-900">Eslam Tareq</option>
-                            <option value="Abdulrahman" class="bg-slate-900">Abdulrahman</option>
-                            <option value="Yousef Mansour" class="bg-slate-900">Yousef Mansour</option>
-                            <option value="Aya" class="bg-slate-900">Aya</option>
-                            <option value="Mostafa" class="bg-slate-900">Mostafa</option>
-                        </select>
-                    </div>
-
-                    <button onclick="triggerSheetSync()" title="إعادة جلب الماتشات من الشيت" class="bg-brand-600 hover:bg-brand-500 active:scale-95 text-white text-xs sm:text-sm font-bold px-3.5 py-2 rounded-xl flex items-center gap-2 shadow-lg shadow-brand-600/20 transition duration-150">
-                        <i class="fa-solid fa-rotate-right" id="syncSpinnerIcon"></i>
-                        <span class="hidden md:inline">مزامنة الشيت</span>
-                    </button>
-                </div>
+                <h2 class="text-2xl font-bold">تسجيل الدخول للنظام</h2>
+                <p class="text-xs text-slate-400 mt-1">Info Team Quality Ticket Processing System</p>
             </div>
-        </div>
-    </header>
-
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-grow w-full space-y-6">
-
-        <!-- Top Metrics Cards Bar -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
-            <div class="glass-panel p-4 rounded-2xl flex items-center justify-between border-r-4 border-amber-500">
+            
+            <form onsubmit="handleLogin(event)" class="space-y-4">
                 <div>
-                    <span class="text-xs font-bold text-slate-400">التذاكر المفتوحة (Open)</span>
-                    <div class="text-2xl sm:text-3xl font-black text-amber-400 mt-1 font-mono" id="statOpenCount">0</div>
-                    <span class="text-[10px] text-slate-500">تتطلب معالجة وحل</span>
+                    <label class="block text-xs font-bold mb-1 text-slate-300">اسم المستخدم (Username):</label>
+                    <input type="text" id="loginUsername" required class="w-full p-3 rounded-xl bg-slate-900 border border-slate-700 text-sm focus:outline-none focus:border-indigo-500">
                 </div>
-                <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center text-lg">
-                    <i class="fa-solid fa-triangle-exclamation"></i>
-                </div>
-            </div>
-
-            <div class="glass-panel p-4 rounded-2xl flex items-center justify-between border-r-4 border-emerald-500">
                 <div>
-                    <span class="text-xs font-bold text-slate-400">التذاكر المحلولة (Solved)</span>
-                    <div class="text-2xl sm:text-3xl font-black text-emerald-400 mt-1 font-mono" id="statSolvedCount">0</div>
-                    <span class="text-[10px] text-slate-500">تم تعديلها وتأكيدها</span>
+                    <label class="block text-xs font-bold mb-1 text-slate-300">كلمة السر (Password):</label>
+                    <input type="password" id="loginPassword" required class="w-full p-3 rounded-xl bg-slate-900 border border-slate-700 text-sm focus:outline-none focus:border-indigo-500">
                 </div>
-                <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center text-lg">
-                    <i class="fa-solid fa-circle-check"></i>
-                </div>
-            </div>
-
-            <div class="glass-panel p-4 rounded-2xl flex items-center justify-between border-r-4 border-indigo-500">
-                <div>
-                    <span class="text-xs font-bold text-slate-400">الأسبوع الفعّال (Tabs)</span>
-                    <div class="text-lg font-black text-indigo-400 mt-1 font-mono" id="statTabsList">W35, W36+</div>
-                    <span class="text-[10px] text-slate-500">تصفية تلقائية من W35</span>
-                </div>
-                <div class="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center text-lg">
-                    <i class="fa-solid fa-layer-group"></i>
-                </div>
-            </div>
-
-            <div class="glass-panel p-4 rounded-2xl flex items-center justify-between border-r-4 border-sky-500">
-                <div>
-                    <span class="text-xs font-bold text-slate-400">المشكلة الأكثر شيوعاً</span>
-                    <div class="text-xs font-bold text-sky-300 mt-1.5 truncate max-w-[120px]" id="statTopIssue">Missing Player</div>
-                    <span class="text-[10px] text-slate-500">في التذاكر الحالية</span>
-                </div>
-                <div class="w-10 h-10 rounded-xl bg-sky-500/10 border border-sky-500/20 text-sky-400 flex items-center justify-center text-lg">
-                    <i class="fa-solid fa-bug"></i>
-                </div>
-            </div>
-        </div>
-
-        <!-- Navigation Tabs Bar -->
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-800 pb-3 gap-3">
-            <nav class="flex space-x-2 space-x-reverse overflow-x-auto pb-1 sm:pb-0" id="mainTabNav">
-                <button onclick="switchTab('open')" id="tabBtn-open" class="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition flex items-center gap-2 bg-brand-600 text-white shadow-lg shadow-brand-600/20">
-                    <i class="fa-solid fa-fire text-amber-300"></i>
-                    <span>التذاكر المفتوحة للعمل</span>
-                    <span id="tabBadgeOpen" class="bg-slate-900/60 text-white text-[10px] font-mono px-2 py-0.5 rounded-full font-extrabold">0</span>
-                </button>
-                <button onclick="switchTab('solved')" id="tabBtn-solved" class="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition flex items-center gap-2 text-slate-400 hover:text-white hover:bg-slate-800">
-                    <i class="fa-solid fa-circle-check text-emerald-400"></i>
-                    <span>أرشيف التذاكر المحلولة</span>
-                    <span id="tabBadgeSolved" class="bg-slate-800 text-emerald-400 text-[10px] font-mono px-2 py-0.5 rounded-full font-extrabold">0</span>
-                </button>
-                <button onclick="switchTab('settings')" id="tabBtn-settings" class="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition flex items-center gap-2 text-slate-400 hover:text-white hover:bg-slate-800">
-                    <i class="fa-solid fa-link text-sky-400"></i>
-                    <span>إعدادات الشيت و Apps Script</span>
-                </button>
-            </nav>
-
-            <!-- Export Buttons -->
-            <div class="flex items-center gap-2">
-                <button onclick="exportCSV('open')" class="bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 text-xs font-bold px-3 py-2 rounded-xl flex items-center gap-1.5 transition">
-                    <i class="fa-solid fa-file-csv text-emerald-400"></i> تصدير المفتوحة (CSV)
-                </button>
-                <button onclick="resetDatasetToDefault()" title="إعادة جلب الماتشات الأصلية من الشيت" class="bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-amber-400 border border-slate-700 p-2 rounded-xl text-xs transition">
-                    <i class="fa-solid fa-arrow-rotate-left"></i>
-                </button>
-            </div>
-        </div>
-
-        <!-- TAB 1: OPEN TICKETS -->
-        <section id="tabContent-open" class="space-y-4">
-            <!-- Search & Filter Controls -->
-            <div class="glass-panel p-4 rounded-2xl flex flex-col md:flex-row gap-3 justify-between items-center">
-                <!-- Search Input -->
-                <div class="w-full md:w-1/3 relative">
-                    <i class="fa-solid fa-search absolute right-3.5 top-3 text-slate-500 text-xs"></i>
-                    <input type="text" id="openSearchInput" onkeyup="filterOpenTickets()" placeholder="بحث بـ ID المباراة، الفريق، البطولة..." class="w-full pr-9 pl-3 py-2 text-xs bg-slate-900 border border-slate-800 rounded-xl focus:outline-none focus:border-brand-500 text-white placeholder-slate-500">
-                </div>
-
-                <!-- Filters -->
-                <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
-                    <!-- Tab Filter -->
-                    <select id="openTabFilter" onchange="filterOpenTickets()" class="bg-slate-900 border border-slate-800 text-slate-300 text-xs rounded-xl px-3 py-2 focus:outline-none focus:border-brand-500">
-                        <option value="ALL">جميع التبويبات (≥ W35)</option>
-                        <option value="W35">W35</option>
-                        <option value="W36">W36</option>
-                        <option value="W37">W37</option>
-                    </select>
-
-                    <!-- Priority Filter -->
-                    <select id="openPriorityFilter" onchange="filterOpenTickets()" class="bg-slate-900 border border-slate-800 text-slate-300 text-xs rounded-xl px-3 py-2 focus:outline-none focus:border-brand-500">
-                        <option value="ALL">جميع الأولويات (Priority)</option>
-                        <option value="Live">Live</option>
-                        <option value="P1.5">P1.5</option>
-                        <option value="P3">P3</option>
-                        <option value="Custom">Custom</option>
-                    </select>
-
-                    <!-- Resolution Issue Filter -->
-                    <select id="openResolutionFilter" onchange="filterOpenTickets()" class="bg-slate-900 border border-slate-800 text-slate-300 text-xs rounded-xl px-3 py-2 focus:outline-none focus:border-brand-500">
-                        <option value="ALL">جميع المشاكل (Col Z)</option>
-                        <option value="Missing Player">Missing Player</option>
-                        <option value="Wrong Number">Wrong Number</option>
-                        <option value="Extra Player">Extra Player</option>
-                    </select>
-                </div>
-            </div>
-
-            <!-- Open Tickets Grid -->
-            <div id="openTicketsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <!-- Dynamically Populated by JS -->
-            </div>
-        </section>
-
-        <!-- TAB 2: SOLVED TICKETS ARCHIVE -->
-        <section id="tabContent-solved" class="hidden space-y-4">
-            <div class="glass-panel p-4 rounded-2xl flex flex-col sm:flex-row gap-3 justify-between items-center">
-                <div class="w-full sm:w-1/3 relative">
-                    <i class="fa-solid fa-search absolute right-3.5 top-3 text-slate-500 text-xs"></i>
-                    <input type="text" id="solvedSearchInput" onkeyup="filterSolvedTickets()" placeholder="بحث في الماتشات المحلولة أو الملاحظات..." class="w-full pr-9 pl-3 py-2 text-xs bg-slate-900 border border-slate-800 rounded-xl focus:outline-none focus:border-brand-500 text-white">
-                </div>
-                <button onclick="exportCSV('solved')" class="bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 border border-emerald-500/30 text-xs font-bold px-3 py-2 rounded-xl flex items-center gap-1.5 transition">
-                    <i class="fa-solid fa-file-export"></i> تصدير التذاكر المحلولة (CSV)
-                </button>
-            </div>
-
-            <!-- Table -->
-            <div class="glass-panel rounded-2xl overflow-hidden overflow-x-auto">
-                <table class="w-full text-right border-collapse">
-                    <thead>
-                        <tr class="bg-slate-900/90 border-b border-slate-800 text-slate-400 text-xs font-bold font-mono">
-                            <th class="py-3.5 px-4">Match ID (A)</th>
-                            <th class="py-3.5 px-4">الورقة (Tab)</th>
-                            <th class="py-3.5 px-4">المباراة (Home vs Away)</th>
-                            <th class="py-3.5 px-4">البطولة / الدولة</th>
-                            <th class="py-3.5 px-4">المشكلة (Col Z)</th>
-                            <th class="py-3.5 px-4">تفاصيل الحل (Action Note)</th>
-                            <th class="py-3.5 px-4">تم الحل بواسطة</th>
-                            <th class="py-3.5 px-4 text-center">إجراءات</th>
-                        </tr>
-                    </thead>
-                    <tbody id="solvedTicketsTableBody" class="divide-y divide-slate-800/60 text-xs">
-                        <!-- Dynamically Populated by JS -->
-                    </tbody>
-                </table>
-            </div>
-        </section>
-
-        <!-- TAB 3: GOOGLE SHEET SETTINGS & APPS SCRIPT -->
-        <section id="tabContent-settings" class="hidden space-y-6">
-            <div class="glass-panel p-6 rounded-2xl space-y-6">
-                <div class="border-b border-slate-800 pb-4">
-                    <h3 class="text-base font-bold text-white flex items-center gap-2">
-                        <i class="fa-solid fa-link text-brand-500"></i> إعدادات المزامنة المباشرة مع Google Sheets
-                    </h3>
-                    <p class="text-xs text-slate-400 mt-1">ربط شيت Info Team Quality 2026 برقم المستند `171DXs48k4FOnpHGB155mLpvgRnXUxfsXoQT4AYGV8rA`</p>
-                </div>
-
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div class="space-y-4">
-                        <div>
-                            <label class="block text-xs font-bold text-slate-300 mb-1">رابط CSV الشيت المنشور (Published CSV Link)</label>
-                            <input type="url" id="sheetUrlInput" value="https://docs.google.com/spreadsheets/d/e/2PACX-1vQ.../pub?output=csv" placeholder="https://docs.google.com/spreadsheets/d/.../pub?output=csv" class="w-full px-3 py-2 border border-slate-800 bg-slate-900 rounded-xl text-xs font-mono text-slate-200">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-slate-300 mb-1">رابط Google Apps Script Webhook (لتحديث الكولم الزمني وتأكيد الحل تلقائياً)</label>
-                            <input type="url" id="sheetWebhookInput" placeholder="https://script.google.com/macros/s/.../exec" class="w-full px-3 py-2 border border-slate-800 bg-slate-900 rounded-xl text-xs font-mono text-slate-200">
-                        </div>
-                        <button onclick="saveSettings()" class="bg-brand-600 hover:bg-brand-500 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition shadow-lg flex items-center gap-2">
-                            <i class="fa-solid fa-floppy-disk"></i> حفظ الإعدادات وإعادة التحميل
-                        </button>
-                    </div>
-
-                    <!-- Code Snippet for Sheet -->
-                    <div class="bg-slate-950 p-4 rounded-xl text-xs font-mono border border-slate-800 space-y-2">
-                        <div class="flex justify-between items-center border-b border-slate-800 pb-2 text-slate-400">
-                            <span>AppsScript_Backend.gs</span>
-                            <button onclick="copyCodeSnippet()" class="text-brand-400 hover:text-brand-300 font-sans flex items-center gap-1">
-                                <i class="fa-regular fa-copy"></i> نسخ الكود
-                            </button>
-                        </div>
-                        <pre id="appsScriptSnippet" class="text-slate-300 overflow-x-auto dir-ltr">function doPost(e) {
-  try {
-    var data = JSON.parse(e.postData.contents);
-    var matchId = data.matchId;
-    var tabName = data.tabName || "W35";
-    var actionNotes = data.actionNotes;
-    var solvedBy = data.solvedBy;
-
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var sheet = ss.getSheetByName(tabName) || ss.getSheets()[0];
-    var values = sheet.getDataRange().getValues();
-
-    for (var i = 1; i < values.length; i++) {
-      if (values[i][0].toString() === matchId.toString()) {
-        sheet.getRange(i + 1, 28).setValue(actionNotes); // Column AB (Comment)
-        sheet.getRange(i + 1, 26).setValue("He's Right"); // Column Z (Resolution)
-        sheet.getRange(i + 1, 23).setValue(solvedBy);    // Column W (Responsible)
-        return ContentService.createTextOutput(JSON.stringify({status: "success"}))
-               .setMimeType(ContentService.MimeType.JSON);
-      }
-    }
-    return ContentService.createTextOutput(JSON.stringify({status: "not_found"}));
-  } catch(err) {
-    return ContentService.createTextOutput(JSON.stringify({error: err.toString()}));
-  }
-}</pre>
-                    </div>
-                </div>
-            </div>
-        </section>
-    </main>
-
-    <!-- MODAL: MARK TICKET AS SOLVED -->
-    <div id="resolveModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
-        <div class="glass-panel max-w-lg w-full rounded-2xl p-6 shadow-2xl border border-slate-800">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-base font-bold text-white flex items-center gap-2">
-                    <i class="fa-solid fa-circle-check text-emerald-400"></i> تحديد الماتش كـ Solved وتأكيد الحل
-                </h3>
-                <button onclick="closeModal('resolveModal')" class="text-slate-500 hover:text-slate-300">
-                    <i class="fa-solid fa-xmark text-lg"></i>
-                </button>
-            </div>
-
-            <form id="resolveTicketForm" onsubmit="handleConfirmSolve(event)" class="space-y-4 text-xs">
-                <input type="hidden" id="modalMatchIdInput">
-
-                <!-- Match Snapshot Box -->
-                <div class="bg-slate-900/90 p-3.5 rounded-xl border border-slate-800 space-y-2">
-                    <div class="flex justify-between items-center">
-                        <span class="font-mono text-brand-400 font-bold" id="modalMatchIdDisplay">Match ID: -</span>
-                        <span class="bg-brand-500/10 text-brand-400 px-2 py-0.5 rounded font-mono font-bold" id="modalTabDisplay">W35</span>
-                    </div>
-                    <div class="font-bold text-slate-100 text-sm" id="modalTeamsDisplay">-</div>
-                    <div class="text-rose-400 font-bold" id="modalIssueDisplay">-</div>
-                </div>
-
-                <div>
-                    <label class="block font-bold text-slate-300 mb-1">تفاصيل وملاحظات التعديل والحل (Action Comment - Col AB)</label>
-                    <textarea id="modalActionNotes" required rows="3" placeholder="اكتب الملاحظات والتصحيحات المطلوبة (مثال: تم إضافة اللاعب الغائب بالتشكيلة...)" class="w-full px-3 py-2 border border-slate-800 bg-slate-900 rounded-xl focus:outline-none focus:border-emerald-500 text-white"></textarea>
-                </div>
-
-                <div>
-                    <label class="block font-bold text-slate-300 mb-1">مسؤول الجودة (Col W)</label>
-                    <input type="text" id="modalSolvedBy" readonly class="w-full px-3 py-2 border border-slate-800 bg-slate-950 font-bold text-emerald-400 rounded-xl">
-                </div>
-
-                <div class="flex justify-end gap-2 pt-2">
-                    <button type="button" onclick="closeModal('resolveModal')" class="px-4 py-2 border border-slate-800 text-slate-400 hover:text-white rounded-xl font-bold">إلغاء</button>
-                    <button type="submit" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold shadow-lg shadow-emerald-600/20 flex items-center gap-1.5">
-                        <i class="fa-solid fa-paper-plane"></i> حفظ وتغيير إلى Solved
-                    </button>
-                </div>
+                <p id="loginError" class="text-xs text-rose-500 hidden text-center font-bold">اسم المستخدم أو كلمة السر غير صحيحة!</p>
+                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 font-bold py-3 rounded-xl text-sm transition shadow-lg">تسجيل الدخول</button>
             </form>
+            <div class="mt-4 pt-4 border-t border-slate-700 text-center">
+                <p class="text-[11px] text-slate-400">حساب الأدمن الافتراضي: <span class="text-indigo-400 font-mono font-bold">admin</span> | الباسورد: <span class="text-indigo-400 font-mono font-bold">123456</span></p>
+            </div>
         </div>
     </div>
 
-    <!-- Footer -->
-    <footer class="bg-slate-900/80 border-t border-slate-800/80 py-4 mt-auto">
-        <div class="max-w-7xl mx-auto px-4 text-center text-xs text-slate-500">
-            نظام جودة المباريات والتذاكر الموحد &copy; 2026 | Info Team Quality Dataset (ID: 171DXs48k4FOnpHGB155mLpvgRnXUxfsXoQT4AYGV8rA)
-        </div>
-    </footer>
+    <!-- MAIN APP CONTENT -->
+    <div id="mainApp" class="hidden">
+        <!-- Header Bar -->
+        <header class="bg-slate-800 border-b border-slate-700 sticky top-0 z-40">
+            <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <div class="bg-indigo-600 p-2 rounded-xl text-white">
+                        <i class="fa-solid fa-futbol text-xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-lg font-bold">Info Team Quality - Tickets System</h1>
+                        <p class="text-xs text-slate-400">Google Sheets Direct Stream (W35+ Tabs)</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-3">
+                    <button onclick="fetchSheetData()" class="bg-emerald-600 hover:bg-emerald-500 px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 shadow-md transition">
+                        <i class="fa-solid fa-rotate" id="syncSpinner"></i>
+                        <span>مزامنة الداتا من الشيت</span>
+                    </button>
+
+                    <button id="adminBtn" onclick="toggleAdminPanel()" class="hidden bg-purple-600 hover:bg-purple-500 px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition">
+                        <i class="fa-solid fa-users-gear"></i>
+                        <span>إدارة الموظفين (Admin)</span>
+                    </button>
+
+                    <div class="bg-slate-900 border border-slate-700 px-3 py-1.5 rounded-xl text-xs flex items-center gap-2">
+                        <i class="fa-solid fa-user-circle text-indigo-400"></i>
+                        <span id="activeUserLabel" class="font-bold"></span>
+                        <button onclick="logout()" class="text-rose-400 hover:text-rose-300 mr-2"><i class="fa-solid fa-right-from-bracket"></i></button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main class="max-w-7xl mx-auto px-4 py-6">
+
+            <!-- STATS BAR -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                <div class="bg-slate-800 border border-slate-700 p-4 rounded-xl flex justify-between items-center">
+                    <div>
+                        <p class="text-xs text-slate-400 font-bold">التذاكر المفتوحة (Open)</p>
+                        <h3 id="statOpenCount" class="text-2xl font-black text-amber-400 mt-1">0</h3>
+                    </div>
+                    <i class="fa-solid fa-clock-rotate-left text-2xl text-amber-400/30"></i>
+                </div>
+
+                <div class="bg-slate-800 border border-slate-700 p-4 rounded-xl flex justify-between items-center">
+                    <div>
+                        <p class="text-xs text-slate-400 font-bold">التذاكر المحلولة (Solved)</p>
+                        <h3 id="statSolvedCount" class="text-2xl font-black text-emerald-400 mt-1">0</h3>
+                    </div>
+                    <i class="fa-solid fa-circle-check text-2xl text-emerald-400/30"></i>
+                </div>
+
+                <div class="bg-slate-800 border border-slate-700 p-4 rounded-xl flex justify-between items-center">
+                    <div>
+                        <p class="text-xs text-slate-400 font-bold">تأكيدات Valid</p>
+                        <h3 id="statValidCount" class="text-2xl font-black text-indigo-400 mt-1">0</h3>
+                    </div>
+                    <i class="fa-solid fa-thumbs-up text-2xl text-indigo-400/30"></i>
+                </div>
+
+                <div class="bg-slate-800 border border-slate-700 p-4 rounded-xl flex justify-between items-center">
+                    <div>
+                        <p class="text-xs text-slate-400 font-bold">تأكيدات Invalid</p>
+                        <h3 id="statInvalidCount" class="text-2xl font-black text-rose-400 mt-1">0</h3>
+                    </div>
+                    <i class="fa-solid fa-thumbs-down text-2xl text-rose-400/30"></i>
+                </div>
+            </div>
+
+            <!-- TABS & CONTROLS -->
+            <div class="flex flex-wrap justify-between items-center gap-4 mb-6">
+                <div class="flex gap-2 bg-slate-800 p-1.5 rounded-xl border border-slate-700">
+                    <button onclick="switchView('open')" id="btnViewOpen" class="px-5 py-2 rounded-lg text-xs font-bold bg-indigo-600 text-white">التذاكر المفتوحة</button>
+                    <button onclick="switchView('solved')" id="btnViewSolved" class="px-5 py-2 rounded-lg text-xs font-bold text-slate-400 hover:text-white">التذاكر المحلولة (Solved)</button>
+                </div>
+
+                <div class="flex gap-3 flex-1 max-w-md">
+                    <input type="text" id="searchInput" oninput="renderTickets()" placeholder="بحث بـ Match ID أو الفريق..." class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-xs focus:outline-none focus:border-indigo-500">
+                </div>
+            </div>
+
+            <!-- OPEN TICKETS VIEW -->
+            <div id="viewOpen">
+                <div id="ticketsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                    <!-- Cards dynamic render -->
+                </div>
+                <div id="noDataMessage" class="hidden text-center py-16 bg-slate-800/50 rounded-2xl border border-slate-700">
+                    <i class="fa-solid fa-check-circle text-4xl text-emerald-500 mb-3"></i>
+                    <h3 class="text-base font-bold">لا توجد تذاكر معلقة حالياً</h3>
+                    <p class="text-xs text-slate-400 mt-1">قم بالضغط على "مزامنة الداتا من الشيت" للتحقق من التحديثات.</p>
+                </div>
+            </div>
+
+            <!-- SOLVED TICKETS VIEW -->
+            <div id="viewSolved" class="hidden bg-slate-800 border border-slate-700 rounded-2xl overflow-hidden">
+                <table class="w-full text-xs text-right">
+                    <thead class="bg-slate-900/80 text-slate-400 font-bold border-b border-slate-700">
+                        <tr>
+                            <th class="p-3">Match ID (A)</th>
+                            <th class="p-3">المباراة (J vs K)</th>
+                            <th class="p-3">البطولة (G)</th>
+                            <th class="p-3">Resolution (Z)</th>
+                            <th class="p-3">القرار</th>
+                            <th class="p-3">الملاحظة</th>
+                            <th class="p-3">الموظف المسؤول</th>
+                            <th class="p-3">التاريخ والوقت</th>
+                        </tr>
+                    </thead>
+                    <tbody id="solvedTableBody" class="divide-y divide-slate-700/50">
+                        <!-- Solved rows -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- ADMIN PANEL MODAL -->
+            <div id="adminModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+                <div class="bg-slate-800 border border-slate-700 max-w-lg w-full rounded-2xl p-6 shadow-2xl">
+                    <div class="flex justify-between items-center mb-4 pb-3 border-b border-slate-700">
+                        <h3 class="text-base font-bold flex items-center gap-2 text-purple-400">
+                            <i class="fa-solid fa-users-gear"></i>
+                            <span>إدارة حسابات الموظفين (Admin)</span>
+                        </h3>
+                        <button onclick="toggleAdminPanel()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+                    </div>
+
+                    <form onsubmit="addUser(event)" class="space-y-3 mb-6 bg-slate-900 p-4 rounded-xl border border-slate-700">
+                        <h4 class="text-xs font-bold text-slate-300">إضافة موظف جديد:</h4>
+                        <div class="grid grid-cols-2 gap-2">
+                            <input type="text" id="newUsername" placeholder="اسم المستخدم" required class="bg-slate-800 border border-slate-700 p-2 rounded-lg text-xs">
+                            <input type="password" id="newPassword" placeholder="كلمة السر" required class="bg-slate-800 border border-slate-700 p-2 rounded-lg text-xs">
+                        </div>
+                        <button type="submit" class="w-full bg-purple-600 hover:bg-purple-500 font-bold py-2 rounded-lg text-xs">إضافة الحساب</button>
+                    </form>
+
+                    <h4 class="text-xs font-bold text-slate-300 mb-2">الحسابات المسجلة:</h4>
+                    <div id="usersList" class="space-y-2 max-h-40 overflow-y-auto pr-1">
+                        <!-- User items -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- SOLVE ACTION MODAL -->
+            <div id="solveModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+                <div class="bg-slate-800 border border-slate-700 max-w-md w-full rounded-2xl p-6 shadow-2xl">
+                    <h3 class="text-base font-bold mb-1 text-emerald-400 flex items-center gap-2">
+                        <i class="fa-solid fa-list-check"></i>
+                        <span>اتخاذ قرار بشأن التذكرة</span>
+                    </h3>
+                    <p id="modalMatchInfo" class="text-xs text-slate-400 mb-4">ID: -</p>
+
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold mb-2">اختر نتيجة المعالجة:</label>
+                            <div class="grid grid-cols-2 gap-3">
+                                <button type="button" onclick="setDecision('Valid')" id="btnDecisionValid" class="py-2.5 px-4 rounded-xl border border-slate-700 font-bold text-xs flex items-center justify-center gap-2 bg-slate-900 text-slate-300 hover:border-emerald-500">
+                                    <i class="fa-solid fa-thumbs-up text-emerald-400"></i>
+                                    <span>Valid</span>
+                                </button>
+                                <button type="button" onclick="setDecision('Invalid')" id="btnDecisionInvalid" class="py-2.5 px-4 rounded-xl border border-slate-700 font-bold text-xs flex items-center justify-center gap-2 bg-slate-900 text-slate-300 hover:border-rose-500">
+                                    <i class="fa-solid fa-thumbs-down text-rose-400"></i>
+                                    <span>Invalid</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold mb-1">ملاحظات إضافية (اختياري):</label>
+                            <textarea id="modalNote" rows="3" placeholder="أدخل الملاحظة..." class="w-full bg-slate-900 border border-slate-700 p-2.5 rounded-xl text-xs focus:outline-none focus:border-indigo-500"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-end gap-2 mt-6">
+                        <button onclick="closeSolveModal()" class="px-4 py-2 rounded-xl text-xs font-bold bg-slate-700 hover:bg-slate-600">إلغاء</button>
+                        <button onclick="submitSolve()" class="px-5 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500">حفظ الإجراء</button>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
 
     <script>
-        // Local Storage Keys
-        const STORAGE_TICKETS_KEY = 'info_quality_matches_2026_v4';
-        const STORAGE_ACTIVE_USER_KEY = 'info_quality_active_user_2026_v4';
+        // SHEET CSV LINK
+        const GOOGLE_SHEET_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT16yvAInqK-Wj2GgM2Y8o3i8Yg_U22z8u3lA/pub?gid=447654358&single=true&output=csv";
 
-        // Pre-loaded dataset strictly matching real data from sheet W35 onwards
-        const initialMockMatches = [
-            {
-                matchId: '1436002',
-                tabName: 'W35',
-                priority: 'Custom',
-                competition: 'Damallsvenskan',
-                country: 'Sweden',
-                season: '2026',
-                homeTeam: 'AIK W',
-                awayTeam: 'Kristianstad',
-                eta: '2026-08-31',
-                etaDate: '03:00',
-                shift: 'B',
-                resolution: 'Missing Player',
-                comment: 'لاعب غير موجود في التشكيلة الأساسية',
-                status: 'Open',
-                solvedBy: null,
-                actionNotes: null,
-                resolvedAt: null
-            },
-            {
-                matchId: '1454372',
-                tabName: 'W35',
-                priority: 'P1.5',
-                competition: 'China League One',
-                country: 'China PR',
-                season: '2026',
-                homeTeam: 'Foshan Nanshi',
-                awayTeam: 'Shenzhen Juniors',
-                eta: '2026-08-31',
-                etaDate: '03:00',
-                shift: 'L',
-                resolution: 'Missing Player',
-                comment: 'تحديث بيانات قائمة البدلاء غير مكتملة',
-                status: 'Open',
-                solvedBy: null,
-                actionNotes: null,
-                resolvedAt: null
-            },
-            {
-                matchId: '1454376',
-                tabName: 'W35',
-                priority: 'P1.5',
-                competition: 'China League One',
-                country: 'China PR',
-                season: '2026',
-                homeTeam: 'Shijiazhuang Gongfu',
-                awayTeam: 'Wuxi Wugo',
-                eta: '2026-08-31',
-                etaDate: '03:00',
-                shift: 'B',
-                resolution: 'Wrong Number',
-                comment: 'رقم القميص غير مطابق للمسجل الرسمي',
-                status: 'Open',
-                solvedBy: null,
-                actionNotes: null,
-                resolvedAt: null
-            },
-            {
-                matchId: '1482440',
-                tabName: 'W35',
-                priority: 'Live',
-                competition: 'Championship',
-                country: 'England',
-                season: '2026/2027',
-                homeTeam: 'Derby County',
-                awayTeam: 'Swansea City',
-                eta: '2026-08-30',
-                etaDate: '03:00',
-                shift: 'B',
-                resolution: 'Missing Player',
-                comment: 'نقص في بيانات اللاعب البديل',
-                status: 'Open',
-                solvedBy: null,
-                actionNotes: null,
-                resolvedAt: null
-            },
-            {
-                matchId: '1482625',
-                tabName: 'W35',
-                priority: 'Custom',
-                competition: 'League One',
-                country: 'England',
-                season: '2026/2027',
-                homeTeam: 'Blackpool',
-                awayTeam: 'Peterborough United',
-                eta: '2026-08-30',
-                etaDate: '03:00',
-                shift: 'L',
-                resolution: 'Extra Player',
-                comment: 'وجود لاعب مكرر في الدكة',
-                status: 'Open',
-                solvedBy: null,
-                actionNotes: null,
-                resolvedAt: null
-            },
-            {
-                matchId: '1482633',
-                tabName: 'W35',
-                priority: 'Custom',
-                competition: 'League One',
-                country: 'England',
-                season: '2026/2027',
-                homeTeam: 'Milton Keynes Dons',
-                awayTeam: 'Leicester City',
-                eta: '2026-08-30',
-                etaDate: '03:00',
-                shift: 'C',
-                resolution: 'Missing Player',
-                comment: 'حارس المرمى البديل غير مسجل',
-                status: 'Open',
-                solvedBy: null,
-                actionNotes: null,
-                resolvedAt: null
-            },
-            {
-                matchId: '1477243',
-                tabName: 'W36',
-                priority: 'Live',
-                competition: 'Premier League',
-                country: 'England',
-                season: '2026/2027',
-                homeTeam: 'Liverpool',
-                awayTeam: 'Nottingham Forest',
-                eta: '2026-08-30',
-                etaDate: '03:00',
-                shift: 'N',
-                resolution: 'Missing Player',
-                comment: 'تحديث أرقام القمصان',
-                status: 'Solved',
-                solvedBy: 'Eslam Tareq',
-                actionNotes: 'تم ضبط أرقام القمصان وإضافة الحارس البديل',
-                resolvedAt: new Date(Date.now() - 3600000 * 2).toISOString()
-            }
+        // APP STATE
+        let users = JSON.parse(localStorage.getItem('app_users')) || [
+            { username: 'admin', password: '123456', role: 'admin' },
+            { username: 'bahaa', password: '123', role: 'user' },
+            { username: 'eslam', password: '123', role: 'user' }
         ];
 
-        let matches = [];
-        let activeUser = 'Bahaa';
+        let activeUser = JSON.parse(sessionStorage.getItem('active_user')) || null;
+        let allTickets = [];
+        let solvedTickets = JSON.parse(localStorage.getItem('solved_tickets_v2')) || [];
+        let selectedDecision = 'Valid';
+        let activeTicketId = null;
 
-        // --- Application Initialization ---
-        window.onload = function() {
-            loadState();
-            renderAll();
-        };
-
-        function loadState() {
-            const savedUser = localStorage.getItem(STORAGE_ACTIVE_USER_KEY);
-            if (savedUser) activeUser = savedUser;
-            document.getElementById('activeUserSelect').value = activeUser;
-
-            const savedTickets = localStorage.getItem(STORAGE_TICKETS_KEY);
-            matches = savedTickets ? JSON.parse(savedTickets) : [...initialMockMatches];
-            saveTickets();
-        }
-
-        function saveTickets() {
-            localStorage.setItem(STORAGE_TICKETS_KEY, JSON.stringify(matches));
-        }
-
-        function changeActiveUser(user) {
-            activeUser = user;
-            localStorage.setItem(STORAGE_ACTIVE_USER_KEY, activeUser);
-            showToast(`تم تغيير المستكشف الحالي إلى: ${activeUser}`);
-        }
-
-        function resetDatasetToDefault() {
-            matches = [...initialMockMatches];
-            saveTickets();
-            renderAll();
-            showToast('تمت استعادة البيانات الافتراضية بنجاح.');
-        }
-
-        function renderAll() {
-            updateMetrics();
-            renderOpenTickets();
-            renderSolvedTickets();
-        }
-
-        function updateMetrics() {
-            const openList = matches.filter(m => m.status === 'Open');
-            const solvedList = matches.filter(m => m.status === 'Solved');
-
-            document.getElementById('statOpenCount').innerText = openList.length;
-            document.getElementById('statSolvedCount').innerText = solvedList.length;
-            document.getElementById('tabBadgeOpen').innerText = openList.length;
-            document.getElementById('tabBadgeSolved').innerText = solvedList.length;
-
-            // Find top issue type
-            const issueCounts = {};
-            openList.forEach(m => {
-                issueCounts[m.resolution] = (issueCounts[m.resolution] || 0) + 1;
-            });
-            let topIssue = 'لا يوجد';
-            let maxCount = 0;
-            for (const issue in issueCounts) {
-                if (issueCounts[issue] > maxCount) {
-                    maxCount = issueCounts[issue];
-                    topIssue = issue;
-                }
+        document.addEventListener('DOMContentLoaded', () => {
+            if (activeUser) {
+                initApp();
             }
-            document.getElementById('statTopIssue').innerText = topIssue;
-        }
+        });
 
-        function renderOpenTickets() {
-            const container = document.getElementById('openTicketsGrid');
-            const searchVal = (document.getElementById('openSearchInput').value || '').toLowerCase();
-            const tabVal = document.getElementById('openTabFilter').value;
-            const priorityVal = document.getElementById('openPriorityFilter').value;
-            const resVal = document.getElementById('openResolutionFilter').value;
-
-            // CRITICAL BUSINESS FILTER: Tab >= W35, Status == Open, Resolution NOT Blank, Resolution != "He's Right"
-            const filtered = matches.filter(m => {
-                if (m.status !== 'Open') return false;
-
-                // Tab Filter
-                if (tabVal !== 'ALL' && m.tabName !== tabVal) return false;
-
-                // Priority Filter
-                if (priorityVal !== 'ALL' && m.priority !== priorityVal) return false;
-
-                // Resolution Filter
-                if (resVal !== 'ALL' && m.resolution !== resVal) return false;
-
-                // Resolution Constraint Check
-                const resNorm = (m.resolution || '').trim().toLowerCase();
-                if (!resNorm || resNorm === "he's right" || resNorm === "hes right") return false;
-
-                // Search Filter
-                if (searchVal) {
-                    const idMatch = m.matchId.toLowerCase().includes(searchVal);
-                    const homeMatch = m.homeTeam.toLowerCase().includes(searchVal);
-                    const awayMatch = m.awayTeam.toLowerCase().includes(searchVal);
-                    const compMatch = m.competition.toLowerCase().includes(searchVal);
-                    return idMatch || homeMatch || awayMatch || compMatch;
-                }
-                return true;
-            });
-
-            if (filtered.length === 0) {
-                container.innerHTML = `
-                    <div class="col-span-full py-16 text-center glass-panel rounded-2xl">
-                        <i class="fa-solid fa-circle-check text-4xl text-emerald-400 mb-2"></i>
-                        <p class="text-slate-400 font-bold text-sm">لا توجد تذاكر مفتوحة مطابقة لشرط الفلترة حالياً!</p>
-                    </div>
-                `;
-                return;
-            }
-
-            container.innerHTML = filtered.map(m => `
-                <div class="glass-panel glass-panel-hover rounded-2xl p-4 flex flex-col justify-between transition duration-200">
-                    <div>
-                        <!-- Header Bar -->
-                        <div class="flex justify-between items-center mb-2">
-                            <div class="flex items-center gap-1.5">
-                                <span class="font-mono text-xs bg-slate-900 border border-slate-800 text-slate-300 font-bold px-2 py-0.5 rounded-lg">ID: #${m.matchId}</span>
-                                <span class="text-[10px] font-bold px-2 py-0.5 rounded-md ${m.priority === 'Live' ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20 badge-live' : 'bg-slate-800 text-slate-400'}">${m.priority}</span>
-                            </div>
-                            <span class="text-[11px] font-mono font-bold text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded-md border border-indigo-500/20">${m.tabName}</span>
-                        </div>
-
-                        <!-- Match Teams -->
-                        <div class="my-2.5">
-                            <h4 class="font-extrabold text-white text-sm flex items-center justify-between">
-                                <span class="truncate max-w-[110px]">${m.homeTeam}</span>
-                                <span class="text-[10px] text-slate-500 font-mono px-1">VS</span>
-                                <span class="truncate max-w-[110px]">${m.awayTeam}</span>
-                            </h4>
-                            <p class="text-[11px] text-slate-400 mt-1 flex items-center gap-1">
-                                <i class="fa-solid fa-trophy text-amber-400 text-[10px]"></i>
-                                <span class="truncate">${m.competition} (${m.country}) - ${m.season}</span>
-                            </p>
-                        </div>
-
-                        <!-- Technical Exact Columns Table -->
-                        <div class="space-y-1.5 bg-slate-950/80 p-3 rounded-xl border border-slate-800/80 text-[11px] mb-3">
-                            <div class="flex justify-between">
-                                <span class="text-slate-500">Problem (Col Z):</span>
-                                <span class="font-bold text-rose-400">${m.resolution}</span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="text-slate-500">Comment (Col AB):</span>
-                                <span class="font-medium text-slate-300 truncate max-w-[180px]">${m.comment || 'لا توجد ملاحظة'}</span>
-                            </div>
-                            <div class="flex justify-between pt-1 border-t border-slate-800 text-[10px] text-slate-400">
-                                <span>ETA: <strong class="text-slate-300 font-mono">${m.eta} ${m.etaDate}</strong></span>
-                                <span>Shift: <strong class="text-slate-300 font-mono">${m.shift}</strong></span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Action Button -->
-                    <button onclick="openResolveModal('${m.matchId}')" class="w-full bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-bold text-xs py-2 rounded-xl flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-600/20 transition">
-                        <i class="fa-solid fa-check"></i> تحديد كـ Solved / حل التذكرة
-                    </button>
-                </div>
-            `).join('');
-        }
-
-        function filterOpenTickets() { renderOpenTickets(); }
-
-        function renderSolvedTickets() {
-            const tableBody = document.getElementById('solvedTicketsTableBody');
-            const searchVal = (document.getElementById('solvedSearchInput').value || '').toLowerCase();
-
-            const filtered = matches.filter(m => {
-                if (m.status !== 'Solved') return false;
-                if (searchVal) {
-                    const idMatch = m.matchId.toLowerCase().includes(searchVal);
-                    const homeMatch = m.homeTeam.toLowerCase().includes(searchVal);
-                    const awayMatch = m.awayTeam.toLowerCase().includes(searchVal);
-                    const solvedMatch = (m.solvedBy || '').toLowerCase().includes(searchVal);
-                    return idMatch || homeMatch || awayMatch || solvedMatch;
-                }
-                return true;
-            });
-
-            if (filtered.length === 0) {
-                tableBody.innerHTML = `<tr><td colspan="8" class="py-8 text-center text-slate-500 text-xs">لا توجد تذاكر محلولة متطابقة.</td></tr>`;
-                return;
-            }
-
-            tableBody.innerHTML = filtered.map(m => `
-                <tr class="hover:bg-slate-800/40 transition">
-                    <td class="py-3 px-4 font-mono font-bold text-emerald-400">${m.matchId}</td>
-                    <td class="py-3 px-4 font-bold">${m.tabName}</td>
-                    <td class="py-3 px-4">
-                        <div class="font-bold text-white">${m.homeTeam} vs ${m.awayTeam}</div>
-                    </td>
-                    <td class="py-3 px-4 text-slate-400">${m.competition} (${m.country})</td>
-                    <td class="py-3 px-4 font-bold text-rose-400">${m.resolution}</td>
-                    <td class="py-3 px-4 text-slate-300 max-w-xs truncate">${m.actionNotes || m.comment || 'تم التصحيح'}</td>
-                    <td class="py-3 px-4">
-                        <span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded font-bold">${m.solvedBy || 'غير محدد'}</span>
-                    </td>
-                    <td class="py-3 px-4 text-center">
-                        <button onclick="reopenTicket('${m.matchId}')" title="إعادة فتح" class="text-amber-400 hover:text-amber-300 bg-amber-500/10 p-1.5 rounded-lg text-xs">
-                            إعادة فتح
-                        </button>
-                    </td>
-                </tr>
-            `).join('');
-        }
-
-        function filterSolvedTickets() { renderSolvedTickets(); }
-
-        function openResolveModal(matchId) {
-            const match = matches.find(m => m.matchId === matchId);
-            if (!match) return;
-
-            document.getElementById('modalMatchIdInput').value = match.matchId;
-            document.getElementById('modalMatchIdDisplay').innerText = `Match ID: #${match.matchId}`;
-            document.getElementById('modalTabDisplay').innerText = match.tabName;
-            document.getElementById('modalTeamsDisplay').innerText = `${match.homeTeam} vs ${match.awayTeam}`;
-            document.getElementById('modalIssueDisplay').innerText = `المشكلة (Col Z): ${match.resolution}`;
-            document.getElementById('modalSolvedBy').value = activeUser;
-
-            openModal('resolveModal');
-        }
-
-        function handleConfirmSolve(e) {
+        function handleLogin(e) {
             e.preventDefault();
-            const matchId = document.getElementById('modalMatchIdInput').value;
-            const actionNotes = document.getElementById('modalActionNotes').value.trim();
+            const u = document.getElementById('loginUsername').value.trim().toLowerCase();
+            const p = document.getElementById('loginPassword').value.trim();
 
-            const idx = matches.findIndex(m => m.matchId === matchId);
-            if (idx !== -1) {
-                matches[idx].status = 'Solved';
-                matches[idx].actionNotes = actionNotes;
-                matches[idx].solvedBy = activeUser;
-                matches[idx].resolvedAt = new Date().toISOString();
+            const found = users.find(x => x.username.toLowerCase() === u && x.password === p);
+            if (found) {
+                activeUser = found;
+                sessionStorage.setItem('active_user', JSON.stringify(found));
+                document.getElementById('loginError').classList.add('hidden');
+                initApp();
+            } else {
+                document.getElementById('loginError').classList.remove('hidden');
+            }
+        }
 
-                // Trigger Apps Script Webhook if configured
-                const webhookUrl = document.getElementById('sheetWebhookInput')?.value.trim();
-                if (webhookUrl) {
-                    fetch(webhookUrl, {
-                        method: 'POST',
-                        mode: 'no-cors',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            matchId: matches[idx].matchId,
-                            tabName: matches[idx].tabName,
-                            actionNotes: actionNotes,
-                            solvedBy: activeUser
-                        })
-                    }).catch(err => console.log('Webhook sent'));
+        function logout() {
+            sessionStorage.removeItem('active_user');
+            location.reload();
+        }
+
+        function initApp() {
+            document.getElementById('loginOverlay').classList.add('hidden');
+            document.getElementById('mainApp').classList.remove('hidden');
+            document.getElementById('activeUserLabel').textContent = activeUser.username + (activeUser.role === 'admin' ? ' (Admin)' : '');
+
+            if (activeUser.role === 'admin') {
+                document.getElementById('adminBtn').classList.remove('hidden');
+            }
+
+            fetchSheetData();
+        }
+
+        function fetchSheetData() {
+            const spinner = document.getElementById('syncSpinner');
+            spinner.classList.add('fa-spin');
+
+            // Fetch live CSV data directly from Google Sheets
+            Papa.parse("https://docs.google.com/spreadsheets/d/171DXs48k4FOnpHGB155mLpvgRnXUxfsXoQT4AYGV8rA/gviz/tq?tqx=out:csv&sheet=W35", {
+                download: true,
+                header: false,
+                skipEmptyLines: true,
+                complete: function(results) {
+                    spinner.classList.remove('fa-spin');
+                    processRows(results.data);
+                },
+                error: function(err) {
+                    spinner.classList.remove('fa-spin');
+                    console.error(err);
+                    alert("تعذر جلب البيانات من الشيت، سيتم استخدام البيانات المحلية المتوفرة.");
                 }
-
-                saveTickets();
-                renderAll();
-                closeModal('resolveModal');
-                document.getElementById('resolveTicketForm').reset();
-                showToast(`تم تحويل الماتش #${matchId} إلى Solved بواسطة ${activeUser}`);
-            }
-        }
-
-        function reopenTicket(matchId) {
-            const idx = matches.findIndex(m => m.matchId === matchId);
-            if (idx !== -1) {
-                matches[idx].status = 'Open';
-                matches[idx].actionNotes = null;
-                matches[idx].solvedBy = null;
-                saveTickets();
-                renderAll();
-                showToast(`تمت إعادة فتح التذكرة #${matchId}`);
-            }
-        }
-
-        // --- Export CSV Engine ---
-        function exportCSV(type) {
-            let data = type === 'open' ? matches.filter(m => m.status === 'Open') : matches.filter(m => m.status === 'Solved');
-            let filename = `${type}_quality_tickets_W35.csv`;
-
-            let csv = "\uFEFFMatch ID (Col A),Tab,Priority (Col E),Competition (Col G),Country (Col H),Season (Col I),Home (Col J),Away (Col K),ETA (Col O),ETA Date (Col P),Shift (Col Q),Resolution (Col Z),Comment (Col AB),Status,Solved By\n";
-
-            data.forEach(m => {
-                const row = [
-                    `"${m.matchId}"`,
-                    `"${m.tabName}"`,
-                    `"${m.priority}"`,
-                    `"${(m.competition || '').replace(/"/g, '""')}"`,
-                    `"${(m.country || '').replace(/"/g, '""')}"`,
-                    `"${m.season}"`,
-                    `"${(m.homeTeam || '').replace(/"/g, '""')}"`,
-                    `"${(m.awayTeam || '').replace(/"/g, '""')}"`,
-                    `"${m.eta}"`,
-                    `"${m.etaDate}"`,
-                    `"${m.shift}"`,
-                    `"${m.resolution}"`,
-                    `"${(m.actionNotes || m.comment || '').replace(/"/g, '""')}"`,
-                    `"${m.status}"`,
-                    `"${m.solvedBy || ''}"`
-                ];
-                csv += row.join(",") + "\n";
-            });
-
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.setAttribute("href", url);
-            a.setAttribute("download", filename);
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            showToast('تم تصدير ملف CSV بنجاح.');
-        }
-
-        function triggerSheetSync() {
-            const icon = document.getElementById('syncSpinnerIcon');
-            if (icon) icon.classList.add('fa-spin');
-            setTimeout(() => {
-                if (icon) icon.classList.remove('fa-spin');
-                showToast('تمت مزامنة التبويبات W35+ وتطبيق قواعد الفلترة بنجاح!');
-            }, 700);
-        }
-
-        function saveSettings() {
-            showToast('تم حفظ إعدادات الشيت و Apps Script بنجاح.');
-        }
-
-        function copyCodeSnippet() {
-            const code = document.getElementById('appsScriptSnippet').innerText;
-            navigator.clipboard.writeText(code).then(() => {
-                showToast('تم نسخ كود Apps Script بنجاح!');
             });
         }
 
-        // --- Navigation Tabs Switching ---
-        function switchTab(tabId) {
-            document.querySelectorAll('#mainTabNav button').forEach(btn => {
-                btn.className = "px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition flex items-center gap-2 text-slate-400 hover:text-white hover:bg-slate-800";
-            });
-
-            document.getElementById('tabContent-open').classList.add('hidden');
-            document.getElementById('tabContent-solved').classList.add('hidden');
-            document.getElementById('tabContent-settings').classList.add('hidden');
-
-            const activeBtn = document.getElementById(`tabBtn-${tabId}`);
-            const activeContent = document.getElementById(`tabContent-${tabId}`);
-
-            if (activeBtn && activeContent) {
-                activeBtn.className = "px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition flex items-center gap-2 bg-brand-600 text-white shadow-lg shadow-brand-600/20";
-                activeContent.classList.remove('hidden');
-            }
-        }
-
-        function showToast(message) {
-            const container = document.getElementById('toastContainer');
-            const toast = document.createElement('div');
+        function processRows(rows) {
+            allTickets = [];
             
-            toast.className = `bg-brand-600 text-white px-4 py-3 rounded-xl shadow-2xl flex items-center justify-between text-xs font-bold pointer-events-auto transition duration-300 transform translate-y-2 border border-brand-400/30`;
-            toast.innerHTML = `
-                <span class="flex items-center gap-2"><i class="fa-solid fa-circle-check"></i> ${message}</span>
-                <button onclick="this.parentElement.remove()" class="text-white/80 hover:text-white mr-2"><i class="fa-solid fa-xmark"></i></button>
-            `;
-            container.appendChild(toast);
-            setTimeout(() => { toast.remove(); }, 3500);
+            // Skip header rows
+            for (let i = 1; i < rows.length; i++) {
+                const row = rows[i];
+                if (!row || row.length < 26) continue;
+
+                const matchId = (row[0] || "").toString().trim(); // Col A
+                const res = (row[25] || "").toString().trim();    // Col Z (0-indexed: 25)
+
+                // STRICT FILTERING: Col Z NOT blank & NOT "He's Right"
+                if (matchId && res !== "" && res.toLowerCase() !== "he's right") {
+                    
+                    // Check if already solved locally
+                    if (!solvedTickets.some(s => s.id === matchId)) {
+                        allTickets.push({
+                            id: matchId,
+                            priority: row[4] || "-",      // Col E
+                            competition: row[6] || "-",   // Col G
+                            country: row[7] || "-",       // Col H
+                            season: row[8] || "-",        // Col I
+                            home: row[9] || "-",          // Col J
+                            away: row[10] || "-",         // Col K
+                            eta: row[14] || "-",          // Col O
+                            etaDate: row[15] || "-",      // Col P
+                            shift: row[16] || "-",        // Col Q
+                            resolution: res,              // Col Z
+                            comment: row[27] || "-"       // Col AB (index 27)
+                        });
+                    }
+                }
+            }
+
+            renderTickets();
         }
 
-        function openModal(id) { document.getElementById(id)?.classList.remove('hidden'); }
-        function closeModal(id) { document.getElementById(id)?.classList.add('hidden'); }
+        function renderTickets() {
+            const grid = document.getElementById('ticketsGrid');
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            grid.innerHTML = '';
+
+            const filtered = allTickets.filter(t => 
+                t.id.toLowerCase().includes(search) || 
+                t.home.toLowerCase().includes(search) || 
+                t.away.toLowerCase().includes(search) ||
+                t.competition.toLowerCase().includes(search)
+            );
+
+            document.getElementById('statOpenCount').textContent = allTickets.length;
+            document.getElementById('statSolvedCount').textContent = solvedTickets.length;
+            document.getElementById('statValidCount').textContent = solvedTickets.filter(s => s.decision === 'Valid').length;
+            document.getElementById('statInvalidCount').textContent = solvedTickets.filter(s => s.decision === 'Invalid').length;
+
+            if (filtered.length === 0) {
+                document.getElementById('noDataMessage').classList.remove('hidden');
+            } else {
+                document.getElementById('noDataMessage').classList.add('hidden');
+                filtered.forEach(t => {
+                    const card = document.createElement('div');
+                    card.className = "bg-slate-800 border border-slate-700/80 p-5 rounded-2xl flex flex-col justify-between shadow-lg hover:border-slate-500 transition";
+                    card.innerHTML = `
+                        <div>
+                            <div class="flex justify-between items-center mb-3">
+                                <span class="bg-indigo-900/80 text-indigo-300 font-mono font-bold text-xs px-2.5 py-1 rounded-lg">ID: #${t.id}</span>
+                                <span class="bg-rose-900/50 text-rose-300 font-bold text-[11px] px-2.5 py-1 rounded-lg border border-rose-700/50">${t.resolution}</span>
+                            </div>
+
+                            <div class="my-3">
+                                <h4 class="font-bold text-sm text-slate-100 flex items-center justify-between">
+                                    <span>${t.home}</span>
+                                    <span class="text-xs text-slate-500">VS</span>
+                                    <span>${t.away}</span>
+                                </h4>
+                                <p class="text-[11px] text-slate-400 mt-1"><i class="fa-solid fa-trophy text-amber-500 ml-1"></i>${t.competition} (${t.country}) - ${t.season}</p>
+                            </div>
+
+                            <div class="bg-slate-900/70 p-3 rounded-xl text-[11px] space-y-1.5 border border-slate-700/40 my-3">
+                                <div class="flex justify-between"><span class="text-slate-400">Priority (E):</span><span class="font-semibold text-slate-200">${t.priority}</span></div>
+                                <div class="flex justify-between"><span class="text-slate-400">ETA / Date (O, P):</span><span class="font-semibold text-slate-200">${t.eta} | ${t.etaDate}</span></div>
+                                <div class="flex justify-between"><span class="text-slate-400">Shift (Q):</span><span class="font-semibold text-slate-200">${t.shift}</span></div>
+                                <div class="flex justify-between"><span class="text-slate-400">Comment (AB):</span><span class="font-semibold text-amber-400">${t.comment}</span></div>
+                            </div>
+                        </div>
+
+                        <button onclick="openSolveModal('${t.id}')" class="w-full bg-emerald-600 hover:bg-emerald-500 font-bold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-2 transition mt-2 shadow-md">
+                            <i class="fa-solid fa-check"></i>
+                            <span>اتخاذ إجراء (Valid / Invalid)</span>
+                        </button>
+                    `;
+                    grid.appendChild(card);
+                });
+            }
+
+            renderSolvedTable();
+        }
+
+        function renderSolvedTable() {
+            const tbody = document.getElementById('solvedTableBody');
+            tbody.innerHTML = '';
+
+            solvedTickets.forEach(s => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-700/30";
+                tr.innerHTML = `
+                    <td class="p-3 font-mono font-bold text-indigo-400">#${s.id}</td>
+                    <td class="p-3 font-bold">${s.home} vs ${s.away}</td>
+                    <td class="p-3 text-slate-400">${s.competition}</td>
+                    <td class="p-3"><span class="bg-slate-700 px-2 py-0.5 rounded text-[10px]">${s.resolution}</span></td>
+                    <td class="p-3"><span class="${s.decision === 'Valid' ? 'bg-emerald-900/80 text-emerald-300' : 'bg-rose-900/80 text-rose-300'} font-bold px-2 py-0.5 rounded text-[10px]">${s.decision}</span></td>
+                    <td class="p-3 text-slate-300">${s.note || '-'}</td>
+                    <td class="p-3 font-semibold text-indigo-300">${s.solvedBy}</td>
+                    <td class="p-3 text-slate-400">${s.solvedAt}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function openSolveModal(id) {
+            activeTicketId = id;
+            const t = allTickets.find(x => x.id === id);
+            document.getElementById('modalMatchInfo').textContent = `Match ID: #${t.id} (${t.home} vs ${t.away})`;
+            document.getElementById('modalNote').value = '';
+            setDecision('Valid');
+            document.getElementById('solveModal').classList.remove('hidden');
+        }
+
+        function closeSolveModal() {
+            document.getElementById('solveModal').classList.add('hidden');
+            activeTicketId = null;
+        }
+
+        function setDecision(val) {
+            selectedDecision = val;
+            const btnValid = document.getElementById('btnDecisionValid');
+            const btnInvalid = document.getElementById('btnDecisionInvalid');
+
+            if (val === 'Valid') {
+                btnValid.className = "py-2.5 px-4 rounded-xl border-2 border-emerald-500 font-bold text-xs flex items-center justify-center gap-2 bg-emerald-950/60 text-emerald-300";
+                btnInvalid.className = "py-2.5 px-4 rounded-xl border border-slate-700 font-bold text-xs flex items-center justify-center gap-2 bg-slate-900 text-slate-400";
+            } else {
+                btnInvalid.className = "py-2.5 px-4 rounded-xl border-2 border-rose-500 font-bold text-xs flex items-center justify-center gap-2 bg-rose-950/60 text-rose-300";
+                btnValid.className = "py-2.5 px-4 rounded-xl border border-slate-700 font-bold text-xs flex items-center justify-center gap-2 bg-slate-900 text-slate-400";
+            }
+        }
+
+        function submitSolve() {
+            if (!activeTicketId) return;
+            const note = document.getElementById('modalNote').value;
+            const idx = allTickets.findIndex(x => x.id === activeTicketId);
+
+            if (idx !== -1) {
+                const t = allTickets.splice(idx, 1)[0];
+                t.decision = selectedDecision;
+                t.note = note;
+                t.solvedBy = activeUser.username;
+                t.solvedAt = new Date().toLocaleString('ar-EG');
+
+                solvedTickets.unshift(t);
+                localStorage.setItem('solved_tickets_v2', JSON.stringify(solvedTickets));
+
+                renderTickets();
+                closeSolveModal();
+            }
+        }
+
+        function switchView(v) {
+            if (v === 'open') {
+                document.getElementById('viewOpen').classList.remove('hidden');
+                document.getElementById('viewSolved').classList.add('hidden');
+                document.getElementById('btnViewOpen').className = "px-5 py-2 rounded-lg text-xs font-bold bg-indigo-600 text-white";
+                document.getElementById('btnViewSolved').className = "px-5 py-2 rounded-lg text-xs font-bold text-slate-400 hover:text-white";
+            } else {
+                document.getElementById('viewOpen').classList.add('hidden');
+                document.getElementById('viewSolved').classList.remove('hidden');
+                document.getElementById('btnViewOpen').className = "px-5 py-2 rounded-lg text-xs font-bold text-slate-400 hover:text-white";
+                document.getElementById('btnViewSolved').className = "px-5 py-2 rounded-lg text-xs font-bold bg-indigo-600 text-white";
+            }
+        }
+
+        function toggleAdminPanel() {
+            const m = document.getElementById('adminModal');
+            m.classList.toggle('hidden');
+            if (!m.classList.contains('hidden')) {
+                renderUsersList();
+            }
+        }
+
+        function renderUsersList() {
+            const list = document.getElementById('usersList');
+            list.innerHTML = '';
+            users.forEach(u => {
+                const d = document.createElement('div');
+                d.className = "flex justify-between items-center bg-slate-900 p-2.5 rounded-lg border border-slate-700 text-xs";
+                d.innerHTML = `
+                    <div>
+                        <span class="font-bold text-slate-200">${u.username}</span>
+                        <span class="text-[10px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded mr-2">${u.role}</span>
+                    </div>
+                    ${u.username !== 'admin' ? `<button onclick="deleteUser('${u.username}')" class="text-rose-400 hover:text-rose-300"><i class="fa-solid fa-trash"></i></button>` : '<span class="text-[10px] text-slate-500">أساسي</span>'}
+                `;
+                list.appendChild(d);
+            });
+        }
+
+        function addUser(e) {
+            e.preventDefault();
+            const u = document.getElementById('newUsername').value.trim();
+            const p = document.getElementById('newPassword').value.trim();
+
+            if (users.some(x => x.username.toLowerCase() === u.toLowerCase())) {
+                alert('هذا المستخدم موجود بالفعل!');
+                return;
+            }
+
+            users.push({ username: u, password: p, role: 'user' });
+            localStorage.setItem('app_users', JSON.stringify(users));
+            document.getElementById('newUsername').value = '';
+            document.getElementById('newPassword').value = '';
+            renderUsersList();
+        }
+
+        function deleteUser(username) {
+            users = users.filter(x => x.username !== username);
+            localStorage.setItem('app_users', JSON.stringify(users));
+            renderUsersList();
+        }
     </script>
 </body>
 </html>
