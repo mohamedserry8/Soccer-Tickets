@@ -10,6 +10,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts: Cairo -->
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body { font-family: 'Cairo', sans-serif; }
     </style>
@@ -57,7 +59,7 @@
                     </div>
                     <div>
                         <h1 class="text-lg font-bold">Info Team Quality - Tickets System</h1>
-                        <p class="text-xs text-slate-400">Multi-Select Filters Engine</p>
+                        <p class="text-xs text-slate-400">Live Analytics Engine (Visual Dashboard)</p>
                     </div>
                 </div>
 
@@ -69,8 +71,8 @@
 
                     <!-- Admin Button -->
                     <button id="adminBtn" onclick="toggleAdminPanel()" class="hidden bg-purple-600 hover:bg-purple-500 px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition">
-                        <i class="fa-solid fa-users-gear"></i>
-                        <span>لوحة التحكم (Admin)</span>
+                        <i class="fa-solid fa-chart-pie"></i>
+                        <span>لوحة التحكم والرسوم (Admin)</span>
                     </button>
 
                     <!-- User Status -->
@@ -129,7 +131,6 @@
 
                 <!-- ALL FILTERS CONTAINER (MULTI-SELECT) -->
                 <div class="flex flex-wrap gap-2 flex-1 justify-end">
-                    <!-- Search Input -->
                     <input type="text" id="searchInput" oninput="renderTickets()" placeholder="بحث بـ Match ID، الفريق، الملاحظات..." class="min-w-[170px] bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-indigo-500">
                     
                     <!-- 1. MULTI-SELECT PRIORITY (COL F) -->
@@ -146,9 +147,7 @@
                                     <button onclick="selectAllFilter('prio', false)" class="text-rose-400 hover:underline">إلغاء</button>
                                 </div>
                             </div>
-                            <div id="prioListOptions" class="space-y-1 max-h-48 overflow-y-auto pr-1">
-                                <!-- Dynamic Checkboxes -->
-                            </div>
+                            <div id="prioListOptions" class="space-y-1 max-h-48 overflow-y-auto pr-1"></div>
                         </div>
                     </div>
 
@@ -166,9 +165,7 @@
                                     <button onclick="selectAllFilter('resp', false)" class="text-rose-400 hover:underline">إلغاء</button>
                                 </div>
                             </div>
-                            <div id="respListOptions" class="space-y-1 max-h-48 overflow-y-auto pr-1">
-                                <!-- Dynamic Checkboxes -->
-                            </div>
+                            <div id="respListOptions" class="space-y-1 max-h-48 overflow-y-auto pr-1"></div>
                         </div>
                     </div>
 
@@ -186,9 +183,7 @@
                                     <button onclick="selectAllFilter('res', false)" class="text-rose-400 hover:underline">إلغاء</button>
                                 </div>
                             </div>
-                            <div id="resListOptions" class="space-y-1 max-h-48 overflow-y-auto pr-1">
-                                <!-- Dynamic Checkboxes -->
-                            </div>
+                            <div id="resListOptions" class="space-y-1 max-h-48 overflow-y-auto pr-1"></div>
                         </div>
                     </div>
 
@@ -235,29 +230,114 @@
                 </table>
             </div>
 
-            <!-- ADMIN PANEL MODAL -->
-            <div id="adminModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
-                <div class="bg-slate-800 border border-slate-700 max-w-lg w-full rounded-2xl p-6 shadow-2xl">
-                    <div class="flex justify-between items-center mb-4 pb-3 border-b border-slate-700">
-                        <h3 class="text-base font-bold flex items-center gap-2 text-purple-400">
-                            <i class="fa-solid fa-users-gear"></i>
-                            <span>إدارة الموظفين الحالية (Admin Panel)</span>
-                        </h3>
-                        <button onclick="toggleAdminPanel()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            <!-- ADMIN CONTROL & VISUALS MODAL -->
+            <div id="adminModal" class="fixed inset-0 bg-black/80 backdrop-blur-md hidden z-50 flex items-center justify-center p-3 md:p-6 overflow-y-auto">
+                <div class="bg-slate-800 border border-slate-700 max-w-6xl w-full rounded-2xl p-6 shadow-2xl my-auto max-h-[95vh] overflow-y-auto">
+                    <div class="flex justify-between items-center mb-4 pb-3 border-b border-slate-700 sticky top-0 bg-slate-800 z-10">
+                        <div class="flex items-center gap-3">
+                            <h3 class="text-lg font-bold flex items-center gap-2 text-purple-400">
+                                <i class="fa-solid fa-chart-line"></i>
+                                <span>لوحة تحليلات ورسوم أدمن النظام</span>
+                            </h3>
+                        </div>
+                        <button onclick="toggleAdminPanel()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
                     </div>
 
-                    <form onsubmit="addUser(event)" class="space-y-3 mb-6 bg-slate-900 p-4 rounded-xl border border-slate-700">
-                        <h4 class="text-xs font-bold text-slate-300">إضافة يوزر جديد للفريق:</h4>
-                        <div class="grid grid-cols-2 gap-2">
-                            <input type="text" id="newUsername" placeholder="اسم المستخدم" required class="bg-slate-800 border border-slate-700 p-2 rounded-lg text-xs">
-                            <input type="password" id="newPassword" placeholder="كلمة السر" required class="bg-slate-800 border border-slate-700 p-2 rounded-lg text-xs">
-                        </div>
-                        <button type="submit" class="w-full bg-purple-600 hover:bg-purple-500 font-bold py-2 rounded-lg text-xs transition">إضافة الحساب</button>
-                    </form>
+                    <!-- ADMIN NAV TABS -->
+                    <div class="flex gap-3 mb-6 bg-slate-900 p-1.5 rounded-xl border border-slate-700 w-fit">
+                        <button onclick="switchAdminTab('visuals')" id="tabAdminVisuals" class="px-4 py-2 rounded-lg text-xs font-bold bg-purple-600 text-white">الرسوم والتحليلات (Dashboard)</button>
+                        <button onclick="switchAdminTab('users')" id="tabAdminUsers" class="px-4 py-2 rounded-lg text-xs font-bold text-slate-400 hover:text-white">إدارة الموظفين الحالية</button>
+                    </div>
 
-                    <h4 class="text-xs font-bold text-slate-300 mb-2">قائمة الموظفين المسجلين:</h4>
-                    <div id="usersList" class="space-y-2 max-h-48 overflow-y-auto pr-1">
-                        <!-- Dynamic User Items -->
+                    <!-- 1. ADMIN VISUALS DASHBOARD TAB -->
+                    <div id="secAdminVisuals" class="space-y-6">
+                        <!-- TOP KPI METRICS CARDS (5 Cards) -->
+                        <div class="grid grid-cols-2 lg:grid-cols-5 gap-3">
+                            <div class="bg-slate-900 p-3.5 rounded-xl border border-slate-700">
+                                <p class="text-[11px] text-slate-400 font-bold">إجمالي مباريات الويك</p>
+                                <h4 id="dashTotalMatches" class="text-2xl font-black text-indigo-400 mt-1">0</h4>
+                            </div>
+                            <div class="bg-slate-900 p-3.5 rounded-xl border border-slate-700">
+                                <p class="text-[11px] text-slate-400 font-bold">مباريات سليمة (He's Right)</p>
+                                <h4 id="dashHesRightMatches" class="text-2xl font-black text-emerald-400 mt-1">0</h4>
+                            </div>
+                            <div class="bg-slate-900 p-3.5 rounded-xl border border-slate-700">
+                                <p class="text-[11px] text-slate-400 font-bold">إجمالي أخطاء الشيت</p>
+                                <h4 id="dashTicketErrors" class="text-2xl font-black text-amber-400 mt-1">0</h4>
+                            </div>
+                            <div class="bg-slate-900 p-3.5 rounded-xl border border-slate-700">
+                                <p class="text-[11px] text-slate-400 font-bold">غير مراجع (Blank)</p>
+                                <h4 id="dashBlankMatches" class="text-2xl font-black text-sky-400 mt-1">0</h4>
+                            </div>
+                            <div class="bg-slate-900 p-3.5 rounded-xl border border-slate-700">
+                                <p class="text-[11px] text-slate-400 font-bold">الأخطاء المؤكدة (Net Valid)</p>
+                                <h4 id="dashNetValidErrors" class="text-2xl font-black text-rose-400 mt-1">0</h4>
+                            </div>
+                        </div>
+
+                        <!-- CHARTS SECTION -->
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                            <!-- CHART 1: WEEKLY MATCHES DISTRIBUTION -->
+                            <div class="bg-slate-900 p-4 rounded-xl border border-slate-700/80">
+                                <h4 class="text-xs font-bold text-slate-200 mb-3 flex items-center gap-2">
+                                    <i class="fa-solid fa-chart-column text-indigo-400"></i>
+                                    <span>تحليل المباريات والأخطاء لكل ويك (Week Breakdown)</span>
+                                </h4>
+                                <div class="h-64 relative">
+                                    <canvas id="chartWeeklyMatches"></canvas>
+                                </div>
+                            </div>
+
+                            <!-- CHART 2: ERROR CATEGORY VALID vs INVALID -->
+                            <div class="bg-slate-900 p-4 rounded-xl border border-slate-700/80">
+                                <h4 class="text-xs font-bold text-slate-200 mb-3 flex items-center gap-2">
+                                    <i class="fa-solid fa-chart-bar text-rose-400"></i>
+                                    <span>معدل الأخطاء (Valid vs Invalid) حسب فئة المشكلة (Col Z)</span>
+                                </h4>
+                                <div class="h-64 relative">
+                                    <canvas id="chartCategoryErrors"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- CATEGORY DETAILED TABLE -->
+                        <div class="bg-slate-900 rounded-xl border border-slate-700/80 p-4">
+                            <h4 class="text-xs font-bold text-slate-200 mb-3 flex items-center gap-2">
+                                <i class="fa-solid fa-table-list text-purple-400"></i>
+                                <span>جدول تفاصيل كل فئة خطأ (Resolution Breakdown)</span>
+                            </h4>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-xs text-right whitespace-nowrap">
+                                    <thead class="bg-slate-800 text-slate-400 font-bold border-b border-slate-700">
+                                        <tr>
+                                            <th class="p-2.5">نوع المشكلة (Col Z)</th>
+                                            <th class="p-2.5">إجمالي البلاغات</th>
+                                            <th class="p-2.5 text-rose-400">أخطاء حقيقية (Valid)</th>
+                                            <th class="p-2.5 text-emerald-400">بلاغات خاطئة (Invalid)</th>
+                                            <th class="p-2.5 text-amber-400">معلقة (Open)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="dashCategoryTableBody" class="divide-y divide-slate-800"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2. ADMIN USER MANAGEMENT TAB -->
+                    <div id="secAdminUsers" class="hidden space-y-6">
+                        <form onsubmit="addUser(event)" class="space-y-3 bg-slate-900 p-4 rounded-xl border border-slate-700">
+                            <h4 class="text-xs font-bold text-slate-300">إضافة يوزر جديد للفريق:</h4>
+                            <div class="grid grid-cols-2 gap-2">
+                                <input type="text" id="newUsername" placeholder="اسم المستخدم" required class="bg-slate-800 border border-slate-700 p-2 rounded-lg text-xs">
+                                <input type="password" id="newPassword" placeholder="كلمة السر" required class="bg-slate-800 border border-slate-700 p-2 rounded-lg text-xs">
+                            </div>
+                            <button type="submit" class="w-full bg-purple-600 hover:bg-purple-500 font-bold py-2 rounded-lg text-xs transition">إضافة الحساب</button>
+                        </form>
+
+                        <div>
+                            <h4 class="text-xs font-bold text-slate-300 mb-2">قائمة الموظفين المسجلين:</h4>
+                            <div id="usersList" class="space-y-2 max-h-56 overflow-y-auto pr-1"></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -268,7 +348,8 @@
     <script>
         const SHEET_ID = "171DXs48k4FOnpHGB155mLpvgRnXUxfsXoQT4AYGV8rA";
 
-        let users = JSON.parse(localStorage.getItem('quality_users_db_v4')) || [
+        // Bumped version keys to ensure clean cache
+        let users = JSON.parse(localStorage.getItem('quality_users_db_v6')) || [
             { username: 'admin', password: '123456', role: 'admin' },
             { username: 'Bahaa', password: '123', role: 'user' },
             { username: 'Eslam Tareq', password: '123', role: 'user' },
@@ -277,13 +358,26 @@
         ];
 
         let activeUser = JSON.parse(sessionStorage.getItem('active_user')) || null;
-        let solvedTickets = JSON.parse(localStorage.getItem('quality_tickets_solved_v4')) || [];
-        let allTickets = JSON.parse(localStorage.getItem('quality_tickets_open_v4')) || [];
+        let solvedTickets = JSON.parse(localStorage.getItem('quality_tickets_solved_v6')) || [];
+        let allTickets = JSON.parse(localStorage.getItem('quality_tickets_open_v6')) || [];
 
-        // MULTI-SELECT FILTER ARRAYS
+        // Raw stats tracking
+        let rawSheetStats = JSON.parse(localStorage.getItem('raw_sheet_stats_v6')) || {
+            totalMatches: 0,
+            hesRightCount: 0,
+            errorsCount: 0,
+            blankCount: 0,
+            weeklyBreakdown: {}
+        };
+
+        // Multi-Select filter arrays
         let selectedPriorities = [];
         let selectedResponsibles = [];
         let selectedResolutions = [];
+
+        // Chart instances
+        let weeklyChartInstance = null;
+        let categoryChartInstance = null;
 
         document.addEventListener('DOMContentLoaded', () => {
             if (activeUser) {
@@ -291,7 +385,6 @@
             }
         });
 
-        // CLOSE DROPDOWNS ON OUTSIDE CLICK
         document.addEventListener('click', (e) => {
             if (!e.target.closest('#prioMultiDropdown')) document.getElementById('prioMenu')?.classList.add('hidden');
             if (!e.target.closest('#respMultiDropdown')) document.getElementById('respMenu')?.classList.add('hidden');
@@ -359,7 +452,7 @@
             script.onerror = function() {
                 if (spinner) spinner.classList.remove('fa-spin');
                 if (manual) {
-                    alert("تنبيه: تعذر جلب البيانات الحية أونلاين. يرجى التأكد من تغيير مشاركة الشيت لـ Anyone with the link.");
+                    alert("تنبيه: تعذر جلب البيانات الحية أونلاين.");
                 }
             };
 
@@ -377,6 +470,11 @@
             const rows = response.table.rows;
             let fetched = [];
 
+            let totalMatchesCounter = 0;
+            let hesRightCounter = 0;
+            let errorsCounter = 0;
+            let blankCounter = 0;
+
             for (let i = 0; i < rows.length; i++) {
                 const c = rows[i].c;
                 if (!c) continue;
@@ -386,33 +484,51 @@
                 const matchId = getVal(0);   // Col A
                 const res = getVal(25);      // Col Z
 
-                if (matchId && matchId.toLowerCase() !== "id" && res !== "" && res.toLowerCase() !== "he's right") {
-                    if (!solvedTickets.some(s => s.id === matchId)) {
-                        fetched.push({
-                            tab: "W35",
-                            id: matchId,
-                            priority: getVal(5) || "-",      // Col F
-                            competition: getVal(6) || "-",   // Col G
-                            country: getVal(7) || "-",       // Col H
-                            season: getVal(8) || "-",        // Col I
-                            home: getVal(9) || "-",          // Col J
-                            away: getVal(10) || "-",         // Col K
-                            eta: getVal(14) || "-",          // Col O
-                            etaDate: getVal(15) || "-",      // Col P
-                            shift: getVal(16) || "-",        // Col Q
-                            reviewDate: getVal(20) || "-",   // Col U
-                            reviewShift: getVal(21) || "-",  // Col V
-                            responsible: getVal(22) || "-",  // Col W
-                            resolution: res,                  // Col Z
-                            comment: [getVal(26), getVal(27)].filter(Boolean).join(" | ") || "-" // Col AA, AB
-                        });
+                if (matchId && matchId.toLowerCase() !== "id") {
+                    totalMatchesCounter++;
+
+                    if (res === "") {
+                        blankCounter++;
+                    } else if (res.toLowerCase() === "he's right") {
+                        hesRightCounter++;
+                    } else {
+                        errorsCounter++;
+                        if (!solvedTickets.some(s => s.id === matchId)) {
+                            fetched.push({
+                                tab: "W35",
+                                id: matchId,
+                                priority: getVal(5) || "-",      // Col F
+                                competition: getVal(6) || "-",   // Col G
+                                country: getVal(7) || "-",       // Col H
+                                season: getVal(8) || "-",        // Col I
+                                home: getVal(9) || "-",          // Col J
+                                away: getVal(10) || "-",         // Col K
+                                eta: getVal(14) || "-",          // Col O
+                                etaDate: getVal(15) || "-",      // Col P
+                                shift: getVal(16) || "-",        // Col Q
+                                reviewDate: getVal(20) || "-",   // Col U
+                                reviewShift: getVal(21) || "-",  // Col V
+                                responsible: getVal(22) || "-",  // Col W
+                                resolution: res,                  // Col Z
+                                comment: [getVal(26), getVal(27)].filter(Boolean).join(" | ") || "-"
+                            });
+                        }
                     }
                 }
             }
 
+            rawSheetStats = {
+                totalMatches: totalMatchesCounter,
+                hesRightCount: hesRightCounter,
+                errorsCount: errorsCounter,
+                blankCount: blankCounter,
+                weeklyBreakdown: { 'W35': { total: totalMatchesCounter, hesRight: hesRightCounter, errors: errorsCounter, blank: blankCounter } }
+            };
+            localStorage.setItem('raw_sheet_stats_v6', JSON.stringify(rawSheetStats));
+
             if (fetched.length > 0) {
                 allTickets = fetched;
-                localStorage.setItem('quality_tickets_open_v4', JSON.stringify(allTickets));
+                localStorage.setItem('quality_tickets_open_v6', JSON.stringify(allTickets));
                 populateFilters();
                 renderTickets();
             }
@@ -421,7 +537,6 @@
         function populateFilters() {
             const combinedTickets = [...allTickets, ...solvedTickets];
 
-            // Helper to build Checkbox Options with Counts
             const buildOptions = (itemsKey, listContainerId, selectedArr, filterType) => {
                 const container = document.getElementById(listContainerId);
                 const counts = {};
@@ -596,8 +711,8 @@
                 t.solvedAt = new Date().toLocaleString('ar-EG');
 
                 solvedTickets.unshift(t);
-                localStorage.setItem('quality_tickets_open_v4', JSON.stringify(allTickets));
-                localStorage.setItem('quality_tickets_solved_v4', JSON.stringify(solvedTickets));
+                localStorage.setItem('quality_tickets_open_v6', JSON.stringify(allTickets));
+                localStorage.setItem('quality_tickets_solved_v6', JSON.stringify(solvedTickets));
 
                 populateFilters();
                 renderTickets();
@@ -614,8 +729,8 @@
                 delete t.solvedAt;
 
                 allTickets.unshift(t);
-                localStorage.setItem('quality_tickets_open_v4', JSON.stringify(allTickets));
-                localStorage.setItem('quality_tickets_solved_v4', JSON.stringify(solvedTickets));
+                localStorage.setItem('quality_tickets_open_v6', JSON.stringify(allTickets));
+                localStorage.setItem('quality_tickets_solved_v6', JSON.stringify(solvedTickets));
 
                 populateFilters();
                 renderTickets();
@@ -665,36 +780,133 @@
             });
         }
 
-        function exportToCSV() {
-            let csv = 'Tab,Match ID,Priority (Col F),Competition,Country,Season,Home,Away,ETA,ETA Date,Shift,Review Date,Review Shift,Responsible,Resolution,Comment,Status,Decision,Solve Note,Solved By,Solved At\n';
+        // ADMIN VISUALS DASHBOARD RENDERER
+        function renderAdminAnalytics() {
+            const validCount = solvedTickets.filter(s => s.decision === 'Valid').length;
+
+            document.getElementById('dashTotalMatches').textContent = rawSheetStats.totalMatches;
+            document.getElementById('dashHesRightMatches').textContent = rawSheetStats.hesRightCount;
+            document.getElementById('dashTicketErrors').textContent = rawSheetStats.errorsCount;
+            document.getElementById('dashBlankMatches').textContent = rawSheetStats.blankCount;
+            document.getElementById('dashNetValidErrors').textContent = validCount;
+
+            // 1. Render Weekly Chart
+            const weeks = Object.keys(rawSheetStats.weeklyBreakdown);
+            const totalData = weeks.map(w => rawSheetStats.weeklyBreakdown[w].total);
+            const hesRightData = weeks.map(w => rawSheetStats.weeklyBreakdown[w].hesRight);
+            const errorData = weeks.map(w => rawSheetStats.weeklyBreakdown[w].errors);
+            const blankData = weeks.map(w => rawSheetStats.weeklyBreakdown[w].blank || 0);
+
+            const ctxWeekly = document.getElementById('chartWeeklyMatches').getContext('2d');
+            if (weeklyChartInstance) weeklyChartInstance.destroy();
+
+            weeklyChartInstance = new Chart(ctxWeekly, {
+                type: 'bar',
+                data: {
+                    labels: weeks,
+                    datasets: [
+                        { label: 'إجمالي المباريات', data: totalData, backgroundColor: '#818cf8' },
+                        { label: "سليمة (He's Right)", data: hesRightData, backgroundColor: '#34d399' },
+                        { label: 'أخطاء البلاغات', data: errorData, backgroundColor: '#fbbf24' },
+                        { label: 'لم تراجع (Blank)', data: blankData, backgroundColor: '#38bdf8' }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { labels: { color: '#cbd5e1', font: { family: 'Cairo' } } } },
+                    scales: {
+                        x: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } },
+                        y: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } }
+                    }
+                }
+            });
+
+            // 2. Render Error Categories Breakdown Chart & Table
+            const catMap = {};
+            const combined = [...allTickets, ...solvedTickets];
             
-            allTickets.forEach(t => {
-                csv += `"${t.tab}","${t.id}","${t.priority}","${t.competition}","${t.country}","${t.season}","${t.home}","${t.away}","${t.eta}","${t.etaDate}","${t.shift}","${t.reviewDate}","${t.reviewShift}","${t.responsible}","${t.resolution}","${t.comment}","Open","","","",""\n`;
+            combined.forEach(t => {
+                const cat = t.resolution;
+                if (cat && cat !== '-') {
+                    if (!catMap[cat]) catMap[cat] = { total: 0, valid: 0, invalid: 0, open: 0 };
+                    catMap[cat].total++;
+                }
             });
 
             solvedTickets.forEach(s => {
-                const safeNote = s.solveNote ? s.solveNote.replace(/"/g, '""') : "";
-                csv += `"${s.tab}","${s.id}","${s.priority}","${s.competition}","${s.country}","${s.season}","${s.home}","${s.away}","${s.eta}","${s.etaDate}","${s.shift}","${s.reviewDate}","${s.reviewShift}","${s.responsible}","${s.resolution}","${s.comment}","Solved","${s.decision}","${safeNote}","${s.solvedBy}","${s.solvedAt}"\n`;
+                const cat = s.resolution;
+                if (cat && catMap[cat]) {
+                    if (s.decision === 'Valid') catMap[cat].valid++;
+                    if (s.decision === 'Invalid') catMap[cat].invalid++;
+                }
             });
 
-            const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = `Quality_Tickets_Export_${new Date().toISOString().slice(0,10)}.csv`;
-            link.click();
+            allTickets.forEach(t => {
+                const cat = t.resolution;
+                if (cat && catMap[cat]) catMap[cat].open++;
+            });
+
+            const catLabels = Object.keys(catMap).sort();
+            const validCatData = catLabels.map(c => catMap[c].valid);
+            const invalidCatData = catLabels.map(c => catMap[c].invalid);
+            const openCatData = catLabels.map(c => catMap[c].open);
+
+            const ctxCat = document.getElementById('chartCategoryErrors').getContext('2d');
+            if (categoryChartInstance) categoryChartInstance.destroy();
+
+            categoryChartInstance = new Chart(ctxCat, {
+                type: 'bar',
+                data: {
+                    labels: catLabels,
+                    datasets: [
+                        { label: 'خطأ حقيقي (Valid)', data: validCatData, backgroundColor: '#f43f5e' },
+                        { label: 'بلاغ خاطئ (Invalid)', data: invalidCatData, backgroundColor: '#10b981' },
+                        { label: 'معلقة (Open)', data: openCatData, backgroundColor: '#f59e0b' }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    plugins: { legend: { labels: { color: '#cbd5e1', font: { family: 'Cairo' } } } },
+                    scales: {
+                        x: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } },
+                        y: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } }
+                    }
+                }
+            });
+
+            // Populate Table
+            const tbody = document.getElementById('dashCategoryTableBody');
+            tbody.innerHTML = '';
+            catLabels.forEach(cat => {
+                const row = document.createElement('tr');
+                row.className = "hover:bg-slate-800/60 transition";
+                row.innerHTML = `
+                    <td class="p-2.5 font-bold text-slate-200">${cat}</td>
+                    <td class="p-2.5 font-mono text-indigo-300 font-bold">${catMap[cat].total}</td>
+                    <td class="p-2.5 font-mono text-rose-400 font-bold">${catMap[cat].valid}</td>
+                    <td class="p-2.5 font-mono text-emerald-400 font-bold">${catMap[cat].invalid}</td>
+                    <td class="p-2.5 font-mono text-amber-400 font-bold">${catMap[cat].open}</td>
+                `;
+                tbody.appendChild(row);
+            });
         }
 
-        function switchView(v) {
-            if (v === 'open') {
-                document.getElementById('viewOpen').classList.remove('hidden');
-                document.getElementById('viewSolved').classList.add('hidden');
-                document.getElementById('btnViewOpen').className = "px-5 py-2 rounded-lg text-xs font-bold bg-indigo-600 text-white";
-                document.getElementById('btnViewSolved').className = "px-5 py-2 rounded-lg text-xs font-bold text-slate-400 hover:text-white";
+        function switchAdminTab(tab) {
+            if (tab === 'visuals') {
+                document.getElementById('secAdminVisuals').classList.remove('hidden');
+                document.getElementById('secAdminUsers').classList.add('hidden');
+                document.getElementById('tabAdminVisuals').className = "px-4 py-2 rounded-lg text-xs font-bold bg-purple-600 text-white";
+                document.getElementById('tabAdminUsers').className = "px-4 py-2 rounded-lg text-xs font-bold text-slate-400 hover:text-white";
+                renderAdminAnalytics();
             } else {
-                document.getElementById('viewOpen').classList.add('hidden');
-                document.getElementById('viewSolved').classList.remove('hidden');
-                document.getElementById('btnViewOpen').className = "px-5 py-2 rounded-lg text-xs font-bold text-slate-400 hover:text-white";
-                document.getElementById('btnViewSolved').className = "px-5 py-2 rounded-lg text-xs font-bold bg-indigo-600 text-white";
+                document.getElementById('secAdminVisuals').classList.add('hidden');
+                document.getElementById('secAdminUsers').classList.remove('hidden');
+                document.getElementById('tabAdminVisuals').className = "px-4 py-2 rounded-lg text-xs font-bold text-slate-400 hover:text-white";
+                document.getElementById('tabAdminUsers').className = "px-4 py-2 rounded-lg text-xs font-bold bg-purple-600 text-white";
+                renderUsersList();
             }
         }
 
@@ -702,7 +914,7 @@
             const m = document.getElementById('adminModal');
             m.classList.toggle('hidden');
             if (!m.classList.contains('hidden')) {
-                renderUsersList();
+                switchAdminTab('visuals');
             }
         }
 
@@ -734,7 +946,7 @@
             }
 
             users.push({ username: u, password: p, role: 'user' });
-            localStorage.setItem('quality_users_db_v4', JSON.stringify(users));
+            localStorage.setItem('quality_users_db_v6', JSON.stringify(users));
             document.getElementById('newUsername').value = '';
             document.getElementById('newPassword').value = '';
             renderUsersList();
@@ -742,8 +954,41 @@
 
         function deleteUser(username) {
             users = users.filter(x => x.username !== username);
-            localStorage.setItem('quality_users_db_v4', JSON.stringify(users));
+            localStorage.setItem('quality_users_db_v6', JSON.stringify(users));
             renderUsersList();
+        }
+
+        function exportToCSV() {
+            let csv = 'Tab,Match ID,Priority (Col F),Competition,Country,Season,Home,Away,ETA,ETA Date,Shift,Review Date,Review Shift,Responsible,Resolution,Comment,Status,Decision,Solve Note,Solved By,Solved At\n';
+            
+            allTickets.forEach(t => {
+                csv += `"${t.tab}","${t.id}","${t.priority}","${t.competition}","${t.country}","${t.season}","${t.home}","${t.away}","${t.eta}","${t.etaDate}","${t.shift}","${t.reviewDate}","${t.reviewShift}","${t.responsible}","${t.resolution}","${t.comment}","Open","","","",""\n`;
+            });
+
+            solvedTickets.forEach(s => {
+                const safeNote = s.solveNote ? s.solveNote.replace(/"/g, '""') : "";
+                csv += `"${s.tab}","${s.id}","${s.priority}","${s.competition}","${s.country}","${s.season}","${s.home}","${s.away}","${s.eta}","${s.etaDate}","${s.shift}","${s.reviewDate}","${s.reviewShift}","${s.responsible}","${s.resolution}","${s.comment}","Solved","${s.decision}","${safeNote}","${s.solvedBy}","${s.solvedAt}"\n`;
+            });
+
+            const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `Quality_Tickets_Export_${new Date().toISOString().slice(0,10)}.csv`;
+            link.click();
+        }
+
+        function switchView(v) {
+            if (v === 'open') {
+                document.getElementById('viewOpen').classList.remove('hidden');
+                document.getElementById('viewSolved').classList.add('hidden');
+                document.getElementById('btnViewOpen').className = "px-5 py-2 rounded-lg text-xs font-bold bg-indigo-600 text-white";
+                document.getElementById('btnViewSolved').className = "px-5 py-2 rounded-lg text-xs font-bold text-slate-400 hover:text-white";
+            } else {
+                document.getElementById('viewOpen').classList.add('hidden');
+                document.getElementById('viewSolved').classList.remove('hidden');
+                document.getElementById('btnViewOpen').className = "px-5 py-2 rounded-lg text-xs font-bold text-slate-400 hover:text-white";
+                document.getElementById('btnViewSolved').className = "px-5 py-2 rounded-lg text-xs font-bold bg-indigo-600 text-white";
+            }
         }
     </script>
 </body>
