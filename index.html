@@ -10,6 +10,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts: Cairo -->
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <!-- PapaParse -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <style>
         body { font-family: 'Cairo', sans-serif; }
     </style>
@@ -17,7 +19,9 @@
 <body class="bg-slate-900 text-slate-100 min-h-screen">
 
     <script>
+        const SHEET_ID = "171DXs48k4FOnpHGB155mLpvgRnXUxfsXoQT4AYGV8rA";
         const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw6tU2RQSs_FHdXeUeCz7WO7TEdyeu5NsN8fC2Evi6OIRZ1JLG2ZZ-2KvgBNGSRYNFicg/exec";
+        const GVIZ_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=W35`;
     </script>
 
     <!-- LOGIN OVERLAY -->
@@ -218,22 +222,8 @@
     </div>
 
     <script>
-        // BACKUP DATASET
-        const defaultTicketsList = [
-            { tab: "W35", id: "1436002", priority: "Custom", competition: "Damallsvenskan", country: "Sweden", season: "2026", home: "AIK W", away: "Kristianstad", eta: "2026-08-31", etaDate: "3:00", shift: "B", reviewDate: "2026-08-29", reviewShift: "M", responsible: "Bahaa", resolution: "Missing Player", comment: "2" },
-            { tab: "W35", id: "1454376", priority: "P1.5", competition: "China League One", country: "China PR", season: "2026", home: "Shijiazhuang Gongfu", away: "Wuxi Wugo", eta: "2026-08-31", etaDate: "3:00", shift: "B", reviewDate: "2026-08-30", reviewShift: "M", responsible: "Abdulrahman", resolution: "Wrong Number", comment: "1 | away:Zhixuan Zhou 28 not 27" },
-            { tab: "W35", id: "1482440", priority: "Live", competition: "Championship", country: "England", season: "2026/2027", home: "Derby County", away: "Swansea City", eta: "2026-08-30", etaDate: "3:00", shift: "B", reviewDate: "2026-08-29", reviewShift: "M", responsible: "Eslam Tareq", resolution: "Missing Player", comment: "-" },
-            { tab: "W35", id: "1482625", priority: "Custom", competition: "League One", country: "England", season: "2026/2027", home: "Blackpool", away: "Peterborough United", eta: "2026-08-30", etaDate: "3:00", shift: "L", reviewDate: "2026-08-29", reviewShift: "N", responsible: "Abdulrahman", resolution: "Extra Player", comment: "1 | away:27.Isac Fors" },
-            { tab: "W35", id: "1454378", priority: "P1.5", competition: "China League One", country: "China PR", season: "2026", home: "Foshan Nanshi", away: "Shenzhen Juniors", eta: "2026-08-31", etaDate: "3:00", shift: "L", reviewDate: "2026-08-30", reviewShift: "N", responsible: "Mossad", resolution: "Missing Official", comment: "1" },
-            { tab: "W35", id: "1469789", priority: "P3", competition: "Superettan", country: "Sweden", season: "2026", home: "Landskrona", away: "Östersunds FK", eta: "2026-08-30", etaDate: "3:00", shift: "N", reviewDate: "2026-08-29", reviewShift: "M", responsible: "Mossad", resolution: "Wrong Number", comment: "2 | Away: 10" },
-            { tab: "W35", id: "1499856", priority: "P1.5", competition: "2. Division", country: "Denmark", season: "2026/2027", home: "VSK Aarhus", away: "FA 2000", eta: "2026-08-30", etaDate: "15:00", shift: "K", reviewDate: "2026-08-29", reviewShift: "O", responsible: "Eslam Hussien", resolution: "Sub Player Wrong", comment: "1 | Sub player and not" },
-            { tab: "W35", id: "1477493", priority: "WS Customer", competition: "I Liga", country: "Poland", season: "2026/2027", home: "Unia Skierniewice", away: "Stal Rzeszów", eta: "N/A", etaDate: "N/A", shift: "N/A#", reviewDate: "2026-08-29", reviewShift: "O", responsible: "Bahaa", resolution: "Missing Player, Extra Player", comment: "Mateusz Sokół 12 missing - Marek Koziol 88 extra away | 2" },
-            { tab: "W35", id: "1506876", priority: "-", competition: "Regionalliga West", country: "Germany", season: "2026/2027", home: "Westfalia Rhynern", away: "FC Gütersloh", eta: "2026-08-31", etaDate: "3:00", shift: "-", reviewDate: "2026-08-29", reviewShift: "M", responsible: "Eslam Tareq", resolution: "Missing Official, Wrong Sub Player", comment: "away 1044429 Jakob Benjamin Korte ( wrong ) - ( right ) 1105906 Hannes John" },
-            { tab: "W35", id: "1507363", priority: "WS Customer", competition: "Regionalliga Südwest", country: "Germany", season: "2026/2027", home: "Fulda-Lehnerz", away: "FSV Frankfurt", eta: "2026-08-31", etaDate: "3:00", shift: "-", reviewDate: "2026-08-29", reviewShift: "M", responsible: "Bahaa", resolution: "Wrong Number", comment: "Emmanuel McDonald 9 nort 33 away | 1" }
-        ];
-
         // APP STATE
-        let users = JSON.parse(localStorage.getItem('app_users_v10')) || [
+        let users = JSON.parse(localStorage.getItem('app_users_v11')) || [
             { username: 'admin', password: '123456', role: 'admin' },
             { username: 'Bahaa', password: '123', role: 'user' },
             { username: 'Eslam Tareq', password: '123', role: 'user' },
@@ -243,7 +233,7 @@
 
         let activeUser = JSON.parse(sessionStorage.getItem('active_user')) || null;
         let allTickets = [];
-        let solvedTickets = JSON.parse(localStorage.getItem('solved_tickets_v10')) || [];
+        let solvedTickets = JSON.parse(localStorage.getItem('solved_tickets_v11')) || [];
 
         document.addEventListener('DOMContentLoaded', () => {
             if (activeUser) {
@@ -288,29 +278,102 @@
             const spinner = document.getElementById('syncSpinner');
             spinner.classList.add('fa-spin');
 
+            // Strategy 1: Attempt Apps Script Engine
             fetch(APPS_SCRIPT_URL)
                 .then(res => res.json())
                 .then(data => {
-                    spinner.classList.remove('fa-spin');
                     if (Array.isArray(data) && data.length > 0) {
+                        spinner.classList.remove('fa-spin');
                         allTickets = data.filter(t => !solvedTickets.some(s => s.id === t.id));
+                        populateFilters();
+                        renderTickets();
                     } else {
-                        loadBackupData();
+                        fetchCsvDirect();
                     }
-                    populateFilters();
-                    renderTickets();
                 })
                 .catch(err => {
-                    spinner.classList.remove('fa-spin');
-                    console.error("Fetch Error:", err);
-                    loadBackupData();
-                    populateFilters();
-                    renderTickets();
+                    console.warn("AppsScript failed, falling back to GVIZ CSV Parser...", err);
+                    fetchCsvDirect();
                 });
         }
 
-        function loadBackupData() {
-            allTickets = defaultTicketsList.filter(t => !solvedTickets.some(s => s.id === t.id));
+        function fetchCsvDirect() {
+            const spinner = document.getElementById('syncSpinner');
+            Papa.parse(GVIZ_CSV_URL, {
+                download: true,
+                header: false,
+                skipEmptyLines: true,
+                complete: function(results) {
+                    spinner.classList.remove('fa-spin');
+                    if (results.data && results.data.length > 1) {
+                        parseCsvRows(results.data);
+                    }
+                },
+                error: function(err) {
+                    spinner.classList.remove('fa-spin');
+                    console.error("CSV Fetch Error:", err);
+                }
+            });
+        }
+
+        function parseCsvRows(rows) {
+            allTickets = [];
+            const resSet = new Set();
+
+            for (let i = 1; i < rows.length; i++) {
+                const r = rows[i];
+                if (!r || r.length < 25) continue;
+
+                const matchId = (r[0] || "").toString().trim();          // Col A
+                const priority = (r[4] || "").toString().trim();         // Col E
+                const comp = (r[6] || "").toString().trim();             // Col G
+                const country = (r[7] || "").toString().trim();          // Col H
+                const season = (r[8] || "").toString().trim();           // Col I
+                const home = (r[9] || "").toString().trim();             // Col J
+                const away = (r[10] || "").toString().trim();            // Col K
+                const eta = (r[14] || "").toString().trim();             // Col O
+                const etaDate = (r[15] || "").toString().trim();         // Col P
+                const shift = (r[16] || "").toString().trim();           // Col Q
+                
+                const reviewDate = (r[20] || "").toString().trim();      // Col U
+                const reviewShift = (r[21] || "").toString().trim();     // Col V
+                const responsible = (r[22] || "").toString().trim();     // Col W
+
+                const res = (r[25] || "").toString().trim();             // Col Z
+                
+                const commentAA = (r[26] || "").toString().trim();
+                const commentAB = (r[27] || "").toString().trim();
+                const combinedComment = [commentAA, commentAB].filter(Boolean).join(" | ") || "-";
+
+                // FILTER RULE: Col Z NOT blank & NOT "He's Right"
+                if (matchId && matchId.toLowerCase() !== "id" && res !== "" && res.toLowerCase() !== "he's right") {
+                    resSet.add(res);
+
+                    if (!solvedTickets.some(s => s.id === matchId)) {
+                        allTickets.push({
+                            tab: "W35",
+                            id: matchId,
+                            priority: priority || "-",
+                            competition: comp || "-",
+                            country: country || "-",
+                            season: season || "-",
+                            home: home || "-",
+                            away: away || "-",
+                            eta: eta || "-",
+                            etaDate: etaDate || "-",
+                            shift: shift || "-",
+                            reviewDate: reviewDate || "-",
+                            reviewShift: reviewShift || "-",
+                            responsible: responsible || "-",
+                            resolution: res,
+                            comment: combinedComment
+                        });
+                    }
+                }
+            }
+
+            populateFilters();
+            renderTickets();
         }
 
         function populateFilters() {
@@ -428,7 +491,7 @@
                 t.solvedAt = new Date().toLocaleString('ar-EG');
 
                 solvedTickets.unshift(t);
-                localStorage.setItem('solved_tickets_v10', JSON.stringify(solvedTickets));
+                localStorage.setItem('solved_tickets_v11', JSON.stringify(solvedTickets));
 
                 renderTickets();
             }
@@ -443,7 +506,7 @@
                 delete t.solvedAt;
 
                 allTickets.unshift(t);
-                localStorage.setItem('solved_tickets_v10', JSON.stringify(solvedTickets));
+                localStorage.setItem('solved_tickets_v11', JSON.stringify(solvedTickets));
 
                 renderTickets();
             }
@@ -560,7 +623,7 @@
             }
 
             users.push({ username: u, password: p, role: 'user' });
-            localStorage.setItem('app_users_v10', JSON.stringify(users));
+            localStorage.setItem('app_users_v11', JSON.stringify(users));
             document.getElementById('newUsername').value = '';
             document.getElementById('newPassword').value = '';
             renderUsersList();
@@ -568,7 +631,7 @@
 
         function deleteUser(username) {
             users = users.filter(x => x.username !== username);
-            localStorage.setItem('app_users_v10', JSON.stringify(users));
+            localStorage.setItem('app_users_v11', JSON.stringify(users));
             renderUsersList();
         }
     </script>
