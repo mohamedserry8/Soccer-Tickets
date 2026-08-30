@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>دليل نشر وتأهيل تطبيق التذاكر كـ Web App مجاني 100%</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts - Cairo -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            500: '#0284c7',
+                            600: '#0369a1',
+                            700: '#075985',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Cairo', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Cairo', sans-serif;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.05);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .dark ::-webkit-scrollbar-thumb {
+            background: #475569;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 antialiased min-h-screen flex flex-col justify-between">
+
+    <!-- Toast Notification Container -->
+    <div id="toastContainer" class="fixed top-5 left-5 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none"></div>
+
+    <!-- Header / Navbar -->
+    <header class="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 sticky top-0 z-30 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-3 space-x-reverse">
+                    <div class="bg-gradient-to-tr from-emerald-600 to-teal-600 text-white p-2.5 rounded-xl shadow-md flex items-center justify-center">
+                        <i class="fa-solid fa-cloud-arrow-up text-xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-lg sm:text-xl font-bold leading-tight">دليل نشر تطبيق التذاكر كـ Web App <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 mr-1">مجاني 100%</span></h1>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">خطوات تشغيل وتوزيع الأبلكيشن لعمل الفريق أونلاين</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2 sm:gap-3">
+                    <button onclick="toggleDarkMode()" title="التبديل بين الوضع الداكن والفيزيائي" class="p-2 rounded-lg text-slate-500 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition">
+                        <i class="fa-solid fa-moon dark:hidden text-lg"></i>
+                        <i class="fa-solid fa-sun hidden dark:inline text-lg text-amber-400"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-grow w-full space-y-6">
+
+        <!-- Banner Intro & Progress Overview -->
+        <div class="bg-gradient-to-r from-sky-600 to-indigo-600 rounded-2xl p-6 text-white shadow-lg flex flex-col md:flex-row justify-between items-center gap-6">
+            <div class="space-y-2 max-w-2xl">
+                <span class="bg-white/20 text-white text-xs px-3 py-1 rounded-full font-semibold inline-block"><i class="fa-solid fa-rocket ml-1"></i> دليل خطوة بخطوة للمبتدئين والمحترفين</span>
+                <h2 class="text-xl sm:text-2xl font-bold">كيف تجعل تطبيقك يعمل أونلاين مجاناً 24/7 لجميع الموظفين؟</h2>
+                <p class="text-xs sm:text-sm text-sky-100 leading-relaxed">
+                    لا تحتاج لشراء سيرفر أو استضافة مدفوعة. ستقوم بنشر التطبيق المكون من ملف <code class="bg-white/20 px-1 py-0.5 rounded font-mono text-white">index.html</code> على منشآت سحابية مجانية تماماً مثل GitHub Pages أو Netlify وربط الشيتات عن طريق Google Apps Script.
+                </p>
+            </div>
+            <!-- Progress Calculator Box -->
+            <div class="bg-white/10 backdrop-blur-md p-4 rounded-xl border border-white/20 text-center w-full md:w-64 space-y-2">
+                <div class="text-xs font-semibold text-sky-200">نسبة جاهزية التطبيق للنشر</div>
+                <div class="text-3xl font-extrabold" id="progressPercentage">0%</div>
+                <div class="w-full bg-white/20 h-2 rounded-full overflow-hidden">
+                    <div id="progressBar" class="bg-emerald-400 h-full transition-all duration-300" style="width: 0%"></div>
+                </div>
+                <div class="text-[11px] text-sky-100" id="progressStatus">قم بإتمام خطوات القائمة أدناه</div>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="border-b border-slate-200 dark:border-slate-700">
+            <nav class="flex space-x-2 space-x-reverse -mb-px overflow-x-auto pb-1" id="guideTabContainer">
+                <button onclick="switchGuideTab('checklist')" id="tab-checklist" class="guide-tab-btn px-4 py-2.5 font-semibold text-sm rounded-t-lg border-b-2 border-sky-600 text-sky-600 dark:text-sky-400 flex items-center gap-2 whitespace-nowrap">
+                    <i class="fa-solid fa-list-check"></i>
+                    قائمة التحقق (Checklist)
+                </button>
+                <button onclick="switchGuideTab('github')" id="tab-github" class="guide-tab-btn px-4 py-2.5 font-semibold text-sm rounded-t-lg border-b-2 border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 flex items-center gap-2 whitespace-nowrap">
+                    <i class="fa-brands fa-github text-lg"></i>
+                    النشر عبر GitHub Pages
+                </button>
+                <button onclick="switchGuideTab('netlify')" id="tab-netlify" class="guide-tab-btn px-4 py-2.5 font-semibold text-sm rounded-t-lg border-b-2 border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 flex items-center gap-2 whitespace-nowrap">
+                    <i class="fa-solid fa-bolt text-amber-500"></i>
+                    النشر السريع (Netlify / Vercel)
+                </button>
+                <button onclick="switchGuideTab('appscript')" id="tab-appscript" class="guide-tab-btn px-4 py-2.5 font-semibold text-sm rounded-t-lg border-b-2 border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 flex items-center gap-2 whitespace-nowrap">
+                    <i class="fa-solid fa-code text-emerald-500"></i>
+                    ربط Google Apps Script
+                </button>
+                <button onclick="switchGuideTab('tester')" id="tab-tester" class="guide-tab-btn px-4 py-2.5 font-semibold text-sm rounded-t-lg border-b-2 border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 flex items-center gap-2 whitespace-nowrap">
+                    <i class="fa-solid fa-vial-circle-check text-purple-500"></i>
+                    فحص واختبار الروابط (URL Tester)
+                </button>
+            </nav>
+        </div>
+
+        <!-- TAB 1: CHECKLIST & DEPLOYMENT STEPS -->
+        <section id="guideContent-checklist" class="guide-tab-content block space-y-4">
+            <div class="bg-white dark:bg-slate-800 p-5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-4">
+                <h3 class="text-base font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                    <i class="fa-solid fa-tasks text-sky-600"></i> قائمة مهام تجهيز ونشر أونلاين (المطلوب منك بالترتيب)
+                </h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400">اضغط على المربع مقابل كل خطوة عند الانتهاء منها لتحديث مؤشر جاهزية التطبيق للعمل مع فريقك:</p>
+
+                <div class="space-y-3" id="checklistContainer">
+                    <!-- Dynamic Checklist Items inserted via JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 2: GITHUB PAGES DEPLOYMENT GUIDE -->
+        <section id="guideContent-github" class="guide-tab-content hidden space-y-6">
+            <div class="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-6">
+                <div class="border-b border-slate-200 dark:border-slate-700 pb-4">
+                    <h3 class="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                        <i class="fa-brands fa-github text-slate-800 dark:text-slate-200"></i> خيار 1: النشر المجاني الدائم عبر GitHub Pages
+                    </h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">طريقة رسمية مجانية تضمن بقاء تطبيقك أونلاين برابط خاص مدى الحياة بدون أي مصاريف.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="bg-slate-50 dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-700 space-y-2">
+                        <div class="w-8 h-8 rounded-full bg-sky-100 dark:bg-sky-900 text-sky-700 dark:text-sky-300 font-bold flex items-center justify-center text-sm">1</div>
+                        <h4 class="font-bold text-sm text-slate-800 dark:text-slate-100">إنشاء مستودع (Repository)</h4>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                            سجل دخول في <a href="https://github.com" target="_blank" class="text-sky-600 underline">GitHub.com</a> ثم اضغط على <strong>New Repository</strong>. سمّه باسم مثل <code class="bg-slate-200 dark:bg-slate-800 px-1 rounded">tickets-app</code> واجعله <strong>Public</strong>.
+                        </p>
+                    </div>
+
+                    <div class="bg-slate-50 dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-700 space-y-2">
+                        <div class="w-8 h-8 rounded-full bg-sky-100 dark:bg-sky-900 text-sky-700 dark:text-sky-300 font-bold flex items-center justify-center text-sm">2</div>
+                        <h4 class="font-bold text-sm text-slate-800 dark:text-slate-100">رفع الملف (uploading index.html)</h4>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                            احفظ كود التطبيق في ملف باسم <code class="bg-slate-200 dark:bg-slate-800 px-1 rounded">index.html</code> على جهازك. داخل صفحة المستودع في جيتهاف اضغط <strong>uploading an existing file</strong> وارفع هذا الملف تماماً ثم اضغط <strong>Commit changes</strong>.
+                        </p>
+                    </div>
+
+                    <div class="bg-slate-50 dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-700 space-y-2">
+                        <div class="w-8 h-8 rounded-full bg-sky-100 dark:bg-sky-900 text-sky-700 dark:text-sky-300 font-bold flex items-center justify-center text-sm">3</div>
+                        <h4 class="font-bold text-sm text-slate-800 dark:text-slate-100">تفعيل Pages واقتناص الرابط</h4>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                            ادخل على <strong>Settings</strong> &gt; <strong>Pages</strong>. في خيار Branch اختر <strong>main</strong> ثم اضغط <strong>Save</strong>. خلال دقيقة سيظهر لك رابط الويب العام الشغال أونلاين!
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 3: NETLIFY / VERCEL FAST DEPLOYMENT -->
+        <section id="guideContent-netlify" class="guide-tab-content hidden space-y-6">
+            <div class="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-6">
+                <div class="border-b border-slate-200 dark:border-slate-700 pb-4">
+                    <h3 class="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                        <i class="fa-solid fa-bolt text-amber-500"></i> خيار 2: النشر السريع للغاية في 30 ثانية (Netlify Drag & Drop)
+                    </h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">أسهل طريقة بدون الحاجة لإنشاء مستودعات كود. السحب والإفلات المباشر للملف.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-4">
+                        <div class="bg-amber-50 dark:bg-amber-950/40 border-r-4 border-amber-500 p-4 rounded-r-xl">
+                            <h4 class="font-bold text-amber-900 dark:text-amber-300 text-sm">خطوات Netlify Drop:</h4>
+                            <ol class="list-decimal list-inside text-xs text-amber-800 dark:text-amber-400 mt-2 space-y-1.5 leading-relaxed">
+                                <li>ضع ملف <code class="bg-amber-100 dark:bg-amber-900 px-1 py-0.5 rounded">index.html</code> داخل مجلد على جهازك.</li>
+                                <li>افتح موقع <a href="https://app.netlify.com/drop" target="_blank" class="font-bold underline">Netlify Drop (app.netlify.com/drop)</a>.</li>
+                                <li>اسحب المجلد وأسقطه داخل المربع المخصص على الشاشة.</li>
+                                <li>مبروك! سيمنحك الموقع فوراً رابط أونلاين عام مجاني يتيح لجميع زملائك فتح التطبيق والعمل عليه.</li>
+                            </ol>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div class="bg-indigo-50 dark:bg-indigo-950/40 border-r-4 border-indigo-500 p-4 rounded-r-xl">
+                            <h4 class="font-bold text-indigo-900 dark:text-indigo-300 text-sm">بديل Vercel:</h4>
+                            <p class="text-xs text-indigo-800 dark:text-indigo-400 mt-1 leading-relaxed">
+                                يمكنك أيضاً التسجيل في موقع <a href="https://vercel.com" target="_blank" class="font-bold underline">Vercel.com</a> واستيراد الملف أو مشروعك بضغطة زر واحدة للحصول على سرعة فائقة واستضافة مجانية مدى الحياة.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 4: GOOGLE APPS SCRIPT CODE & INSTRUCTIONS -->
+        <section id="guideContent-appscript" class="guide-tab-content hidden space-y-6">
+            <div class="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-6">
+                <div class="border-b border-slate-200 dark:border-slate-700 pb-4">
+                    <h3 class="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                        <i class="fa-solid fa-code text-emerald-600"></i> إعداد Google Apps Script المباشر للتفاعل أونلاين
+                    </h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">هذا الكود يجعل Google Sheet يقرأ ويكتب البيانات مع الأبلكيشن لجميع اليوزرز أونلاين في نفس الوقت.</p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="space-y-4 text-xs leading-relaxed text-slate-600 dark:text-slate-300">
+                        <div class="bg-slate-50 dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-700 space-y-2">
+                            <h4 class="font-bold text-sm text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                                <i class="fa-solid fa-list-ol text-emerald-600"></i> خطوات التثبيت في Google Sheets:
+                            </h4>
+                            <ol class="list-decimal list-inside space-y-2">
+                                <li>افتح ملف Google Sheet الخاص بك من حسابك.</li>
+                                <li>من القائمة العلوية اختر <strong>Extensions (الإضافات)</strong> &gt; <strong>Apps Script</strong>.</li>
+                                <li>احذف أي كود مكتوب والصق الكود الموجود في النافذة المجاورة.</li>
+                                <li>اضغط على <strong>Deploy (نشر)</strong> &gt; <strong>New Deployment (نشر جديد)</strong>.</li>
+                                <li>في نوع التثبيت اختر <strong>Web App</strong>.</li>
+                                <li><strong>مهم جداً:</strong> اجعل خيار Execute as: <code class="bg-emerald-100 dark:bg-emerald-900 px-1 py-0.5 rounded text-emerald-800 dark:text-emerald-200 font-bold">Me</code> وخيار Who has access: <code class="bg-emerald-100 dark:bg-emerald-900 px-1 py-0.5 rounded text-emerald-800 dark:text-emerald-200 font-bold">Anyone</code>.</li>
+                                <li>اضغط Deploy وانسخ الرابط الناتج وضعه في خانة Webhook URL بالأبلكيشن.</li>
+                            </ol>
+                        </div>
+                    </div>
+
+                    <!-- Code Box -->
+                    <div class="bg-slate-900 text-slate-100 p-4 rounded-xl text-xs font-mono space-y-2 overflow-x-auto dir-ltr border border-slate-700">
+                        <div class="flex justify-between items-center border-b border-slate-700 pb-2 text-slate-400">
+                            <span>AppsScript_Backend.gs</span>
+                            <button onclick="copyAppsScriptCode()" class="text-sky-400 hover:text-sky-300 text-xs font-sans flex items-center gap-1">
+                                <i class="fa-regular fa-copy"></i> نسخ الكود
+                            </button>
+                        </div>
+                        <pre id="appScriptBlock" class="text-slate-200">function doGet(e) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheets()[0];
+  var data = sheet.getDataRange().getValues();
+  return ContentService.createTextOutput(JSON.stringify(data))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+function doPost(e) {
+  try {
+    var data = JSON.parse(e.postData.contents);
+    var matchId = data.matchId;
+    var tabName = data.tabName;
+    var resolution = data.resolutionNotes;
+    var solvedBy = data.solvedBy;
+
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var sheet = ss.getSheetByName(tabName) || ss.getSheets()[0];
+    var values = sheet.getDataRange().getValues();
+
+    // البحث والتحديث المباشر برقم Match ID
+    for (var i = 1; i < values.length; i++) {
+      if (values[i][0].toString() === matchId.toString()) {
+        sheet.getRange(i + 1, 7).setValue(resolution); // العمود 7: الحل
+        sheet.getRange(i + 1, 8).setValue(solvedBy);    // العمود 8: اليوزر
+        sheet.getRange(i + 1, 9).setValue("Solved");   // العمود 9: الحالة
+        return ContentService.createTextOutput(JSON.stringify({status: "success"}))
+               .setMimeType(ContentService.MimeType.JSON);
+      }
+    }
+    return ContentService.createTextOutput(JSON.stringify({status: "not_found"}));
+  } catch(err) {
+    return ContentService.createTextOutput(JSON.stringify({error: err.toString()}));
+  }
+}</pre>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 5: URL & CONNECTION TESTER TOOL -->
+        <section id="guideContent-tester" class="guide-tab-content hidden space-y-6">
+            <div class="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-6">
+                <div class="border-b border-slate-200 dark:border-slate-700 pb-4">
+                    <h3 class="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                        <i class="fa-solid fa-vial-circle-check text-purple-600"></i> أداة فحص واختبار الرابط المباشر (URL Tester)
+                    </h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">اختبر روابط Google Sheet المنشورة كـ CSV أو روابط Apps Script للتأكد من سهولة الوصول إليها أونلاين.</p>
+                </div>
+
+                <div class="space-y-4 max-w-xl">
+                    <div>
+                        <label class="block text-slate-700 dark:text-slate-300 font-semibold mb-1 text-sm">أدخل رابط CSV أو Webhook للفحص</label>
+                        <div class="flex gap-2">
+                            <input type="url" id="testUrlInput" placeholder="https://docs.google.com/spreadsheets/d/.../pub?output=csv" class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none text-xs font-mono">
+                            <button onclick="runUrlTest()" class="bg-purple-600 hover:bg-purple-700 text-white font-semibold text-xs px-4 py-2 rounded-lg transition whitespace-nowrap flex items-center gap-1.5">
+                                <i class="fa-solid fa-play" id="testSpinner"></i> اختبر الرابط
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Test Output Area -->
+                    <div id="testResultBox" class="hidden p-4 rounded-xl text-xs font-mono border"></div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 py-4 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 text-center text-xs text-slate-500 dark:text-slate-400">
+            دليل وتجهيز تطبيق التذاكر الموحد أونلاين &copy; 2026 - نشر مجاني 100% عبر الاستضافات السحابية.
+        </div>
+    </footer>
+
+    <script>
+        // Checklist items state
+        const checklistItems = [
+            { id: 'chk-1', text: 'حفظ كود تطبيق التذاكر الرئيسي داخل ملف باسم index.html على كمبيوترك.', done: false },
+            { id: 'chk-2', text: 'إنشاء حساب مجاني على GitHub أو Netlify.', done: false },
+            { id: 'chk-3', text: 'رفع ملف index.html والحصول على رابط الويب الأونلاين المباشر.', done: false },
+            { id: 'chk-4', text: 'نشر أوراق Google Sheets كـ CSV لربط القراءة التلقائية.', done: false },
+            { id: 'chk-5', text: 'إضافة كود Google Apps Script ونشره كـ Web App (Access: Anyone).', done: false },
+            { id: 'chk-6', text: 'مشاركة رابط التطبيق النهائي مع أعضاء فريق الدعم لبدء حل التذاكر فورياً.', done: false }
+        ];
+
+        window.onload = function() {
+            loadGuideState();
+            renderChecklist();
+        };
+
+        function loadGuideState() {
+            if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+
+            const savedChk = localStorage.getItem('helpdesk_guide_checklist_v1');
+            if (savedChk) {
+                try {
+                    const parsed = JSON.parse(savedChk);
+                    parsed.forEach(p => {
+                        const found = checklistItems.find(c => c.id === p.id);
+                        if (found) found.done = p.done;
+                    });
+                } catch(e){}
+            }
+        }
+
+        function saveChecklistState() {
+            localStorage.setItem('helpdesk_guide_checklist_v1', JSON.stringify(checklistItems));
+        }
+
+        function toggleDarkMode() {
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.theme = 'light';
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.theme = 'dark';
+            }
+        }
+
+        function renderChecklist() {
+            const container = document.getElementById('checklistContainer');
+            let completedCount = 0;
+
+            container.innerHTML = checklistItems.map(item => {
+                if (item.done) completedCount++;
+                return `
+                    <label class="flex items-start gap-3 p-3.5 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+                        <input type="checkbox" onchange="toggleCheckItem('${item.id}')" ${item.done ? 'checked' : ''} class="mt-1 w-4 h-4 text-emerald-600 rounded border-slate-300 focus:ring-emerald-500">
+                        <span class="text-xs sm:text-sm ${item.done ? 'line-through text-slate-400' : 'text-slate-700 dark:text-slate-200 font-medium'}">${item.text}</span>
+                    </label>
+                `;
+            }).join('');
+
+            const total = checklistItems.length;
+            const pct = Math.round((completedCount / total) * 100);
+
+            document.getElementById('progressPercentage').innerText = pct + '%';
+            document.getElementById('progressBar').style.width = pct + '%';
+
+            if (pct === 100) {
+                document.getElementById('progressStatus').innerText = 'تهانينا! تطبيقك جاهز ومرفوع أونلاين بالكامل.';
+            } else {
+                document.getElementById('progressStatus').innerText = `تم إنجاز ${completedCount} من أصل ${total} خطوات`;
+            }
+        }
+
+        function toggleCheckItem(id) {
+            const item = checklistItems.find(c => c.id === id);
+            if (item) {
+                item.done = !item.done;
+                saveChecklistState();
+                renderChecklist();
+            }
+        }
+
+        function switchGuideTab(tabId) {
+            document.querySelectorAll('.guide-tab-btn').forEach(btn => {
+                btn.classList.remove('border-sky-600', 'text-sky-600', 'dark:text-sky-400');
+                btn.classList.add('border-transparent', 'text-slate-500');
+            });
+            document.querySelectorAll('.guide-tab-content').forEach(content => {
+                content.classList.add('hidden');
+            });
+
+            const activeBtn = document.getElementById(`tab-${tabId}`);
+            const activeContent = document.getElementById(`guideContent-${tabId}`);
+
+            if (activeBtn && activeContent) {
+                activeBtn.classList.add('border-sky-600', 'text-sky-600', 'dark:text-sky-400');
+                activeBtn.classList.remove('border-transparent', 'text-slate-500');
+                activeContent.classList.remove('hidden');
+            }
+        }
+
+        function copyAppsScriptCode() {
+            const code = document.getElementById('appScriptBlock').innerText;
+            navigator.clipboard.writeText(code).then(() => {
+                showToast('تم نسخ كود Google Apps Script بنجاح!');
+            });
+        }
+
+        function runUrlTest() {
+            const url = document.getElementById('testUrlInput').value.trim();
+            const resultBox = document.getElementById('testResultBox');
+
+            if (!url) {
+                showToast('الرجاء إدخال رابط أولاً لاختباره.', 'error');
+                return;
+            }
+
+            resultBox.classList.remove('hidden', 'bg-emerald-50', 'bg-rose-50', 'border-emerald-200', 'border-rose-200', 'text-emerald-800', 'text-rose-800');
+            resultBox.innerHTML = '<i class="fa-solid fa-spinner fa-spin ml-2"></i> جاري فحص الرابط ومحاولة الاتصال...';
+            resultBox.className = 'p-4 rounded-xl text-xs font-mono border bg-slate-100 dark:bg-slate-900 border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300';
+
+            fetch(url)
+                .then(res => res.text())
+                .then(data => {
+                    resultBox.className = 'p-4 rounded-xl text-xs font-mono border bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 text-emerald-800 dark:text-emerald-300';
+                    resultBox.innerHTML = `
+                        <div class="font-bold mb-1"><i class="fa-solid fa-circle-check text-emerald-600"></i> تم الاتصال بنجاح بالرابط!</div>
+                        <div>تم استقبال رد بحجم: ${data.length} حرف. الرابط شغال وجاهز للربط مع الأبلكيشن.</div>
+                    `;
+                })
+                .catch(err => {
+                    resultBox.className = 'p-4 rounded-xl text-xs font-mono border bg-rose-50 dark:bg-rose-950/40 border-rose-300 text-rose-800 dark:text-rose-300';
+                    resultBox.innerHTML = `
+                        <div class="font-bold mb-1"><i class="fa-solid fa-triangle-exclamation text-rose-600"></i> تعذر الوصول أو النشر بشكل كامل</div>
+                        <div>تأكد أن الرابط منشور للعامة (Anyone) وأن الشيت منشور كـ CSV إذا كان رابط Google Sheet.</div>
+                    `;
+                });
+        }
+
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            const bgClass = type === 'success' ? 'bg-emerald-600' : 'bg-rose-600';
+            
+            toast.className = `${bgClass} text-white px-4 py-3 rounded-xl shadow-lg flex items-center justify-between text-xs font-semibold pointer-events-auto transition duration-300 transform translate-y-2`;
+            toast.innerHTML = `
+                <span class="flex items-center gap-2"><i class="fa-solid fa-circle-check"></i> ${message}</span>
+                <button onclick="this.parentElement.remove()" class="text-white/80 hover:text-white mr-2"><i class="fa-solid fa-xmark"></i></button>
+            `;
+            container.appendChild(toast);
+            setTimeout(() => { toast.remove(); }, 3500);
+        }
+    </script>
+</body>
+</html>
