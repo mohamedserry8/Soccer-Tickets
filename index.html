@@ -19,9 +19,8 @@
 <body class="bg-slate-900 text-slate-100 min-h-screen">
 
     <script>
-        const SHEET_ID = "171DXs48k4FOnpHGB155mLpvgRnXUxfsXoQT4AYGV8rA";
         const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw6tU2RQSs_FHdXeUeCz7WO7TEdyeu5NsN8fC2Evi6OIRZ1JLG2ZZ-2KvgBNGSRYNFicg/exec";
-        const GVIZ_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=W35`;
+        const GVIZ_CSV_URL = "https://docs.google.com/spreadsheets/d/171DXs48k4FOnpHGB155mLpvgRnXUxfsXoQT4AYGV8rA/gviz/tq?tqx=out:csv&sheet=W35";
     </script>
 
     <!-- LOGIN OVERLAY -->
@@ -222,8 +221,8 @@
     </div>
 
     <script>
-        // APP STATE
-        let users = JSON.parse(localStorage.getItem('app_users_v11')) || [
+        // APP STATE & STORAGE
+        let users = JSON.parse(localStorage.getItem('app_users_final_fixed')) || [
             { username: 'admin', password: '123456', role: 'admin' },
             { username: 'Bahaa', password: '123', role: 'user' },
             { username: 'Eslam Tareq', password: '123', role: 'user' },
@@ -232,8 +231,8 @@
         ];
 
         let activeUser = JSON.parse(sessionStorage.getItem('active_user')) || null;
-        let allTickets = [];
-        let solvedTickets = JSON.parse(localStorage.getItem('solved_tickets_v11')) || [];
+        let allTickets = JSON.parse(localStorage.getItem('cached_open_tickets')) || [];
+        let solvedTickets = JSON.parse(localStorage.getItem('solved_tickets_final_fixed')) || [];
 
         document.addEventListener('DOMContentLoaded', () => {
             if (activeUser) {
@@ -271,6 +270,11 @@
                 document.getElementById('adminBtn').classList.remove('hidden');
             }
 
+            if (allTickets.length > 0) {
+                populateFilters();
+                renderTickets();
+            }
+            
             fetchSheetData();
         }
 
@@ -278,28 +282,33 @@
             const spinner = document.getElementById('syncSpinner');
             spinner.classList.add('fa-spin');
 
-            // Strategy 1: Attempt Apps Script Engine
-            fetch(APPS_SCRIPT_URL)
+            // CORS Bypass Engine via AllOrigins Proxy
+            const proxyUrl = "https://api.allorigins.win/raw?url=" + encodeURIComponent(APPS_SCRIPT_URL);
+
+            fetch(proxyUrl)
                 .then(res => res.json())
                 .then(data => {
+                    spinner.classList.remove('fa-spin');
                     if (Array.isArray(data) && data.length > 0) {
-                        spinner.classList.remove('fa-spin');
                         allTickets = data.filter(t => !solvedTickets.some(s => s.id === t.id));
+                        localStorage.setItem('cached_open_tickets', JSON.stringify(allTickets));
                         populateFilters();
                         renderTickets();
                     } else {
-                        fetchCsvDirect();
+                        fetchCsvProxy();
                     }
                 })
                 .catch(err => {
-                    console.warn("AppsScript failed, falling back to GVIZ CSV Parser...", err);
-                    fetchCsvDirect();
+                    console.warn("Proxy 1 failed, trying direct CSV...", err);
+                    fetchCsvProxy();
                 });
         }
 
-        function fetchCsvDirect() {
+        function fetchCsvProxy() {
             const spinner = document.getElementById('syncSpinner');
-            Papa.parse(GVIZ_CSV_URL, {
+            const csvProxy = "https://api.allorigins.win/raw?url=" + encodeURIComponent(GVIZ_CSV_URL);
+
+            Papa.parse(csvProxy, {
                 download: true,
                 header: false,
                 skipEmptyLines: true,
@@ -311,14 +320,13 @@
                 },
                 error: function(err) {
                     spinner.classList.remove('fa-spin');
-                    console.error("CSV Fetch Error:", err);
+                    console.error("All Proxies failed:", err);
                 }
             });
         }
 
         function parseCsvRows(rows) {
-            allTickets = [];
-            const resSet = new Set();
+            let fetched = [];
 
             for (let i = 1; i < rows.length; i++) {
                 const r = rows[i];
@@ -347,10 +355,8 @@
 
                 // FILTER RULE: Col Z NOT blank & NOT "He's Right"
                 if (matchId && matchId.toLowerCase() !== "id" && res !== "" && res.toLowerCase() !== "he's right") {
-                    resSet.add(res);
-
                     if (!solvedTickets.some(s => s.id === matchId)) {
-                        allTickets.push({
+                        fetched.push({
                             tab: "W35",
                             id: matchId,
                             priority: priority || "-",
@@ -370,6 +376,11 @@
                         });
                     }
                 }
+            }
+
+            if (fetched.length > 0) {
+                allTickets = fetched;
+                localStorage.setItem('cached_open_tickets', JSON.stringify(allTickets));
             }
 
             populateFilters();
@@ -491,7 +502,8 @@
                 t.solvedAt = new Date().toLocaleString('ar-EG');
 
                 solvedTickets.unshift(t);
-                localStorage.setItem('solved_tickets_v11', JSON.stringify(solvedTickets));
+                localStorage.setItem('cached_open_tickets', JSON.stringify(allTickets));
+                localStorage.setItem('solved_tickets_final_fixed', JSON.stringify(solvedTickets));
 
                 renderTickets();
             }
@@ -506,7 +518,8 @@
                 delete t.solvedAt;
 
                 allTickets.unshift(t);
-                localStorage.setItem('solved_tickets_v11', JSON.stringify(solvedTickets));
+                localStorage.setItem('cached_open_tickets', JSON.stringify(allTickets));
+                localStorage.setItem('solved_tickets_final_fixed', JSON.stringify(solvedTickets));
 
                 renderTickets();
             }
@@ -623,7 +636,7 @@
             }
 
             users.push({ username: u, password: p, role: 'user' });
-            localStorage.setItem('app_users_v11', JSON.stringify(users));
+            localStorage.setItem('app_users_final_fixed', JSON.stringify(users));
             document.getElementById('newUsername').value = '';
             document.getElementById('newPassword').value = '';
             renderUsersList();
@@ -631,7 +644,7 @@
 
         function deleteUser(username) {
             users = users.filter(x => x.username !== username);
-            localStorage.setItem('app_users_v11', JSON.stringify(users));
+            localStorage.setItem('app_users_final_fixed', JSON.stringify(users));
             renderUsersList();
         }
     </script>
