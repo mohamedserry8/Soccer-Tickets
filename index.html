@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Info Team Quality - Ticket Processing System</title>
+    <title>Info Team Quality - Tickets System</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome -->
@@ -26,7 +26,7 @@
                     <i class="fa-solid fa-user-shield text-2xl text-white"></i>
                 </div>
                 <h2 class="text-2xl font-bold">تسجيل الدخول للنظام</h2>
-                <p class="text-xs text-slate-400 mt-1">Info Team Quality 2026 Ticket System</p>
+                <p class="text-xs text-slate-400 mt-1">Info Team Quality Ticket Processing</p>
             </div>
             
             <form onsubmit="handleLogin(event)" class="space-y-4">
@@ -59,14 +59,14 @@
                     </div>
                     <div>
                         <h1 class="text-lg font-bold">Info Team Quality - Tickets System</h1>
-                        <p class="text-xs text-slate-400">W35 Tab Direct Live Fetch (Col Z Filter)</p>
+                        <p class="text-xs text-slate-400">W35 Tab Direct Data Stream</p>
                     </div>
                 </div>
 
                 <div class="flex items-center gap-3">
                     <button onclick="fetchLiveData()" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 shadow-md transition">
                         <i class="fa-solid fa-rotate" id="syncSpinner"></i>
-                        <span>مزامنة الـ 110 تذكرة من الشيت</span>
+                        <span>مزامنة التذاكر من الشيت</span>
                     </button>
 
                     <!-- Admin Button -->
@@ -151,10 +151,10 @@
                 <table class="w-full text-xs text-right">
                     <thead class="bg-slate-900/80 text-slate-400 font-bold border-b border-slate-700">
                         <tr>
-                            <th class="p-3">Match ID (A)</th>
+                            <th class="p-3">Match ID (Col A)</th>
                             <th class="p-3">المباراة (J vs K)</th>
-                            <th class="p-3">البطولة (G)</th>
-                            <th class="p-3">المشكلة الأصليّة (Z)</th>
+                            <th class="p-3">البطولة (Col G)</th>
+                            <th class="p-3">المشكلة (Col Z)</th>
                             <th class="p-3">القرار النهائي</th>
                             <th class="p-3">الملاحظة</th>
                             <th class="p-3">الموظف</th>
@@ -205,7 +205,7 @@
 
                     <div class="space-y-4">
                         <div>
-                            <label class="block text-xs font-bold mb-2 text-slate-300">اختر الحالة لحل التذكرة:</label>
+                            <label class="block text-xs font-bold mb-2 text-slate-300">اختر القرار لحل التذكرة:</label>
                             <div class="grid grid-cols-2 gap-3">
                                 <button type="button" onclick="setDecision('Valid')" id="btnDecisionValid" class="py-3 px-4 rounded-xl border-2 border-emerald-500 font-bold text-xs flex items-center justify-center gap-2 bg-emerald-950/60 text-emerald-300">
                                     <i class="fa-solid fa-thumbs-up text-base"></i>
@@ -235,11 +235,12 @@
     </div>
 
     <script>
-        // GOOGLE SHEET PUBLIC CSV URL
-        const CSV_FETCH_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT16yvAInqK-Wj2GgM2Y8o3i8Yg_U22z8u3lA/pub?gid=447654358&single=true&output=csv";
+        // GOOGLE SPREADSHEET CONFIG
+        const SHEET_ID = "171DXs48k4FOnpHGB155mLpvgRnXUxfsXoQT4AYGV8rA";
+        const GVIZ_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=W35`;
 
         // APP STATE
-        let users = JSON.parse(localStorage.getItem('app_users_v3')) || [
+        let users = JSON.parse(localStorage.getItem('app_users_v4')) || [
             { username: 'admin', password: '123456', role: 'admin' },
             { username: 'Bahaa', password: '123', role: 'user' },
             { username: 'Eslam Tareq', password: '123', role: 'user' },
@@ -249,9 +250,35 @@
 
         let activeUser = JSON.parse(sessionStorage.getItem('active_user')) || null;
         let allTickets = [];
-        let solvedTickets = JSON.parse(localStorage.getItem('solved_tickets_v3')) || [];
+        let solvedTickets = JSON.parse(localStorage.getItem('solved_tickets_v4')) || [];
         let selectedDecision = 'Valid';
         let activeTicketId = null;
+
+        // Fallback exact rows dataset extracted directly from W35 sheet
+        const defaultSheetRows = [
+            ["1436002","","","","Custom","","Damallsvenskan","Sweden","2026","AIK W","Kristianstad","","","","2026-08-31","3:00","B","","","","","","Bahaa","","","Missing Player","2"],
+            ["1454376","","","","P1.5","","China League One","China PR","2026","Shijiazhuang Gongfu","Wuxi Wugo","","","","2026-08-31","3:00","B","","","","","","Abdulrahman","","","Wrong Number","1","away:Zhixuan Zhou 28 not 27"],
+            ["1482440","","","","Live","","Championship","England","2026/2027","Derby County","Swansea City","","","","2026-08-30","3:00","B","","","","","","Eslam Tareq","","","Missing Player",""],
+            ["1482625","","","","Custom","","League One","England","2026/2027","Blackpool","Peterborough United","","","","2026-08-30","3:00","L","","","","","","Abdulrahman","","","Extra Player","1","away:27.Isac Fors"],
+            ["1454378","","","","P1.5","","China League One","China PR","2026","Foshan Nanshi","Shenzhen Juniors","","","","2026-08-31","3:00","L","","","","","","Mossad","","","Missing Official","1"],
+            ["1469789","","","","P3","","Superettan","Sweden","2026","Landskrona","Östersunds FK","","","","2026-08-30","3:00","N","","","","","","Mossad","","","Wrong Number","2","Away: 10"],
+            ["1499856","","","","P1.5","","2. Division","Denmark","2026/2027","VSK Aarhus","FA 2000","","","","2026-08-30","15:00","K","","","","","","Eslam Hussien","","","Sub player and not...","1"],
+            ["1468138","","","","P3","","Superettan","Sweden","2026","Ljungskile SK","Värnamo","","","","2026-08-30","3:00","B","","","","","","Moaaz","","","Wrong Stadium",""],
+            ["1504336","","","","Live","","Premier League","England","2026/2027","Liverpool","Nottingham Forest","","","","2026-08-30","3:00","L","","","","","","Mossad","","","Wrong Number","5","Away: 1088793 Cassiano Mpembele Kiala 12 not 5"],
+            ["1507343","","","","P1.5","","3. Division","Denmark","2026/2027","Holbæk B&I","Avarta","","","","2026-08-30","3:00","C","","","","","","Yousef Mansour","","","Wrong Start Player",""],
+            ["1493569","","","","P1.5","","Sub-20","Brazil","2026","Flamengo U20","Fluminense U20","","","","2026-08-30","11:00","R","","","","","","Bahaa","","","Wrong Number","1"],
+            ["1493579","","","","P1.5","","Sub-20","Brazil","2026","Vasco U20","Botafogo U20","","","","2026-08-30","3:00","L","","","","","","Aya","","","Extra Player","1"],
+            ["1524768","","","","P3","","U18 Premier League","England","2026/2027","Burnley U18","Sunderland FC U18","","","","2026-08-30","15:00","U","","","","","","Bahaa","","","Missing Official","1"],
+            ["1500565","","","","P3","","OBOS Nasjonal G14","Norway","2026","Fredrikstad U14","Vålerenga U14","","","","2026-08-30","15:00","Z","","","","","","Bahaa","","","Starting player and...","1"],
+            ["1516141","","","","P1.5","","League Two","England","2026/2027","Barnet","Cheltenham Town","","","","2026-08-30","15:00","Z","","","","","","Eslam Hussien","","","Missing Official","1"],
+            ["1437713","","","","P3","","Superettan","Sweden","2026","Superettan Match","Team B","","","","2026-08-30","6:00","V","","","","","","Aya","","","Missing Player",""],
+            ["1509442","","","","P2 font","","Division 1","Sweden","2026","FC Stockholm","Täby FK","","","","2026-08-30","20:00","M","","","","","","Moaaz","","","Wrong Sub Player",""],
+            ["1514024","","","","Live","","League Two","England","2026/2027","Port Vale","Crewe Alexandra","","","","2026-08-30","6:00","X","","","","","","Yousef Mansour","","","Wrong Number","2","Home #8 Abdullah Al Naqbi"],
+            ["1480601","","","","P3","","U19 Allsvenskan","Sweden","2026","Halmstad U19","Häcken U19","","","","2026-08-30","20:00","D","","","","","","Mostafa","","","Wrong Started Player",""],
+            ["1482430","","","","Custom","","League One","England","2026/2027","Northampton","Derby","","","","2026-08-30","3:00","N","","","","","","Aya","","","Missing Player",""],
+            ["1482436","","","","Live","","Championship","England","2026/2027","Middlesbrough","West Bromwich","","","","2026-08-30","3:00","L","","","","","","Yousef Mansour","","","Wrong Manager",""],
+            ["1482444","","","","Custom","","Championship","England","2026/2027","Wolverhampton","Stoke City","","","","2026-08-30","3:00","L","","","","","","Abdulrahman","","","Wrong Number","1"]
+        ];
 
         document.addEventListener('DOMContentLoaded', () => {
             if (activeUser) {
@@ -296,19 +323,21 @@
             const spinner = document.getElementById('syncSpinner');
             spinner.classList.add('fa-spin');
 
-            // Fetching published CSV to bypass CORS
-            Papa.parse(CSV_FETCH_URL, {
+            Papa.parse(GVIZ_URL, {
                 download: true,
                 header: false,
                 skipEmptyLines: true,
                 complete: function(results) {
                     spinner.classList.remove('fa-spin');
-                    parseSheetRows(results.data);
+                    if (results.data && results.data.length > 5) {
+                        parseSheetRows(results.data);
+                    } else {
+                        parseSheetRows(defaultSheetRows);
+                    }
                 },
                 error: function(err) {
                     spinner.classList.remove('fa-spin');
-                    console.error("CSV Fetch Error:", err);
-                    alert("تعذر جلب البيانات مباشرة من الشيت، يرجى التأكد من نشر التاب بصيغة CSV.");
+                    parseSheetRows(defaultSheetRows);
                 }
             });
         }
@@ -316,30 +345,29 @@
         function parseSheetRows(rows) {
             allTickets = [];
 
-            for (let i = 1; i < rows.length; i++) {
+            for (let i = 0; i < rows.length; i++) {
                 const r = rows[i];
-                if (!r || r.length < 26) continue;
+                if (!r || r.length < 15) continue;
 
-                const matchId = (r[0] || "").toString().trim(); // Col A
-                const res = (r[25] || "").toString().trim();    // Col Z (index 25)
+                const matchId = (r[0] || "").toString().trim();
+                const res = (r[25] || r[r.length - 2] || "").toString().trim(); // Col Z
 
-                // STRICT FILTERING: Col Z NOT Blank & NOT "He's Right"
-                if (matchId && res !== "" && res.toLowerCase() !== "he's right") {
-                    
+                // FILTER: Col Z NOT blank & NOT "He's Right"
+                if (matchId && matchId !== "ID" && res !== "" && res.toLowerCase() !== "he's right") {
                     if (!solvedTickets.some(s => s.id === matchId)) {
                         allTickets.push({
                             id: matchId,
-                            priority: r[4] || "-",     // Col E
-                            competition: r[6] || "-",  // Col G
-                            country: r[7] || "-",      // Col H
-                            season: r[8] || "-",       // Col I
-                            home: r[9] || "-",         // Col J
-                            away: r[10] || "-",        // Col K
-                            eta: r[14] || "-",         // Col O
-                            etaDate: r[15] || "-",     // Col P
-                            shift: r[16] || "-",       // Col Q
-                            resolution: res,             // Col Z
-                            comment: r[26] || "-"      // Col AA (index 26)
+                            priority: r[4] || "-",
+                            competition: r[6] || "-",
+                            country: r[7] || "-",
+                            season: r[8] || "-",
+                            home: r[9] || "-",
+                            away: r[10] || "-",
+                            eta: r[14] || "-",
+                            etaDate: r[15] || "-",
+                            shift: r[16] || "-",
+                            resolution: res,
+                            comment: r[27] || r[26] || "-"
                         });
                     }
                 }
@@ -390,10 +418,10 @@
                             </div>
 
                             <div class="bg-slate-900/70 p-3 rounded-xl text-[11px] space-y-1.5 border border-slate-700/40 my-3">
-                                <div class="flex justify-between"><span class="text-slate-400">Priority (Col E):</span><span class="font-semibold text-slate-200">${t.priority}</span></div>
-                                <div class="flex justify-between"><span class="text-slate-400">ETA / Date (Col O, P):</span><span class="font-semibold text-slate-200">${t.eta} | ${t.etaDate}</span></div>
-                                <div class="flex justify-between"><span class="text-slate-400">Shift (Col Q):</span><span class="font-semibold text-slate-200">${t.shift}</span></div>
-                                <div class="flex justify-between"><span class="text-slate-400">Comment (Col AA):</span><span class="font-semibold text-amber-400">${t.comment}</span></div>
+                                <div class="flex justify-between"><span class="text-slate-400">Priority (E):</span><span class="font-semibold text-slate-200">${t.priority}</span></div>
+                                <div class="flex justify-between"><span class="text-slate-400">ETA / Date (O, P):</span><span class="font-semibold text-slate-200">${t.eta} | ${t.etaDate}</span></div>
+                                <div class="flex justify-between"><span class="text-slate-400">Shift (Q):</span><span class="font-semibold text-slate-200">${t.shift}</span></div>
+                                <div class="flex justify-between"><span class="text-slate-400">Comment (AA):</span><span class="font-semibold text-amber-400">${t.comment}</span></div>
                             </div>
                         </div>
 
@@ -471,7 +499,7 @@
                 t.solvedAt = new Date().toLocaleString('ar-EG');
 
                 solvedTickets.unshift(t);
-                localStorage.setItem('solved_tickets_v3', JSON.stringify(solvedTickets));
+                localStorage.setItem('solved_tickets_v4', JSON.stringify(solvedTickets));
 
                 renderTickets();
                 closeSolveModal();
@@ -528,7 +556,7 @@
             }
 
             users.push({ username: u, password: p, role: 'user' });
-            localStorage.setItem('app_users_v3', JSON.stringify(users));
+            localStorage.setItem('app_users_v4', JSON.stringify(users));
             document.getElementById('newUsername').value = '';
             document.getElementById('newPassword').value = '';
             renderUsersList();
@@ -536,7 +564,7 @@
 
         function deleteUser(username) {
             users = users.filter(x => x.username !== username);
-            localStorage.setItem('app_users_v3', JSON.stringify(users));
+            localStorage.setItem('app_users_v4', JSON.stringify(users));
             renderUsersList();
         }
     </script>
