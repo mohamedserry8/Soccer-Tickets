@@ -16,9 +16,9 @@
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen">
 
-    <!-- ⚠️ ضع رابط الـ Web App الذي نسخته من Apps Script بين التنصيص هنا ⚠️ -->
+    <!-- ⚠️ ضع رابط الـ Web App الخاص بـ Apps Script هنا ⚠️ -->
     <script>
-        const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw6tU2RQSs_FHdXeUeCz7WO7TEdyeu5NsN8fC2EvI6OIRZ1JLG2ZZ-2KvgBNGSRYNFicg/exec";
+        const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw6tU2RQSs_FHdXeUeCz7WO7TEdyeu5NsN8fC2Evi6OIRZ1JLG2ZZ-2KvgBNGSRYNFicg/exec";
     </script>
 
     <!-- LOGIN OVERLAY -->
@@ -132,7 +132,7 @@
                     <button onclick="switchView('solved')" id="btnViewSolved" class="px-5 py-2 rounded-lg text-xs font-bold text-slate-400 hover:text-white">الأرشيف المحلول (Solved)</button>
                 </div>
 
-                <div class="flex gap-3 flex-1 max-w-xl">
+                <div class="flex gap-3 flex-1 max-w-2xl">
                     <!-- Search Input -->
                     <input type="text" id="searchInput" oninput="renderTickets()" placeholder="بحث بـ Match ID، الفريق، الملاحظات، أو التاب..." class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-xs focus:outline-none focus:border-indigo-500">
                     
@@ -145,6 +145,12 @@
                     <select id="resolutionFilter" onchange="renderTickets()" class="bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-xl px-3 py-2 focus:outline-none focus:border-indigo-500">
                         <option value="ALL">جميع أنواع المشاكل (Col Z)</option>
                     </select>
+
+                    <!-- Export CSV Button -->
+                    <button onclick="exportToCSV()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition whitespace-nowrap">
+                        <i class="fa-solid fa-file-csv text-emerald-400 text-sm"></i>
+                        <span>تصدير CSV</span>
+                    </button>
                 </div>
             </div>
 
@@ -156,7 +162,7 @@
                 <div id="noDataMessage" class="hidden text-center py-16 bg-slate-800/50 rounded-2xl border border-slate-700">
                     <i class="fa-solid fa-circle-check text-4xl text-emerald-500 mb-3"></i>
                     <h3 class="text-base font-bold">لا توجد تذاكر معلقة حالياً!</h3>
-                    <p class="text-xs text-slate-400 mt-1">تأكد من إضافة رابط الـ Deploy واضغطي على "مزامنة كافة التابز".</p>
+                    <p class="text-xs text-slate-400 mt-1">اضغط على "مزامنة كافة التابز" للتأكد من أحدث البيانات.</p>
                 </div>
             </div>
 
@@ -173,6 +179,7 @@
                             <th class="p-3">القرار النهائي</th>
                             <th class="p-3">الموظف</th>
                             <th class="p-3">وقت الحل</th>
+                            <th class="p-3 text-center">الإجراءات</th>
                         </tr>
                     </thead>
                     <tbody id="solvedTableBody" class="divide-y divide-slate-700/50">
@@ -213,7 +220,7 @@
 
     <script>
         // APP STATE
-        let users = JSON.parse(localStorage.getItem('app_users_v8')) || [
+        let users = JSON.parse(localStorage.getItem('app_users_v9')) || [
             { username: 'admin', password: '123456', role: 'admin' },
             { username: 'Bahaa', password: '123', role: 'user' },
             { username: 'Eslam Tareq', password: '123', role: 'user' },
@@ -223,7 +230,7 @@
 
         let activeUser = JSON.parse(sessionStorage.getItem('active_user')) || null;
         let allTickets = [];
-        let solvedTickets = JSON.parse(localStorage.getItem('solved_tickets_v8')) || [];
+        let solvedTickets = JSON.parse(localStorage.getItem('solved_tickets_v9')) || [];
 
         document.addEventListener('DOMContentLoaded', () => {
             if (activeUser) {
@@ -266,7 +273,7 @@
 
         function fetchSheetData() {
             if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL.includes("ضع_رابط")) {
-                alert("يرجى وضع رابط الـ Web App الخاص بك في السطر المخصص له أعلى الكود أولاً!");
+                alert("يرجى التأكد من ضبط رابط APPS_SCRIPT_URL في أعلى الملف!");
                 return;
             }
 
@@ -284,7 +291,6 @@
                 .catch(err => {
                     spinner.classList.remove('fa-spin');
                     console.error("Multi-Tab Fetch Error:", err);
-                    alert("تعذر جلب التابز، التأكد من ضبط صلاحية الرابط على Anyone في خيارات الـ Deploy.");
                 });
         }
 
@@ -292,8 +298,12 @@
             const tabSelect = document.getElementById('tabFilter');
             const resSelect = document.getElementById('resolutionFilter');
 
-            const tabs = [...new Set(allTickets.map(t => t.tab))].sort();
-            const resList = [...new Set(allTickets.map(t => t.resolution))].sort();
+            const currentTab = tabSelect.value;
+            const currentRes = resSelect.value;
+
+            const combinedTickets = [...allTickets, ...solvedTickets];
+            const tabs = [...new Set(combinedTickets.map(t => t.tab))].sort();
+            const resList = [...new Set(combinedTickets.map(t => t.resolution))].sort();
 
             tabSelect.innerHTML = '<option value="ALL">جميع التبويبات (Tabs)</option>';
             tabs.forEach(t => {
@@ -304,6 +314,9 @@
             resList.forEach(r => {
                 resSelect.innerHTML += `<option value="${r}">${r}</option>`;
             });
+
+            tabSelect.value = currentTab;
+            resSelect.value = currentRes;
         }
 
         function renderTickets() {
@@ -397,7 +410,23 @@
                 t.solvedAt = new Date().toLocaleString('ar-EG');
 
                 solvedTickets.unshift(t);
-                localStorage.setItem('solved_tickets_v8', JSON.stringify(solvedTickets));
+                localStorage.setItem('solved_tickets_v9', JSON.stringify(solvedTickets));
+
+                renderTickets();
+            }
+        }
+
+        // RE-OPEN / RE-SOLVE TICKETS ENGINE
+        function reopenTicket(matchId) {
+            const idx = solvedTickets.findIndex(x => x.id === matchId);
+            if (idx !== -1) {
+                const t = solvedTickets.splice(idx, 1)[0];
+                delete t.decision;
+                delete t.solvedBy;
+                delete t.solvedAt;
+
+                allTickets.unshift(t);
+                localStorage.setItem('solved_tickets_v9', JSON.stringify(solvedTickets));
 
                 renderTickets();
             }
@@ -405,11 +434,27 @@
 
         function renderSolvedTable() {
             const tbody = document.getElementById('solvedTableBody');
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const selectedTab = document.getElementById('tabFilter').value;
+            const selectedRes = document.getElementById('resolutionFilter').value;
             tbody.innerHTML = '';
 
-            solvedTickets.forEach(s => {
+            const filteredSolved = solvedTickets.filter(s => {
+                const matchSearch = s.id.toLowerCase().includes(search) || 
+                                    s.home.toLowerCase().includes(search) || 
+                                    s.away.toLowerCase().includes(search) ||
+                                    s.responsible.toLowerCase().includes(search) ||
+                                    s.competition.toLowerCase().includes(search);
+                
+                const matchTab = selectedTab === 'ALL' || s.tab === selectedTab;
+                const matchRes = selectedRes === 'ALL' || s.resolution === selectedRes;
+
+                return matchSearch && matchTab && matchRes;
+            });
+
+            filteredSolved.forEach(s => {
                 const tr = document.createElement('tr');
-                tr.className = "hover:bg-slate-700/30";
+                tr.className = "hover:bg-slate-700/30 transition";
                 tr.innerHTML = `
                     <td class="p-3 font-bold text-purple-400">${s.tab}</td>
                     <td class="p-3 font-mono font-bold text-indigo-400">#${s.id}</td>
@@ -419,9 +464,34 @@
                     <td class="p-3"><span class="${s.decision === 'Valid' ? 'bg-emerald-900/80 text-emerald-300' : 'bg-rose-900/80 text-rose-300'} font-bold px-2 py-0.5 rounded text-[10px]">${s.decision}</span></td>
                     <td class="p-3 font-semibold text-indigo-300">${s.solvedBy}</td>
                     <td class="p-3 text-slate-400">${s.solvedAt}</td>
+                    <td class="p-3 text-center">
+                        <button onclick="reopenTicket('${s.id}')" title="إعادة فتح وتعديل القرار" class="bg-amber-600/80 hover:bg-amber-500 text-white text-[11px] px-2.5 py-1 rounded-lg font-bold flex items-center gap-1 mx-auto transition">
+                            <i class="fa-solid fa-rotate-left"></i>
+                            <span>إعادة فتح</span>
+                        </button>
+                    </td>
                 `;
                 tbody.appendChild(tr);
             });
+        }
+
+        // CSV EXPORT ENGINE WITH UTF-8 BOM FOR EXCEL
+        function exportToCSV() {
+            let csv = 'Tab,Match ID,Priority,Competition,Country,Season,Home,Away,ETA,ETA Date,Shift,Review Date,Review Shift,Responsible,Resolution,Comment,Status,Decision,Solved By,Solved At\n';
+            
+            allTickets.forEach(t => {
+                csv += `"${t.tab}","${t.id}","${t.priority}","${t.competition}","${t.country}","${t.season}","${t.home}","${t.away}","${t.eta}","${t.etaDate}","${t.shift}","${t.reviewDate}","${t.reviewShift}","${t.responsible}","${t.resolution}","${t.comment}","Open","","",""\n`;
+            });
+
+            solvedTickets.forEach(s => {
+                csv += `"${s.tab}","${s.id}","${s.priority}","${s.competition}","${s.country}","${s.season}","${s.home}","${s.away}","${s.eta}","${s.etaDate}","${s.shift}","${s.reviewDate}","${s.reviewShift}","${s.responsible}","${s.resolution}","${s.comment}","Solved","${s.decision}","${s.solvedBy}","${s.solvedAt}"\n`;
+            });
+
+            const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `Quality_Tickets_Export_${new Date().toISOString().slice(0,10)}.csv`;
+            link.click();
         }
 
         function switchView(v) {
@@ -474,7 +544,7 @@
             }
 
             users.push({ username: u, password: p, role: 'user' });
-            localStorage.setItem('app_users_v8', JSON.stringify(users));
+            localStorage.setItem('app_users_v9', JSON.stringify(users));
             document.getElementById('newUsername').value = '';
             document.getElementById('newPassword').value = '';
             renderUsersList();
@@ -482,7 +552,7 @@
 
         function deleteUser(username) {
             users = users.filter(x => x.username !== username);
-            localStorage.setItem('app_users_v8', JSON.stringify(users));
+            localStorage.setItem('app_users_v9', JSON.stringify(users));
             renderUsersList();
         }
     </script>
