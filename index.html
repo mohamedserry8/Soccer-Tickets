@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Info Team Quality - Tickets System</title>
+    <title>Info Team Quality - Multi-Tab Tickets System</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome -->
@@ -16,6 +16,11 @@
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen">
 
+    <!-- ⚠️ ضع رابط الـ Web App الذي نسخته من Apps Script بين التنصيص هنا ⚠️ -->
+    <script>
+        const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw6tU2RQSs_FHdXeUeCz7WO7TEdyeu5NsN8fC2EvI6OIRZ1JLG2ZZ-2KvgBNGSRYNFicg/exec";
+    </script>
+
     <!-- LOGIN OVERLAY -->
     <div id="loginOverlay" class="fixed inset-0 bg-slate-950 z-50 flex items-center justify-center p-4">
         <div class="bg-slate-800 border border-slate-700 p-8 rounded-2xl max-w-md w-full shadow-2xl">
@@ -24,7 +29,7 @@
                     <i class="fa-solid fa-user-shield text-2xl text-white"></i>
                 </div>
                 <h2 class="text-2xl font-bold">تسجيل الدخول للنظام</h2>
-                <p class="text-xs text-slate-400 mt-1">Info Team Quality Ticket System</p>
+                <p class="text-xs text-slate-400 mt-1">Info Team Quality Multi-Tab System (W35+)</p>
             </div>
             
             <form onsubmit="handleLogin(event)" class="space-y-4">
@@ -57,14 +62,14 @@
                     </div>
                     <div>
                         <h1 class="text-lg font-bold">Info Team Quality - Tickets System</h1>
-                        <p class="text-xs text-slate-400">W35 Tab Direct Processing Engine</p>
+                        <p class="text-xs text-slate-400">Multi-Tab Stream (W35, W36, W37...)</p>
                     </div>
                 </div>
 
                 <div class="flex items-center gap-3">
-                    <button onclick="resetData()" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 shadow-md transition">
-                        <i class="fa-solid fa-rotate"></i>
-                        <span>إعادة تحميل كافة التذاكر (110)</span>
+                    <button onclick="fetchSheetData()" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 shadow-md transition">
+                        <i class="fa-solid fa-rotate" id="syncSpinner"></i>
+                        <span>مزامنة كافة التابز (W35+)</span>
                     </button>
 
                     <!-- Admin Button -->
@@ -129,8 +134,13 @@
 
                 <div class="flex gap-3 flex-1 max-w-xl">
                     <!-- Search Input -->
-                    <input type="text" id="searchInput" oninput="renderTickets()" placeholder="بحث بـ Match ID، الفريق، أو الملاحظات..." class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-xs focus:outline-none focus:border-indigo-500">
+                    <input type="text" id="searchInput" oninput="renderTickets()" placeholder="بحث بـ Match ID، الفريق، الملاحظات، أو التاب..." class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-xs focus:outline-none focus:border-indigo-500">
                     
+                    <!-- Tab Filter -->
+                    <select id="tabFilter" onchange="renderTickets()" class="bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-xl px-3 py-2 focus:outline-none focus:border-indigo-500">
+                        <option value="ALL">جميع التبويبات (Tabs)</option>
+                    </select>
+
                     <!-- Resolution Filter -->
                     <select id="resolutionFilter" onchange="renderTickets()" class="bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-xl px-3 py-2 focus:outline-none focus:border-indigo-500">
                         <option value="ALL">جميع أنواع المشاكل (Col Z)</option>
@@ -145,8 +155,8 @@
                 </div>
                 <div id="noDataMessage" class="hidden text-center py-16 bg-slate-800/50 rounded-2xl border border-slate-700">
                     <i class="fa-solid fa-circle-check text-4xl text-emerald-500 mb-3"></i>
-                    <h3 class="text-base font-bold">تم حل جميع التذاكر المتاحة!</h3>
-                    <p class="text-xs text-slate-400 mt-1">لا توجد أي تذاكر معلقة بانتظار المراجعة.</p>
+                    <h3 class="text-base font-bold">لا توجد تذاكر معلقة حالياً!</h3>
+                    <p class="text-xs text-slate-400 mt-1">تأكد من إضافة رابط الـ Deploy واضغطي على "مزامنة كافة التابز".</p>
                 </div>
             </div>
 
@@ -155,6 +165,7 @@
                 <table class="w-full text-xs text-right">
                     <thead class="bg-slate-900/80 text-slate-400 font-bold border-b border-slate-700">
                         <tr>
+                            <th class="p-3">التاب</th>
                             <th class="p-3">Match ID (Col A)</th>
                             <th class="p-3">المباراة (Col J vs K)</th>
                             <th class="p-3">المسؤول (Col W)</th>
@@ -201,34 +212,8 @@
     </div>
 
     <script>
-        // RAW SHEET DATA PRE-LOADED (110 ROWS SUPPORT)
-        const embeddedTickets = [
-            { id: "1436002", priority: "Custom", competition: "Damallsvenskan", country: "Sweden", season: "2026", home: "AIK W", away: "Kristianstad", eta: "2026-08-31", etaDate: "3:00", shift: "B", reviewDate: "2026-08-29", reviewShift: "M", responsible: "Bahaa", resolution: "Missing Player", comment: "2" },
-            { id: "1454376", priority: "P1.5", competition: "China League One", country: "China PR", season: "2026", home: "Shijiazhuang Gongfu", away: "Wuxi Wugo", eta: "2026-08-31", etaDate: "3:00", shift: "B", reviewDate: "2026-08-30", reviewShift: "M", responsible: "Abdulrahman", resolution: "Wrong Number", comment: "1 | away:Zhixuan Zhou 28 not 27" },
-            { id: "1482440", priority: "Live", competition: "Championship", country: "England", season: "2026/2027", home: "Derby County", away: "Swansea City", eta: "2026-08-30", etaDate: "3:00", shift: "B", reviewDate: "2026-08-29", reviewShift: "M", responsible: "Eslam Tareq", resolution: "Missing Player", comment: "-" },
-            { id: "1482625", priority: "Custom", competition: "League One", country: "England", season: "2026/2027", home: "Blackpool", away: "Peterborough United", eta: "2026-08-30", etaDate: "3:00", shift: "L", reviewDate: "2026-08-29", reviewShift: "N", responsible: "Abdulrahman", resolution: "Extra Player", comment: "1 | away:27.Isac Fors" },
-            { id: "1454378", priority: "P1.5", competition: "China League One", country: "China PR", season: "2026", home: "Foshan Nanshi", away: "Shenzhen Juniors", eta: "2026-08-31", etaDate: "3:00", shift: "L", reviewDate: "2026-08-30", reviewShift: "N", responsible: "Mossad", resolution: "Missing Official", comment: "1" },
-            { id: "1469789", priority: "P3", competition: "Superettan", country: "Sweden", season: "2026", home: "Landskrona", away: "Östersunds FK", eta: "2026-08-30", etaDate: "3:00", shift: "N", reviewDate: "2026-08-29", reviewShift: "M", responsible: "Mossad", resolution: "Wrong Number", comment: "2 | Away: 10" },
-            { id: "1499856", priority: "P1.5", competition: "2. Division", country: "Denmark", season: "2026/2027", home: "VSK Aarhus", away: "FA 2000", eta: "2026-08-30", etaDate: "15:00", shift: "K", reviewDate: "2026-08-29", reviewShift: "O", responsible: "Eslam Hussien", resolution: "Sub Player Wrong", comment: "1 | Sub player and not" },
-            { id: "1468138", priority: "P3", competition: "Superettan", country: "Sweden", season: "2026", home: "Ljungskile SK", away: "Värnamo", eta: "2026-08-30", etaDate: "3:00", shift: "B", reviewDate: "2026-08-29", reviewShift: "M", responsible: "Moaaz", resolution: "Wrong Stadium", comment: "-" },
-            { id: "1504336", priority: "Live", competition: "Premier League", country: "England", season: "2026/2027", home: "Liverpool", away: "Nottingham Forest", eta: "2026-08-30", etaDate: "3:00", shift: "L", reviewDate: "2026-08-29", reviewShift: "N", responsible: "Mossad", resolution: "Wrong Number", comment: "5 | Away: 1088793 Cassiano Mpembele Kiala 12 not 5" },
-            { id: "1507343", priority: "P1.5", competition: "3. Division", country: "Denmark", season: "2026/2027", home: "Holbæk B&I", away: "Avarta", eta: "2026-08-30", etaDate: "3:00", shift: "C", reviewDate: "2026-08-29", reviewShift: "N", responsible: "Yousef Mansour", resolution: "Wrong Start Player", comment: "-" },
-            { id: "1493569", priority: "P1.5", competition: "Sub-20", country: "Brazil", season: "2026", home: "Flamengo U20", away: "Fluminense U20", eta: "2026-08-30", etaDate: "11:00", shift: "R", reviewDate: "2026-08-29", reviewShift: "O", responsible: "Bahaa", resolution: "Wrong Number", comment: "1" },
-            { id: "1493579", priority: "P1.5", competition: "Sub-20", country: "Brazil", season: "2026", home: "Vasco U20", away: "Botafogo U20", eta: "2026-08-30", etaDate: "3:00", shift: "L", reviewDate: "2026-08-29", reviewShift: "O", responsible: "Aya", resolution: "Extra Player", comment: "1" },
-            { id: "1524768", priority: "P3", competition: "U18 Premier League", country: "England", season: "2026/2027", home: "Burnley U18", away: "Sunderland FC U18", eta: "2026-08-30", etaDate: "15:00", shift: "U", reviewDate: "2026-08-29", reviewShift: "O", responsible: "Bahaa", resolution: "Missing Official", comment: "1" },
-            { id: "1500565", priority: "P3", competition: "OBOS Nasjonal G14", country: "Norway", season: "2026", home: "Fredrikstad U14", away: "Vålerenga U14", eta: "2026-08-30", etaDate: "15:00", shift: "Z", reviewDate: "2026-08-29", reviewShift: "O", responsible: "Bahaa", resolution: "Starting Player Error", comment: "1 | Starting player and..." },
-            { id: "1516141", priority: "P1.5", competition: "League Two", country: "England", season: "2026/2027", home: "Barnet", away: "Cheltenham Town", eta: "2026-08-30", etaDate: "15:00", shift: "Z", reviewDate: "2026-08-29", reviewShift: "O", responsible: "Eslam Hussien", resolution: "Missing Official", comment: "1" },
-            { id: "1437713", priority: "P3", competition: "Superettan", country: "Sweden", season: "2026", home: "Ljungskile SK", away: "Värnamo", eta: "2026-08-30", etaDate: "6:00", shift: "V", reviewDate: "2026-08-29", reviewShift: "N", responsible: "Aya", resolution: "Missing Player", comment: "-" },
-            { id: "1509442", priority: "P2 font", competition: "Division 1", country: "Sweden", season: "2026", home: "FC Stockholm", away: "Täby FK", eta: "2026-08-30", etaDate: "20:00", shift: "M", reviewDate: "2026-08-30", reviewShift: "O", responsible: "Moaaz", resolution: "Wrong Sub Player", comment: "away: 12" },
-            { id: "1514024", priority: "Live", competition: "League Two", country: "England", season: "2026/2027", home: "Port Vale", away: "Crewe Alexandra", eta: "2026-08-30", etaDate: "6:00", shift: "X", reviewDate: "2026-08-29", reviewShift: "N", responsible: "Yousef Mansour", resolution: "Wrong Number", comment: "2 | Home #8 Abdullah Al Naqbi" },
-            { id: "1480601", priority: "P3", competition: "U19 Allsvenskan", country: "Sweden", season: "2026", home: "Halmstad U19", away: "Häcken U19", eta: "2026-08-30", etaDate: "20:00", shift: "D", reviewDate: "2026-08-30", reviewShift: "O", responsible: "Mostafa", resolution: "Wrong Started Player", comment: "111" },
-            { id: "1482430", priority: "Custom", competition: "League One", country: "England", season: "2026/2027", home: "Northampton", away: "Derby", eta: "2026-08-30", etaDate: "3:00", shift: "N", reviewDate: "2026-08-29", reviewShift: "N", responsible: "Aya", resolution: "Missing Player", comment: "-" },
-            { id: "1482436", priority: "Live", competition: "Championship", country: "England", season: "2026/2027", home: "Middlesbrough", away: "West Bromwich", eta: "2026-08-30", etaDate: "3:00", shift: "L", reviewDate: "2026-08-29", reviewShift: "N", responsible: "Yousef Mansour", resolution: "Wrong Manager", comment: "-" },
-            { id: "1482444", priority: "Custom", competition: "Championship", country: "England", season: "2026/2027", home: "Wolverhampton", away: "Stoke City", eta: "2026-08-30", etaDate: "3:00", shift: "L", reviewDate: "2026-08-29", reviewShift: "N", responsible: "Abdulrahman", resolution: "Wrong Number", comment: "1" }
-        ];
-
         // APP STATE
-        let users = JSON.parse(localStorage.getItem('app_users_final')) || [
+        let users = JSON.parse(localStorage.getItem('app_users_v8')) || [
             { username: 'admin', password: '123456', role: 'admin' },
             { username: 'Bahaa', password: '123', role: 'user' },
             { username: 'Eslam Tareq', password: '123', role: 'user' },
@@ -237,8 +222,8 @@
         ];
 
         let activeUser = JSON.parse(sessionStorage.getItem('active_user')) || null;
-        let openTickets = JSON.parse(localStorage.getItem('open_tickets_final')) || [...embeddedTickets];
-        let solvedTickets = JSON.parse(localStorage.getItem('solved_tickets_final')) || [];
+        let allTickets = [];
+        let solvedTickets = JSON.parse(localStorage.getItem('solved_tickets_v8')) || [];
 
         document.addEventListener('DOMContentLoaded', () => {
             if (activeUser) {
@@ -276,39 +261,59 @@
                 document.getElementById('adminBtn').classList.remove('hidden');
             }
 
-            populateResolutionFilter();
-            renderTickets();
+            fetchSheetData();
         }
 
-        function resetData() {
-            openTickets = [...embeddedTickets];
-            solvedTickets = [];
-            localStorage.setItem('open_tickets_final', JSON.stringify(openTickets));
-            localStorage.setItem('solved_tickets_final', JSON.stringify(solvedTickets));
-            populateResolutionFilter();
-            renderTickets();
+        function fetchSheetData() {
+            if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL.includes("ضع_رابط")) {
+                alert("يرجى وضع رابط الـ Web App الخاص بك في السطر المخصص له أعلى الكود أولاً!");
+                return;
+            }
+
+            const spinner = document.getElementById('syncSpinner');
+            spinner.classList.add('fa-spin');
+
+            fetch(APPS_SCRIPT_URL)
+                .then(res => res.json())
+                .then(data => {
+                    spinner.classList.remove('fa-spin');
+                    allTickets = data.filter(t => !solvedTickets.some(s => s.id === t.id));
+                    populateFilters();
+                    renderTickets();
+                })
+                .catch(err => {
+                    spinner.classList.remove('fa-spin');
+                    console.error("Multi-Tab Fetch Error:", err);
+                    alert("تعذر جلب التابز، التأكد من ضبط صلاحية الرابط على Anyone في خيارات الـ Deploy.");
+                });
         }
 
-        function populateResolutionFilter() {
-            const select = document.getElementById('resolutionFilter');
-            const resSet = new Set(openTickets.map(t => t.resolution));
-            select.innerHTML = '<option value="ALL">جميع أنواع المشاكل (Col Z)</option>';
-            
-            resSet.forEach(res => {
-                const opt = document.createElement('option');
-                opt.value = res;
-                opt.textContent = res;
-                select.appendChild(opt);
+        function populateFilters() {
+            const tabSelect = document.getElementById('tabFilter');
+            const resSelect = document.getElementById('resolutionFilter');
+
+            const tabs = [...new Set(allTickets.map(t => t.tab))].sort();
+            const resList = [...new Set(allTickets.map(t => t.resolution))].sort();
+
+            tabSelect.innerHTML = '<option value="ALL">جميع التبويبات (Tabs)</option>';
+            tabs.forEach(t => {
+                tabSelect.innerHTML += `<option value="${t}">${t}</option>`;
+            });
+
+            resSelect.innerHTML = '<option value="ALL">جميع أنواع المشاكل (Col Z)</option>';
+            resList.forEach(r => {
+                resSelect.innerHTML += `<option value="${r}">${r}</option>`;
             });
         }
 
         function renderTickets() {
             const grid = document.getElementById('ticketsGrid');
             const search = document.getElementById('searchInput').value.toLowerCase();
-            const resFilter = document.getElementById('resolutionFilter').value;
+            const selectedTab = document.getElementById('tabFilter').value;
+            const selectedRes = document.getElementById('resolutionFilter').value;
             grid.innerHTML = '';
 
-            const filtered = openTickets.filter(t => {
+            const filtered = allTickets.filter(t => {
                 const matchSearch = t.id.toLowerCase().includes(search) || 
                                     t.home.toLowerCase().includes(search) || 
                                     t.away.toLowerCase().includes(search) ||
@@ -316,11 +321,13 @@
                                     t.responsible.toLowerCase().includes(search) ||
                                     t.competition.toLowerCase().includes(search);
                 
-                const matchRes = resFilter === 'ALL' || t.resolution === resFilter;
-                return matchSearch && matchRes;
+                const matchTab = selectedTab === 'ALL' || t.tab === selectedTab;
+                const matchRes = selectedRes === 'ALL' || t.resolution === selectedRes;
+
+                return matchSearch && matchTab && matchRes;
             });
 
-            document.getElementById('statOpenCount').textContent = openTickets.length;
+            document.getElementById('statOpenCount').textContent = allTickets.length;
             document.getElementById('statSolvedCount').textContent = solvedTickets.length;
             document.getElementById('statValidCount').textContent = solvedTickets.filter(s => s.decision === 'Valid').length;
             document.getElementById('statInvalidCount').textContent = solvedTickets.filter(s => s.decision === 'Invalid').length;
@@ -336,7 +343,10 @@
                     card.innerHTML = `
                         <div>
                             <div class="flex justify-between items-center mb-3">
-                                <span class="bg-indigo-900/80 text-indigo-300 font-mono font-bold text-xs px-2.5 py-1 rounded-lg">ID: #${t.id}</span>
+                                <div class="flex items-center gap-2">
+                                    <span class="bg-purple-900/80 text-purple-300 font-bold text-[11px] px-2 py-0.5 rounded-md border border-purple-700/50">${t.tab}</span>
+                                    <span class="bg-indigo-900/80 text-indigo-300 font-mono font-bold text-xs px-2.5 py-1 rounded-lg">ID: #${t.id}</span>
+                                </div>
                                 <span class="bg-rose-900/50 text-rose-300 font-bold text-[11px] px-2.5 py-1 rounded-lg border border-rose-700/50">${t.resolution}</span>
                             </div>
 
@@ -379,18 +389,16 @@
         }
 
         function directSolve(matchId, decision) {
-            const idx = openTickets.findIndex(x => x.id === matchId);
+            const idx = allTickets.findIndex(x => x.id === matchId);
             if (idx !== -1) {
-                const t = openTickets.splice(idx, 1)[0];
+                const t = allTickets.splice(idx, 1)[0];
                 t.decision = decision;
                 t.solvedBy = activeUser.username;
                 t.solvedAt = new Date().toLocaleString('ar-EG');
 
                 solvedTickets.unshift(t);
-                localStorage.setItem('open_tickets_final', JSON.stringify(openTickets));
-                localStorage.setItem('solved_tickets_final', JSON.stringify(solvedTickets));
+                localStorage.setItem('solved_tickets_v8', JSON.stringify(solvedTickets));
 
-                populateResolutionFilter();
                 renderTickets();
             }
         }
@@ -403,6 +411,7 @@
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-slate-700/30";
                 tr.innerHTML = `
+                    <td class="p-3 font-bold text-purple-400">${s.tab}</td>
                     <td class="p-3 font-mono font-bold text-indigo-400">#${s.id}</td>
                     <td class="p-3 font-bold">${s.home} vs ${s.away}</td>
                     <td class="p-3 text-emerald-400 font-bold">${s.responsible}</td>
@@ -465,7 +474,7 @@
             }
 
             users.push({ username: u, password: p, role: 'user' });
-            localStorage.setItem('app_users_final', JSON.stringify(users));
+            localStorage.setItem('app_users_v8', JSON.stringify(users));
             document.getElementById('newUsername').value = '';
             document.getElementById('newPassword').value = '';
             renderUsersList();
@@ -473,7 +482,7 @@
 
         function deleteUser(username) {
             users = users.filter(x => x.username !== username);
-            localStorage.setItem('app_users_final', JSON.stringify(users));
+            localStorage.setItem('app_users_v8', JSON.stringify(users));
             renderUsersList();
         }
     </script>
