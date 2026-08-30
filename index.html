@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Info Team Quality - Dynamic Live Tickets System</title>
+    <title>Info Team Quality - Tickets System</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome -->
@@ -16,10 +16,6 @@
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen">
 
-    <script>
-        const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw6tU2RQSs_FHdXeUeCz7WO7TEdyeu5NsN8fC2Evi6OIRZ1JLG2ZZ-2KvgBNGSRYNFicg/exec";
-    </script>
-
     <!-- LOGIN OVERLAY -->
     <div id="loginOverlay" class="fixed inset-0 bg-slate-950 z-50 flex items-center justify-center p-4">
         <div class="bg-slate-800 border border-slate-700 p-8 rounded-2xl max-w-md w-full shadow-2xl">
@@ -28,7 +24,7 @@
                     <i class="fa-solid fa-user-shield text-2xl text-white"></i>
                 </div>
                 <h2 class="text-2xl font-bold">تسجيل الدخول للنظام</h2>
-                <p class="text-xs text-slate-400 mt-1">Info Team Quality Dynamic Ticket Engine</p>
+                <p class="text-xs text-slate-400 mt-1">Info Team Quality Direct Stream</p>
             </div>
             
             <form onsubmit="handleLogin(event)" class="space-y-4">
@@ -61,14 +57,14 @@
                     </div>
                     <div>
                         <h1 class="text-lg font-bold">Info Team Quality - Tickets System</h1>
-                        <p class="text-xs text-slate-400">Live Dynamic JSONP Stream (W35, W36, W37...)</p>
+                        <p class="text-xs text-slate-400">Direct Google Visualization Engine</p>
                     </div>
                 </div>
 
                 <div class="flex items-center gap-3">
-                    <button onclick="fetchSheetDataDynamic()" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 shadow-md transition">
+                    <button onclick="fetchSheetDirect()" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 shadow-md transition">
                         <i class="fa-solid fa-rotate" id="syncSpinner"></i>
-                        <span>مزامنة دقيقة حية من الشيت</span>
+                        <span>مزامنة جلب التذاكر من الشيت</span>
                     </button>
 
                     <!-- Admin Button -->
@@ -132,20 +128,12 @@
                 </div>
 
                 <div class="flex gap-3 flex-1 max-w-2xl">
-                    <!-- Search Input -->
-                    <input type="text" id="searchInput" oninput="renderTickets()" placeholder="بحث بـ Match ID، الفريق، الملاحظات، أو التاب..." class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-xs focus:outline-none focus:border-indigo-500">
+                    <input type="text" id="searchInput" oninput="renderTickets()" placeholder="بحث بـ Match ID، الفريق، الملاحظات..." class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-xs focus:outline-none focus:border-indigo-500">
                     
-                    <!-- Tab Filter -->
-                    <select id="tabFilter" onchange="renderTickets()" class="bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-xl px-3 py-2 focus:outline-none focus:border-indigo-500">
-                        <option value="ALL">جميع التبويبات (Tabs)</option>
-                    </select>
-
-                    <!-- Resolution Filter -->
                     <select id="resolutionFilter" onchange="renderTickets()" class="bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-xl px-3 py-2 focus:outline-none focus:border-indigo-500">
                         <option value="ALL">جميع أنواع المشاكل (Col Z)</option>
                     </select>
 
-                    <!-- Export CSV Button -->
                     <button onclick="exportToCSV()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition whitespace-nowrap">
                         <i class="fa-solid fa-file-csv text-emerald-400 text-sm"></i>
                         <span>تصدير CSV</span>
@@ -161,7 +149,7 @@
                 <div id="noDataMessage" class="hidden text-center py-16 bg-slate-800/50 rounded-2xl border border-slate-700">
                     <i class="fa-solid fa-circle-check text-4xl text-emerald-500 mb-3"></i>
                     <h3 class="text-base font-bold">تم حل جميع التذاكر المتاحة!</h3>
-                    <p class="text-xs text-slate-400 mt-1">انقر على "مزامنة دقيقة حية من الشيت" للتحقق من أحدث الإضافات.</p>
+                    <p class="text-xs text-slate-400 mt-1">لا توجد أي تذاكر معلقة حالياً.</p>
                 </div>
             </div>
 
@@ -218,8 +206,9 @@
     </div>
 
     <script>
-        // APP STATE & STORAGE
-        let users = JSON.parse(localStorage.getItem('app_users_v14')) || [
+        const SHEET_ID = "171DXs48k4FOnpHGB155mLpvgRnXUxfsXoQT4AYGV8rA";
+
+        let users = JSON.parse(localStorage.getItem('app_users_v15')) || [
             { username: 'admin', password: '123456', role: 'admin' },
             { username: 'Bahaa', password: '123', role: 'user' },
             { username: 'Eslam Tareq', password: '123', role: 'user' },
@@ -228,8 +217,8 @@
         ];
 
         let activeUser = JSON.parse(sessionStorage.getItem('active_user')) || null;
-        let allTickets = JSON.parse(localStorage.getItem('dyn_cached_tickets')) || [];
-        let solvedTickets = JSON.parse(localStorage.getItem('solved_tickets_v14')) || [];
+        let allTickets = JSON.parse(localStorage.getItem('gviz_cached_tickets')) || [];
+        let solvedTickets = JSON.parse(localStorage.getItem('solved_tickets_v15')) || [];
 
         document.addEventListener('DOMContentLoaded', () => {
             if (activeUser) {
@@ -272,71 +261,102 @@
                 renderTickets();
             }
             
-            fetchSheetDataDynamic();
+            fetchSheetDirect();
         }
 
-        // JSONP DIRECT BYPASS ENGINE
-        function fetchSheetDataDynamic() {
+        // DIRECT GOOGLE VISUALIZATION API WITH CALLBACK
+        function fetchSheetDirect() {
             const spinner = document.getElementById('syncSpinner');
-            spinner.classList.add('fa-spin');
+            if (spinner) spinner.classList.add('fa-spin');
 
-            const oldScript = document.getElementById('jsonp_script');
+            const oldScript = document.getElementById('gviz_script');
             if (oldScript) oldScript.remove();
 
-            const script = document.createElement('script');
-            script.id = 'jsonp_script';
-            script.src = APPS_SCRIPT_URL + '?callback=handleDynamicResponse&t=' + new Date().getTime();
+            const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=responseHandler:handleGvizResponse&sheet=W35&t=${new Date().getTime()}`;
             
+            const script = document.createElement('script');
+            script.id = 'gviz_script';
+            script.src = url;
             script.onerror = function() {
-                spinner.classList.remove('fa-spin');
-                console.error("JSONP script load error.");
+                if (spinner) spinner.classList.remove('fa-spin');
+                alert('حدث خطأ في الاتصال بالشيت!');
             };
 
             document.body.appendChild(script);
         }
 
-        // JSONP CALLBACK FUNCTION
-        window.handleDynamicResponse = function(data) {
+        // GOOGLE GVIZ PARSER
+        window.handleGvizResponse = function(response) {
             const spinner = document.getElementById('syncSpinner');
             if (spinner) spinner.classList.remove('fa-spin');
 
-            if (Array.isArray(data)) {
-                allTickets = data.filter(t => !solvedTickets.some(s => s.id === t.id));
-                localStorage.setItem('dyn_cached_tickets', JSON.stringify(allTickets));
+            if (!response || !response.table || !response.table.rows) {
+                return;
+            }
+
+            const rows = response.table.rows;
+            let fetched = [];
+
+            for (let i = 0; i < rows.length; i++) {
+                const c = rows[i].c;
+                if (!c) continue;
+
+                const getVal = (idx) => (c[idx] && c[idx].v !== null && c[idx].v !== undefined) ? (c[idx].f || c[idx].v).toString().trim() : "";
+
+                const matchId = getVal(0);   // Col A
+                const res = getVal(25);      // Col Z
+
+                // FILTER RULE: Col Z NOT blank & NOT "He's Right"
+                if (matchId && matchId.toLowerCase() !== "id" && res !== "" && res.toLowerCase() !== "he's right") {
+                    if (!solvedTickets.some(s => s.id === matchId)) {
+                        fetched.push({
+                            tab: "W35",
+                            id: matchId,
+                            priority: getVal(4) || "-",      // Col E
+                            competition: getVal(6) || "-",   // Col G
+                            country: getVal(7) || "-",       // Col H
+                            season: getVal(8) || "-",        // Col I
+                            home: getVal(9) || "-",          // Col J
+                            away: getVal(10) || "-",         // Col K
+                            eta: getVal(14) || "-",          // Col O
+                            etaDate: getVal(15) || "-",      // Col P
+                            shift: getVal(16) || "-",        // Col Q
+                            reviewDate: getVal(20) || "-",   // Col U
+                            reviewShift: getVal(21) || "-",  // Col V
+                            responsible: getVal(22) || "-",  // Col W
+                            resolution: res,                  // Col Z
+                            comment: [getVal(26), getVal(27)].filter(Boolean).join(" | ") || "-" // Col AA, AB
+                        });
+                    }
+                }
+            }
+
+            if (fetched.length > 0) {
+                allTickets = fetched;
+                localStorage.setItem('gviz_cached_tickets', JSON.stringify(allTickets));
                 populateFilters();
                 renderTickets();
             }
         };
 
         function populateFilters() {
-            const tabSelect = document.getElementById('tabFilter');
             const resSelect = document.getElementById('resolutionFilter');
-
-            const currentTab = tabSelect.value;
             const currentRes = resSelect.value;
 
             const combinedTickets = [...allTickets, ...solvedTickets];
-            const tabs = [...new Set(combinedTickets.map(t => t.tab))].sort();
             const resList = [...new Set(combinedTickets.map(t => t.resolution))].sort();
-
-            tabSelect.innerHTML = '<option value="ALL">جميع التبويبات (Tabs)</option>';
-            tabs.forEach(t => {
-                tabSelect.innerHTML += `<option value="${t}">${t}</option>`;
-            });
 
             resSelect.innerHTML = '<option value="ALL">جميع أنواع المشاكل (Col Z)</option>';
             resList.forEach(r => {
                 resSelect.innerHTML += `<option value="${r}">${r}</option>`;
             });
 
-            tabSelect.value = currentTab;
             resSelect.value = currentRes;
         }
 
         function renderTickets() {
             const grid = document.getElementById('ticketsGrid');
             const search = document.getElementById('searchInput').value.toLowerCase();
-            const selectedTab = document.getElementById('tabFilter').value;
             const selectedRes = document.getElementById('resolutionFilter').value;
             grid.innerHTML = '';
 
@@ -348,10 +368,9 @@
                                     t.responsible.toLowerCase().includes(search) ||
                                     t.competition.toLowerCase().includes(search);
                 
-                const matchTab = selectedTab === 'ALL' || t.tab === selectedTab;
                 const matchRes = selectedRes === 'ALL' || t.resolution === selectedRes;
 
-                return matchSearch && matchTab && matchRes;
+                return matchSearch && matchRes;
             });
 
             document.getElementById('statOpenCount').textContent = allTickets.length;
@@ -423,8 +442,8 @@
                 t.solvedAt = new Date().toLocaleString('ar-EG');
 
                 solvedTickets.unshift(t);
-                localStorage.setItem('dyn_cached_tickets', JSON.stringify(allTickets));
-                localStorage.setItem('solved_tickets_v14', JSON.stringify(solvedTickets));
+                localStorage.setItem('gviz_cached_tickets', JSON.stringify(allTickets));
+                localStorage.setItem('solved_tickets_v15', JSON.stringify(solvedTickets));
 
                 renderTickets();
             }
@@ -439,8 +458,8 @@
                 delete t.solvedAt;
 
                 allTickets.unshift(t);
-                localStorage.setItem('dyn_cached_tickets', JSON.stringify(allTickets));
-                localStorage.setItem('solved_tickets_v14', JSON.stringify(solvedTickets));
+                localStorage.setItem('gviz_cached_tickets', JSON.stringify(allTickets));
+                localStorage.setItem('solved_tickets_v15', JSON.stringify(solvedTickets));
 
                 renderTickets();
             }
@@ -449,7 +468,6 @@
         function renderSolvedTable() {
             const tbody = document.getElementById('solvedTableBody');
             const search = document.getElementById('searchInput').value.toLowerCase();
-            const selectedTab = document.getElementById('tabFilter').value;
             const selectedRes = document.getElementById('resolutionFilter').value;
             tbody.innerHTML = '';
 
@@ -460,10 +478,9 @@
                                     s.responsible.toLowerCase().includes(search) ||
                                     s.competition.toLowerCase().includes(search);
                 
-                const matchTab = selectedTab === 'ALL' || s.tab === selectedTab;
                 const matchRes = selectedRes === 'ALL' || s.resolution === selectedRes;
 
-                return matchSearch && matchTab && matchRes;
+                return matchSearch && matchRes;
             });
 
             filteredSolved.forEach(s => {
@@ -557,7 +574,7 @@
             }
 
             users.push({ username: u, password: p, role: 'user' });
-            localStorage.setItem('app_users_v14', JSON.stringify(users));
+            localStorage.setItem('app_users_v15', JSON.stringify(users));
             document.getElementById('newUsername').value = '';
             document.getElementById('newPassword').value = '';
             renderUsersList();
@@ -565,7 +582,7 @@
 
         function deleteUser(username) {
             users = users.filter(x => x.username !== username);
-            localStorage.setItem('app_users_v14', JSON.stringify(users));
+            localStorage.setItem('app_users_v15', JSON.stringify(users));
             renderUsersList();
         }
     </script>
