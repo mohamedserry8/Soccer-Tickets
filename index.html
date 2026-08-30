@@ -57,7 +57,7 @@
                     </div>
                     <div>
                         <h1 class="text-lg font-bold">Info Team Quality - Tickets System</h1>
-                        <p class="text-xs text-slate-400">Live Sync Engine (Tab W35)</p>
+                        <p class="text-xs text-slate-400">Live Sync Engine (Priority Col F & Multi-Filters)</p>
                     </div>
                 </div>
 
@@ -106,35 +106,49 @@
                 <div class="bg-slate-800 border border-slate-700 p-4 rounded-2xl flex justify-between items-center shadow-md">
                     <div>
                         <p class="text-xs text-slate-400 font-bold">إجمالي قرارات Valid</p>
-                        <h3 id="statValidCount" class="text-3xl font-black text-indigo-400 mt-1">0</h3>
+                        <h3 id="statValidCount" class="text-3xl font-black text-rose-400 mt-1">0</h3>
                     </div>
-                    <i class="fa-solid fa-thumbs-up text-3xl text-indigo-400/20"></i>
+                    <i class="fa-solid fa-thumbs-up text-3xl text-rose-400/20"></i>
                 </div>
 
                 <div class="bg-slate-800 border border-slate-700 p-4 rounded-2xl flex justify-between items-center shadow-md">
                     <div>
                         <p class="text-xs text-slate-400 font-bold">إجمالي قرارات Invalid</p>
-                        <h3 id="statInvalidCount" class="text-3xl font-black text-rose-400 mt-1">0</h3>
+                        <h3 id="statInvalidCount" class="text-3xl font-black text-emerald-400 mt-1">0</h3>
                     </div>
-                    <i class="fa-solid fa-thumbs-down text-3xl text-rose-400/20"></i>
+                    <i class="fa-solid fa-thumbs-down text-3xl text-emerald-400/20"></i>
                 </div>
             </div>
 
-            <!-- CONTROLS & FILTERS -->
-            <div class="flex flex-wrap justify-between items-center gap-4 mb-6">
+            <!-- CONTROLS & FILTERS BAR -->
+            <div class="flex flex-wrap justify-between items-center gap-3 mb-6">
                 <div class="flex gap-2 bg-slate-800 p-1.5 rounded-xl border border-slate-700">
                     <button onclick="switchView('open')" id="btnViewOpen" class="px-5 py-2 rounded-lg text-xs font-bold bg-indigo-600 text-white">التذاكر المفتوحة للعمل</button>
                     <button onclick="switchView('solved')" id="btnViewSolved" class="px-5 py-2 rounded-lg text-xs font-bold text-slate-400 hover:text-white">الأرشيف المحلول (Solved)</button>
                 </div>
 
-                <div class="flex gap-3 flex-1 max-w-2xl">
-                    <input type="text" id="searchInput" oninput="renderTickets()" placeholder="بحث بـ Match ID، الفريق، الملاحظات..." class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-xs focus:outline-none focus:border-indigo-500">
+                <!-- ALL FILTERS CONTAINER -->
+                <div class="flex flex-wrap gap-2 flex-1 justify-end">
+                    <!-- Search Input -->
+                    <input type="text" id="searchInput" oninput="renderTickets()" placeholder="بحث بـ Match ID، الفريق، الملاحظات..." class="min-w-[180px] bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-indigo-500">
                     
-                    <select id="resolutionFilter" onchange="renderTickets()" class="bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-xl px-3 py-2 focus:outline-none focus:border-indigo-500">
+                    <!-- Priority Filter (Col F) -->
+                    <select id="priorityFilter" onchange="renderTickets()" class="bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-xl px-2.5 py-2 focus:outline-none focus:border-indigo-500">
+                        <option value="ALL">جميع الأولويات (Col F)</option>
+                    </select>
+
+                    <!-- Responsible Filter (Col W) -->
+                    <select id="responsibleFilter" onchange="renderTickets()" class="bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-xl px-2.5 py-2 focus:outline-none focus:border-indigo-500">
+                        <option value="ALL">جميع المسؤولين (Col W)</option>
+                    </select>
+
+                    <!-- Resolution Filter (Col Z) -->
+                    <select id="resolutionFilter" onchange="renderTickets()" class="bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-xl px-2.5 py-2 focus:outline-none focus:border-indigo-500">
                         <option value="ALL">جميع أنواع المشاكل (Col Z)</option>
                     </select>
 
-                    <button onclick="exportToCSV()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition whitespace-nowrap">
+                    <!-- Export CSV Button -->
+                    <button onclick="exportToCSV()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition whitespace-nowrap">
                         <i class="fa-solid fa-file-csv text-emerald-400 text-sm"></i>
                         <span>تصدير CSV</span>
                     </button>
@@ -149,13 +163,13 @@
                 <div id="noDataMessage" class="hidden text-center py-16 bg-slate-800/50 rounded-2xl border border-slate-700">
                     <i class="fa-solid fa-circle-check text-4xl text-emerald-500 mb-3"></i>
                     <h3 class="text-base font-bold">تم حل جميع التذاكر المتاحة!</h3>
-                    <p class="text-xs text-slate-400 mt-1">لا توجد أي تذاكر معلقة حالياً.</p>
+                    <p class="text-xs text-slate-400 mt-1">لا توجد أي تذاكر معلقة بانتظار المراجعة.</p>
                 </div>
             </div>
 
             <!-- SOLVED TICKETS VIEW -->
-            <div id="viewSolved" class="hidden bg-slate-800 border border-slate-700 rounded-2xl overflow-hidden shadow-xl">
-                <table class="w-full text-xs text-right">
+            <div id="viewSolved" class="hidden bg-slate-800 border border-slate-700 rounded-2xl overflow-x-auto shadow-xl">
+                <table class="w-full text-xs text-right whitespace-nowrap">
                     <thead class="bg-slate-900/80 text-slate-400 font-bold border-b border-slate-700">
                         <tr>
                             <th class="p-3">التاب</th>
@@ -164,6 +178,7 @@
                             <th class="p-3">المسؤول (Col W)</th>
                             <th class="p-3">المشكلة (Col Z)</th>
                             <th class="p-3">القرار النهائي</th>
+                            <th class="p-3">ملاحظة الحل</th>
                             <th class="p-3">الموظف</th>
                             <th class="p-3">وقت الحل</th>
                             <th class="p-3 text-center">الإجراءات</th>
@@ -208,7 +223,7 @@
     <script>
         const SHEET_ID = "171DXs48k4FOnpHGB155mLpvgRnXUxfsXoQT4AYGV8rA";
 
-        let users = JSON.parse(localStorage.getItem('quality_users_db_v2')) || [
+        let users = JSON.parse(localStorage.getItem('quality_users_db_v3')) || [
             { username: 'admin', password: '123456', role: 'admin' },
             { username: 'Bahaa', password: '123', role: 'user' },
             { username: 'Eslam Tareq', password: '123', role: 'user' },
@@ -217,8 +232,8 @@
         ];
 
         let activeUser = JSON.parse(sessionStorage.getItem('active_user')) || null;
-        let solvedTickets = JSON.parse(localStorage.getItem('quality_tickets_solved_v2')) || [];
-        let allTickets = JSON.parse(localStorage.getItem('quality_tickets_open_v2')) || [];
+        let solvedTickets = JSON.parse(localStorage.getItem('quality_tickets_solved_v3')) || [];
+        let allTickets = JSON.parse(localStorage.getItem('quality_tickets_open_v3')) || [];
 
         document.addEventListener('DOMContentLoaded', () => {
             if (activeUser) {
@@ -279,7 +294,7 @@
             script.onerror = function() {
                 if (spinner) spinner.classList.remove('fa-spin');
                 if (manual) {
-                    alert("تنبيه: تعذر الاتصال بالشيت تلقائياً. يرجى التأكد من تغيير مشاركة الشيت إلى 'Anyone with the link can view'.");
+                    alert("تنبيه: تعذر جلب البيانات الحية أونلاين. يرجى التأكد من تغيير مشاركة الشيت لـ Anyone with the link.");
                 }
             };
 
@@ -312,7 +327,7 @@
                         fetched.push({
                             tab: "W35",
                             id: matchId,
-                            priority: getVal(4) || "-",      // Col E
+                            priority: getVal(5) || "-",      // Col F
                             competition: getVal(6) || "-",   // Col G
                             country: getVal(7) || "-",       // Col H
                             season: getVal(8) || "-",        // Col I
@@ -333,30 +348,51 @@
 
             if (fetched.length > 0) {
                 allTickets = fetched;
-                localStorage.setItem('quality_tickets_open_v2', JSON.stringify(allTickets));
+                localStorage.setItem('quality_tickets_open_v3', JSON.stringify(allTickets));
                 populateFilters();
                 renderTickets();
             }
         };
 
         function populateFilters() {
+            const combinedTickets = [...allTickets, ...solvedTickets];
+
+            // Priority Filter (Col F)
+            const prioSelect = document.getElementById('priorityFilter');
+            const currentPrio = prioSelect.value;
+            const prioList = [...new Set(combinedTickets.map(t => t.priority).filter(x => x && x !== '-'))].sort();
+            prioSelect.innerHTML = '<option value="ALL">جميع الأولويات (Col F)</option>';
+            prioList.forEach(p => {
+                prioSelect.innerHTML += `<option value="${p}">${p}</option>`;
+            });
+            prioSelect.value = currentPrio;
+
+            // Responsible Filter (Col W)
+            const respSelect = document.getElementById('responsibleFilter');
+            const currentResp = respSelect.value;
+            const respList = [...new Set(combinedTickets.map(t => t.responsible).filter(x => x && x !== '-'))].sort();
+            respSelect.innerHTML = '<option value="ALL">جميع المسؤولين (Col W)</option>';
+            respList.forEach(r => {
+                respSelect.innerHTML += `<option value="${r}">${r}</option>`;
+            });
+            respSelect.value = currentResp;
+
+            // Resolution Filter (Col Z)
             const resSelect = document.getElementById('resolutionFilter');
             const currentRes = resSelect.value;
-
-            const combinedTickets = [...allTickets, ...solvedTickets];
-            const resList = [...new Set(combinedTickets.map(t => t.resolution))].sort();
-
+            const resList = [...new Set(combinedTickets.map(t => t.resolution).filter(x => x && x !== '-'))].sort();
             resSelect.innerHTML = '<option value="ALL">جميع أنواع المشاكل (Col Z)</option>';
             resList.forEach(r => {
                 resSelect.innerHTML += `<option value="${r}">${r}</option>`;
             });
-
             resSelect.value = currentRes;
         }
 
         function renderTickets() {
             const grid = document.getElementById('ticketsGrid');
             const search = document.getElementById('searchInput').value.toLowerCase();
+            const selectedPrio = document.getElementById('priorityFilter').value;
+            const selectedResp = document.getElementById('responsibleFilter').value;
             const selectedRes = document.getElementById('resolutionFilter').value;
             grid.innerHTML = '';
 
@@ -368,9 +404,11 @@
                                     t.responsible.toLowerCase().includes(search) ||
                                     t.competition.toLowerCase().includes(search);
                 
+                const matchPrio = selectedPrio === 'ALL' || t.priority === selectedPrio;
+                const matchResp = selectedResp === 'ALL' || t.responsible === selectedResp;
                 const matchRes = selectedRes === 'ALL' || t.resolution === selectedRes;
 
-                return matchSearch && matchRes;
+                return matchSearch && matchPrio && matchResp && matchRes;
             });
 
             document.getElementById('statOpenCount').textContent = allTickets.length;
@@ -406,7 +444,7 @@
                             </div>
 
                             <div class="bg-slate-900/70 p-3 rounded-xl text-[11px] space-y-1.5 border border-slate-700/40 my-3">
-                                <div class="flex justify-between"><span class="text-slate-400">Priority (Col E):</span><span class="font-bold text-indigo-300">${t.priority}</span></div>
+                                <div class="flex justify-between"><span class="text-slate-400">Priority (Col F):</span><span class="font-bold text-indigo-300">${t.priority}</span></div>
                                 <div class="flex justify-between"><span class="text-slate-400">Shift (Col Q):</span><span class="font-semibold text-slate-200">${t.shift}</span></div>
                                 <div class="flex justify-between"><span class="text-slate-400">ETA / Date (Col O, P):</span><span class="font-semibold text-slate-200">${t.eta} | ${t.etaDate}</span></div>
                                 <div class="flex justify-between"><span class="text-slate-400">Responsible (Col W):</span><span class="font-bold text-emerald-400">${t.responsible}</span></div>
@@ -415,15 +453,21 @@
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-2 gap-2 mt-3 pt-2 border-t border-slate-700/60">
-                            <button onclick="directSolve('${t.id}', 'Valid')" class="bg-emerald-600/90 hover:bg-emerald-500 text-white font-bold py-2.5 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-md transition">
-                                <i class="fa-solid fa-thumbs-up"></i>
-                                <span>Valid</span>
-                            </button>
-                            <button onclick="directSolve('${t.id}', 'Invalid')" class="bg-rose-600/90 hover:bg-rose-500 text-white font-bold py-2.5 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-md transition">
-                                <i class="fa-solid fa-thumbs-down"></i>
-                                <span>Invalid</span>
-                            </button>
+                        <div class="mt-3 pt-3 border-t border-slate-700/60">
+                            <!-- Optional free-text comment input -->
+                            <input type="text" id="solve_note_${t.id}" placeholder="ملاحظة إضافية عند الحل (اختياري)..." class="w-full bg-slate-900/80 border border-slate-700/50 p-2.5 rounded-lg text-xs mb-3 focus:outline-none focus:border-indigo-500 text-slate-200 placeholder-slate-500">
+                            
+                            <!-- Action Buttons -->
+                            <div class="grid grid-cols-2 gap-2">
+                                <button onclick="directSolve('${t.id}', 'Invalid')" class="bg-emerald-600/90 hover:bg-emerald-500 text-white font-bold py-2.5 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-md transition">
+                                    <span>Invalid</span>
+                                    <i class="fa-solid fa-thumbs-down"></i>
+                                </button>
+                                <button onclick="directSolve('${t.id}', 'Valid')" class="bg-rose-600/90 hover:bg-rose-500 text-white font-bold py-2.5 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-md transition">
+                                    <span>Valid</span>
+                                    <i class="fa-solid fa-thumbs-up"></i>
+                                </button>
+                            </div>
                         </div>
                     `;
                     grid.appendChild(card);
@@ -436,14 +480,18 @@
         function directSolve(matchId, decision) {
             const idx = allTickets.findIndex(x => x.id === matchId);
             if (idx !== -1) {
+                const noteInput = document.getElementById('solve_note_' + matchId);
+                const userNote = noteInput ? noteInput.value.trim() : "";
+
                 const t = allTickets.splice(idx, 1)[0];
                 t.decision = decision;
+                t.solveNote = userNote;
                 t.solvedBy = activeUser.username;
                 t.solvedAt = new Date().toLocaleString('ar-EG');
 
                 solvedTickets.unshift(t);
-                localStorage.setItem('quality_tickets_open_v2', JSON.stringify(allTickets));
-                localStorage.setItem('quality_tickets_solved_v2', JSON.stringify(solvedTickets));
+                localStorage.setItem('quality_tickets_open_v3', JSON.stringify(allTickets));
+                localStorage.setItem('quality_tickets_solved_v3', JSON.stringify(solvedTickets));
 
                 renderTickets();
             }
@@ -454,12 +502,13 @@
             if (idx !== -1) {
                 const t = solvedTickets.splice(idx, 1)[0];
                 delete t.decision;
+                delete t.solveNote;
                 delete t.solvedBy;
                 delete t.solvedAt;
 
                 allTickets.unshift(t);
-                localStorage.setItem('quality_tickets_open_v2', JSON.stringify(allTickets));
-                localStorage.setItem('quality_tickets_solved_v2', JSON.stringify(solvedTickets));
+                localStorage.setItem('quality_tickets_open_v3', JSON.stringify(allTickets));
+                localStorage.setItem('quality_tickets_solved_v3', JSON.stringify(solvedTickets));
 
                 renderTickets();
             }
@@ -468,6 +517,8 @@
         function renderSolvedTable() {
             const tbody = document.getElementById('solvedTableBody');
             const search = document.getElementById('searchInput').value.toLowerCase();
+            const selectedPrio = document.getElementById('priorityFilter').value;
+            const selectedResp = document.getElementById('responsibleFilter').value;
             const selectedRes = document.getElementById('resolutionFilter').value;
             tbody.innerHTML = '';
 
@@ -478,21 +529,24 @@
                                     s.responsible.toLowerCase().includes(search) ||
                                     s.competition.toLowerCase().includes(search);
                 
+                const matchPrio = selectedPrio === 'ALL' || s.priority === selectedPrio;
+                const matchResp = selectedResp === 'ALL' || s.responsible === selectedResp;
                 const matchRes = selectedRes === 'ALL' || s.resolution === selectedRes;
 
-                return matchSearch && matchRes;
+                return matchSearch && matchPrio && matchResp && matchRes;
             });
 
             filteredSolved.forEach(s => {
                 const tr = document.createElement('tr');
-                tr.className = "hover:bg-slate-700/30 transition";
+                tr.className = "hover:bg-slate-700/30 transition text-[11px] md:text-xs";
                 tr.innerHTML = `
                     <td class="p-3 font-bold text-purple-400">${s.tab}</td>
                     <td class="p-3 font-mono font-bold text-indigo-400">#${s.id}</td>
                     <td class="p-3 font-bold">${s.home} vs ${s.away}</td>
                     <td class="p-3 text-emerald-400 font-bold">${s.responsible}</td>
                     <td class="p-3"><span class="bg-slate-700 px-2 py-0.5 rounded text-[10px]">${s.resolution}</span></td>
-                    <td class="p-3"><span class="${s.decision === 'Valid' ? 'bg-emerald-900/80 text-emerald-300' : 'bg-rose-900/80 text-rose-300'} font-bold px-2 py-0.5 rounded text-[10px]">${s.decision}</span></td>
+                    <td class="p-3"><span class="${s.decision === 'Valid' ? 'bg-rose-900/80 text-rose-300' : 'bg-emerald-900/80 text-emerald-300'} font-bold px-2 py-0.5 rounded text-[10px]">${s.decision}</span></td>
+                    <td class="p-3 text-slate-300 max-w-[120px] truncate" title="${s.solveNote || '-'}">${s.solveNote || '-'}</td>
                     <td class="p-3 font-semibold text-indigo-300">${s.solvedBy}</td>
                     <td class="p-3 text-slate-400">${s.solvedAt}</td>
                     <td class="p-3 text-center">
@@ -507,14 +561,15 @@
         }
 
         function exportToCSV() {
-            let csv = 'Tab,Match ID,Priority,Competition,Country,Season,Home,Away,ETA,ETA Date,Shift,Review Date,Review Shift,Responsible,Resolution,Comment,Status,Decision,Solved By,Solved At\n';
+            let csv = 'Tab,Match ID,Priority (Col F),Competition,Country,Season,Home,Away,ETA,ETA Date,Shift,Review Date,Review Shift,Responsible,Resolution,Comment,Status,Decision,Solve Note,Solved By,Solved At\n';
             
             allTickets.forEach(t => {
-                csv += `"${t.tab}","${t.id}","${t.priority}","${t.competition}","${t.country}","${t.season}","${t.home}","${t.away}","${t.eta}","${t.etaDate}","${t.shift}","${t.reviewDate}","${t.reviewShift}","${t.responsible}","${t.resolution}","${t.comment}","Open","","",""\n`;
+                csv += `"${t.tab}","${t.id}","${t.priority}","${t.competition}","${t.country}","${t.season}","${t.home}","${t.away}","${t.eta}","${t.etaDate}","${t.shift}","${t.reviewDate}","${t.reviewShift}","${t.responsible}","${t.resolution}","${t.comment}","Open","","","",""\n`;
             });
 
             solvedTickets.forEach(s => {
-                csv += `"${s.tab}","${s.id}","${s.priority}","${s.competition}","${s.country}","${s.season}","${s.home}","${s.away}","${s.eta}","${s.etaDate}","${s.shift}","${s.reviewDate}","${s.reviewShift}","${s.responsible}","${s.resolution}","${s.comment}","Solved","${s.decision}","${s.solvedBy}","${s.solvedAt}"\n`;
+                const safeNote = s.solveNote ? s.solveNote.replace(/"/g, '""') : "";
+                csv += `"${s.tab}","${s.id}","${s.priority}","${s.competition}","${s.country}","${s.season}","${s.home}","${s.away}","${s.eta}","${s.etaDate}","${s.shift}","${s.reviewDate}","${s.reviewShift}","${s.responsible}","${s.resolution}","${s.comment}","Solved","${s.decision}","${safeNote}","${s.solvedBy}","${s.solvedAt}"\n`;
             });
 
             const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
@@ -574,7 +629,7 @@
             }
 
             users.push({ username: u, password: p, role: 'user' });
-            localStorage.setItem('quality_users_db_v2', JSON.stringify(users));
+            localStorage.setItem('quality_users_db_v3', JSON.stringify(users));
             document.getElementById('newUsername').value = '';
             document.getElementById('newPassword').value = '';
             renderUsersList();
@@ -582,7 +637,7 @@
 
         function deleteUser(username) {
             users = users.filter(x => x.username !== username);
-            localStorage.setItem('quality_users_db_v2', JSON.stringify(users));
+            localStorage.setItem('quality_users_db_v3', JSON.stringify(users));
             renderUsersList();
         }
     </script>
