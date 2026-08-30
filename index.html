@@ -16,7 +16,6 @@
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen">
 
-    <!-- ⚠️ ضع رابط الـ Web App الخاص بـ Apps Script هنا ⚠️ -->
     <script>
         const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw6tU2RQSs_FHdXeUeCz7WO7TEdyeu5NsN8fC2Evi6OIRZ1JLG2ZZ-2KvgBNGSRYNFicg/exec";
     </script>
@@ -29,7 +28,7 @@
                     <i class="fa-solid fa-user-shield text-2xl text-white"></i>
                 </div>
                 <h2 class="text-2xl font-bold">تسجيل الدخول للنظام</h2>
-                <p class="text-xs text-slate-400 mt-1">Info Team Quality Multi-Tab System (W35+)</p>
+                <p class="text-xs text-slate-400 mt-1">Info Team Quality Ticket Processing Engine</p>
             </div>
             
             <form onsubmit="handleLogin(event)" class="space-y-4">
@@ -62,7 +61,7 @@
                     </div>
                     <div>
                         <h1 class="text-lg font-bold">Info Team Quality - Tickets System</h1>
-                        <p class="text-xs text-slate-400">Multi-Tab Stream (W35, W36, W37...)</p>
+                        <p class="text-xs text-slate-400">Multi-Tab Processing Stream (W35, W36, W37...)</p>
                     </div>
                 </div>
 
@@ -161,8 +160,8 @@
                 </div>
                 <div id="noDataMessage" class="hidden text-center py-16 bg-slate-800/50 rounded-2xl border border-slate-700">
                     <i class="fa-solid fa-circle-check text-4xl text-emerald-500 mb-3"></i>
-                    <h3 class="text-base font-bold">لا توجد تذاكر معلقة حالياً!</h3>
-                    <p class="text-xs text-slate-400 mt-1">اضغط على "مزامنة كافة التابز" للتأكد من أحدث البيانات.</p>
+                    <h3 class="text-base font-bold">تم حل جميع التذاكر المتاحة!</h3>
+                    <p class="text-xs text-slate-400 mt-1">لا توجد أي تذاكر معلقة بانتظار المراجعة.</p>
                 </div>
             </div>
 
@@ -219,8 +218,22 @@
     </div>
 
     <script>
+        // BACKUP DATASET
+        const defaultTicketsList = [
+            { tab: "W35", id: "1436002", priority: "Custom", competition: "Damallsvenskan", country: "Sweden", season: "2026", home: "AIK W", away: "Kristianstad", eta: "2026-08-31", etaDate: "3:00", shift: "B", reviewDate: "2026-08-29", reviewShift: "M", responsible: "Bahaa", resolution: "Missing Player", comment: "2" },
+            { tab: "W35", id: "1454376", priority: "P1.5", competition: "China League One", country: "China PR", season: "2026", home: "Shijiazhuang Gongfu", away: "Wuxi Wugo", eta: "2026-08-31", etaDate: "3:00", shift: "B", reviewDate: "2026-08-30", reviewShift: "M", responsible: "Abdulrahman", resolution: "Wrong Number", comment: "1 | away:Zhixuan Zhou 28 not 27" },
+            { tab: "W35", id: "1482440", priority: "Live", competition: "Championship", country: "England", season: "2026/2027", home: "Derby County", away: "Swansea City", eta: "2026-08-30", etaDate: "3:00", shift: "B", reviewDate: "2026-08-29", reviewShift: "M", responsible: "Eslam Tareq", resolution: "Missing Player", comment: "-" },
+            { tab: "W35", id: "1482625", priority: "Custom", competition: "League One", country: "England", season: "2026/2027", home: "Blackpool", away: "Peterborough United", eta: "2026-08-30", etaDate: "3:00", shift: "L", reviewDate: "2026-08-29", reviewShift: "N", responsible: "Abdulrahman", resolution: "Extra Player", comment: "1 | away:27.Isac Fors" },
+            { tab: "W35", id: "1454378", priority: "P1.5", competition: "China League One", country: "China PR", season: "2026", home: "Foshan Nanshi", away: "Shenzhen Juniors", eta: "2026-08-31", etaDate: "3:00", shift: "L", reviewDate: "2026-08-30", reviewShift: "N", responsible: "Mossad", resolution: "Missing Official", comment: "1" },
+            { tab: "W35", id: "1469789", priority: "P3", competition: "Superettan", country: "Sweden", season: "2026", home: "Landskrona", away: "Östersunds FK", eta: "2026-08-30", etaDate: "3:00", shift: "N", reviewDate: "2026-08-29", reviewShift: "M", responsible: "Mossad", resolution: "Wrong Number", comment: "2 | Away: 10" },
+            { tab: "W35", id: "1499856", priority: "P1.5", competition: "2. Division", country: "Denmark", season: "2026/2027", home: "VSK Aarhus", away: "FA 2000", eta: "2026-08-30", etaDate: "15:00", shift: "K", reviewDate: "2026-08-29", reviewShift: "O", responsible: "Eslam Hussien", resolution: "Sub Player Wrong", comment: "1 | Sub player and not" },
+            { tab: "W35", id: "1477493", priority: "WS Customer", competition: "I Liga", country: "Poland", season: "2026/2027", home: "Unia Skierniewice", away: "Stal Rzeszów", eta: "N/A", etaDate: "N/A", shift: "N/A#", reviewDate: "2026-08-29", reviewShift: "O", responsible: "Bahaa", resolution: "Missing Player, Extra Player", comment: "Mateusz Sokół 12 missing - Marek Koziol 88 extra away | 2" },
+            { tab: "W35", id: "1506876", priority: "-", competition: "Regionalliga West", country: "Germany", season: "2026/2027", home: "Westfalia Rhynern", away: "FC Gütersloh", eta: "2026-08-31", etaDate: "3:00", shift: "-", reviewDate: "2026-08-29", reviewShift: "M", responsible: "Eslam Tareq", resolution: "Missing Official, Wrong Sub Player", comment: "away 1044429 Jakob Benjamin Korte ( wrong ) - ( right ) 1105906 Hannes John" },
+            { tab: "W35", id: "1507363", priority: "WS Customer", competition: "Regionalliga Südwest", country: "Germany", season: "2026/2027", home: "Fulda-Lehnerz", away: "FSV Frankfurt", eta: "2026-08-31", etaDate: "3:00", shift: "-", reviewDate: "2026-08-29", reviewShift: "M", responsible: "Bahaa", resolution: "Wrong Number", comment: "Emmanuel McDonald 9 nort 33 away | 1" }
+        ];
+
         // APP STATE
-        let users = JSON.parse(localStorage.getItem('app_users_v9')) || [
+        let users = JSON.parse(localStorage.getItem('app_users_v10')) || [
             { username: 'admin', password: '123456', role: 'admin' },
             { username: 'Bahaa', password: '123', role: 'user' },
             { username: 'Eslam Tareq', password: '123', role: 'user' },
@@ -230,7 +243,7 @@
 
         let activeUser = JSON.parse(sessionStorage.getItem('active_user')) || null;
         let allTickets = [];
-        let solvedTickets = JSON.parse(localStorage.getItem('solved_tickets_v9')) || [];
+        let solvedTickets = JSON.parse(localStorage.getItem('solved_tickets_v10')) || [];
 
         document.addEventListener('DOMContentLoaded', () => {
             if (activeUser) {
@@ -272,11 +285,6 @@
         }
 
         function fetchSheetData() {
-            if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL.includes("ضع_رابط")) {
-                alert("يرجى التأكد من ضبط رابط APPS_SCRIPT_URL في أعلى الملف!");
-                return;
-            }
-
             const spinner = document.getElementById('syncSpinner');
             spinner.classList.add('fa-spin');
 
@@ -284,14 +292,25 @@
                 .then(res => res.json())
                 .then(data => {
                     spinner.classList.remove('fa-spin');
-                    allTickets = data.filter(t => !solvedTickets.some(s => s.id === t.id));
+                    if (Array.isArray(data) && data.length > 0) {
+                        allTickets = data.filter(t => !solvedTickets.some(s => s.id === t.id));
+                    } else {
+                        loadBackupData();
+                    }
                     populateFilters();
                     renderTickets();
                 })
                 .catch(err => {
                     spinner.classList.remove('fa-spin');
-                    console.error("Multi-Tab Fetch Error:", err);
+                    console.error("Fetch Error:", err);
+                    loadBackupData();
+                    populateFilters();
+                    renderTickets();
                 });
+        }
+
+        function loadBackupData() {
+            allTickets = defaultTicketsList.filter(t => !solvedTickets.some(s => s.id === t.id));
         }
 
         function populateFilters() {
@@ -382,7 +401,6 @@
                             </div>
                         </div>
 
-                        <!-- DIRECT ACTION BUTTONS (VALID / INVALID) -->
                         <div class="grid grid-cols-2 gap-2 mt-3 pt-2 border-t border-slate-700/60">
                             <button onclick="directSolve('${t.id}', 'Valid')" class="bg-emerald-600/90 hover:bg-emerald-500 text-white font-bold py-2.5 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-md transition">
                                 <i class="fa-solid fa-thumbs-up"></i>
@@ -410,13 +428,12 @@
                 t.solvedAt = new Date().toLocaleString('ar-EG');
 
                 solvedTickets.unshift(t);
-                localStorage.setItem('solved_tickets_v9', JSON.stringify(solvedTickets));
+                localStorage.setItem('solved_tickets_v10', JSON.stringify(solvedTickets));
 
                 renderTickets();
             }
         }
 
-        // RE-OPEN / RE-SOLVE TICKETS ENGINE
         function reopenTicket(matchId) {
             const idx = solvedTickets.findIndex(x => x.id === matchId);
             if (idx !== -1) {
@@ -426,7 +443,7 @@
                 delete t.solvedAt;
 
                 allTickets.unshift(t);
-                localStorage.setItem('solved_tickets_v9', JSON.stringify(solvedTickets));
+                localStorage.setItem('solved_tickets_v10', JSON.stringify(solvedTickets));
 
                 renderTickets();
             }
@@ -475,7 +492,6 @@
             });
         }
 
-        // CSV EXPORT ENGINE WITH UTF-8 BOM FOR EXCEL
         function exportToCSV() {
             let csv = 'Tab,Match ID,Priority,Competition,Country,Season,Home,Away,ETA,ETA Date,Shift,Review Date,Review Shift,Responsible,Resolution,Comment,Status,Decision,Solved By,Solved At\n';
             
@@ -544,7 +560,7 @@
             }
 
             users.push({ username: u, password: p, role: 'user' });
-            localStorage.setItem('app_users_v9', JSON.stringify(users));
+            localStorage.setItem('app_users_v10', JSON.stringify(users));
             document.getElementById('newUsername').value = '';
             document.getElementById('newPassword').value = '';
             renderUsersList();
@@ -552,7 +568,7 @@
 
         function deleteUser(username) {
             users = users.filter(x => x.username !== username);
-            localStorage.setItem('app_users_v9', JSON.stringify(users));
+            localStorage.setItem('app_users_v10', JSON.stringify(users));
             renderUsersList();
         }
     </script>
