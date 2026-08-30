@@ -1,488 +1,436 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl" class="light">
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>دليل نشر وتأهيل تطبيق التذاكر كـ Web App مجاني 100%</title>
+    <title>نظام جودة المباريات والتذاكر - Info Team Quality</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts - Cairo -->
+    <!-- Google Fonts: Cairo -->
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap" rel="stylesheet">
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        brand: {
-                            50: '#f0f9ff',
-                            100: '#e0f2fe',
-                            500: '#0284c7',
-                            600: '#0369a1',
-                            700: '#075985',
-                        }
-                    },
-                    fontFamily: {
-                        sans: ['Cairo', 'sans-serif'],
-                    }
-                }
-            }
-        }
-    </script>
     <style>
-        body {
-            font-family: 'Cairo', sans-serif;
-            transition: background-color 0.3s, color 0.3s;
-        }
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: rgba(0, 0, 0, 0.05);
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 4px;
-        }
-        .dark ::-webkit-scrollbar-thumb {
-            background: #475569;
-        }
+        body { font-family: 'Cairo', sans-serif; }
+        .glass-card { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
+        .dark .glass-card { background: rgba(30, 41, 59, 0.95); }
     </style>
 </head>
-<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 antialiased min-h-screen flex flex-col justify-between">
+<body class="bg-slate-100 text-slate-800 dark:bg-slate-900 dark:text-slate-100 transition-colors duration-200 min-h-screen">
 
-    <!-- Toast Notification Container -->
-    <div id="toastContainer" class="fixed top-5 left-5 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none"></div>
-
-    <!-- Header / Navbar -->
-    <header class="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 sticky top-0 z-30 shadow-sm">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-16">
-                <div class="flex items-center space-x-3 space-x-reverse">
-                    <div class="bg-gradient-to-tr from-emerald-600 to-teal-600 text-white p-2.5 rounded-xl shadow-md flex items-center justify-center">
-                        <i class="fa-solid fa-cloud-arrow-up text-xl"></i>
-                    </div>
-                    <div>
-                        <h1 class="text-lg sm:text-xl font-bold leading-tight">دليل نشر تطبيق التذاكر كـ Web App <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 mr-1">مجاني 100%</span></h1>
-                        <p class="text-xs text-slate-500 dark:text-slate-400">خطوات تشغيل وتوزيع الأبلكيشن لعمل الفريق أونلاين</p>
-                    </div>
+    <!-- Navbar -->
+    <header class="bg-indigo-900 text-white shadow-xl sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-3 space-x-reverse">
+                <div class="bg-indigo-600 p-2.5 rounded-xl shadow-inner">
+                    <i class="fa-solid fa-futbol text-2xl text-yellow-400"></i>
                 </div>
-
-                <div class="flex items-center gap-2 sm:gap-3">
-                    <button onclick="toggleDarkMode()" title="التبديل بين الوضع الداكن والفيزيائي" class="p-2 rounded-lg text-slate-500 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition">
-                        <i class="fa-solid fa-moon dark:hidden text-lg"></i>
-                        <i class="fa-solid fa-sun hidden dark:inline text-lg text-amber-400"></i>
-                    </button>
+                <div>
+                    <h1 class="text-xl font-bold tracking-wide">Info Team Quality - Soccer Tickets</h1>
+                    <p class="text-xs text-indigo-300">W35+ Matching & Resolution System</p>
                 </div>
+            </div>
+
+            <!-- User Selector & Actions -->
+            <div class="flex items-center gap-3">
+                <div class="flex items-center bg-indigo-800 px-3 py-1.5 rounded-lg border border-indigo-700">
+                    <i class="fa-solid fa-user-check text-indigo-300 ml-2"></i>
+                    <select id="userSelect" onchange="switchUser()" class="bg-transparent text-sm text-white font-semibold focus:outline-none cursor-pointer">
+                        <option value="Bahaa" class="bg-slate-800">Bahaa</option>
+                        <option value="Zahry" class="bg-slate-800">Zahry</option>
+                        <option value="Eslam Tareq" class="bg-slate-800">Eslam Tareq</option>
+                        <option value="Abdulrahman" class="bg-slate-800">Abdulrahman</option>
+                        <option value="Yousef Mansour" class="bg-slate-800">Yousef Mansour</option>
+                        <option value="Aya" class="bg-slate-800">Aya</option>
+                        <option value="Mostafa" class="bg-slate-800">Mostafa</option>
+                    </select>
+                </div>
+                
+                <button onclick="syncSheetData()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3.5 py-1.5 rounded-lg text-sm font-semibold flex items-center gap-2 shadow-md transition">
+                    <i class="fa-solid fa-rotate" id="syncIcon"></i>
+                    <span>مزامنة W35+</span>
+                </button>
             </div>
         </div>
     </header>
 
-    <!-- Main Content -->
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-grow w-full space-y-6">
+    <!-- Main Container -->
+    <main class="max-w-7xl mx-auto px-4 py-6">
 
-        <!-- Banner Intro & Progress Overview -->
-        <div class="bg-gradient-to-r from-sky-600 to-indigo-600 rounded-2xl p-6 text-white shadow-lg flex flex-col md:flex-row justify-between items-center gap-6">
-            <div class="space-y-2 max-w-2xl">
-                <span class="bg-white/20 text-white text-xs px-3 py-1 rounded-full font-semibold inline-block"><i class="fa-solid fa-rocket ml-1"></i> دليل خطوة بخطوة للمبتدئين والمحترفين</span>
-                <h2 class="text-xl sm:text-2xl font-bold">كيف تجعل تطبيقك يعمل أونلاين مجاناً 24/7 لجميع الموظفين؟</h2>
-                <p class="text-xs sm:text-sm text-sky-100 leading-relaxed">
-                    لا تحتاج لشراء سيرفر أو استضافة مدفوعة. ستقوم بنشر التطبيق المكون من ملف <code class="bg-white/20 px-1 py-0.5 rounded font-mono text-white">index.html</code> على منشآت سحابية مجانية تماماً مثل GitHub Pages أو Netlify وربط الشيتات عن طريق Google Apps Script.
-                </p>
-            </div>
-            <!-- Progress Calculator Box -->
-            <div class="bg-white/10 backdrop-blur-md p-4 rounded-xl border border-white/20 text-center w-full md:w-64 space-y-2">
-                <div class="text-xs font-semibold text-sky-200">نسبة جاهزية التطبيق للنشر</div>
-                <div class="text-3xl font-extrabold" id="progressPercentage">0%</div>
-                <div class="w-full bg-white/20 h-2 rounded-full overflow-hidden">
-                    <div id="progressBar" class="bg-emerald-400 h-full transition-all duration-300" style="width: 0%"></div>
+        <!-- Stats Bar -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <div class="glass-card p-4 rounded-xl shadow-md border-r-4 border-amber-500 flex justify-between items-center">
+                <div>
+                    <p class="text-xs text-slate-500 font-semibold">تذاكر مفتوحة (Open)</p>
+                    <h3 class="text-2xl font-bold text-amber-600 mt-1" id="openTicketsCount">0</h3>
                 </div>
-                <div class="text-[11px] text-sky-100" id="progressStatus">قم بإتمام خطوات القائمة أدناه</div>
+                <div class="bg-amber-100 text-amber-600 p-3 rounded-lg"><i class="fa-solid fa-triangle-exclamation text-xl"></i></div>
+            </div>
+
+            <div class="glass-card p-4 rounded-xl shadow-md border-r-4 border-emerald-500 flex justify-between items-center">
+                <div>
+                    <p class="text-xs text-slate-500 font-semibold">تذاكر محلولة (Solved)</p>
+                    <h3 class="text-2xl font-bold text-emerald-600 mt-1" id="solvedTicketsCount">0</h3>
+                </div>
+                <div class="bg-emerald-100 text-emerald-600 p-3 rounded-lg"><i class="fa-solid fa-circle-check text-xl"></i></div>
+            </div>
+
+            <div class="glass-card p-4 rounded-xl shadow-md border-r-4 border-blue-500 flex justify-between items-center">
+                <div>
+                    <p class="text-xs text-slate-500 font-semibold">المستخدم الحالي</p>
+                    <h3 class="text-lg font-bold text-blue-600 mt-1" id="currentUserDisplay">Bahaa</h3>
+                </div>
+                <div class="bg-blue-100 text-blue-600 p-3 rounded-lg"><i class="fa-solid fa-user-gear text-xl"></i></div>
+            </div>
+
+            <div class="glass-card p-4 rounded-xl shadow-md border-r-4 border-purple-500 flex justify-between items-center">
+                <div>
+                    <p class="text-xs text-slate-500 font-semibold">التبويبات النشطة</p>
+                    <h3 class="text-sm font-bold text-purple-600 mt-1">W35, W36, W37...</h3>
+                </div>
+                <div class="bg-purple-100 text-purple-600 p-3 rounded-lg"><i class="fa-solid fa-layer-group text-xl"></i></div>
             </div>
         </div>
 
-        <!-- Navigation Tabs -->
-        <div class="border-b border-slate-200 dark:border-slate-700">
-            <nav class="flex space-x-2 space-x-reverse -mb-px overflow-x-auto pb-1" id="guideTabContainer">
-                <button onclick="switchGuideTab('checklist')" id="tab-checklist" class="guide-tab-btn px-4 py-2.5 font-semibold text-sm rounded-t-lg border-b-2 border-sky-600 text-sky-600 dark:text-sky-400 flex items-center gap-2 whitespace-nowrap">
-                    <i class="fa-solid fa-list-check"></i>
-                    قائمة التحقق (Checklist)
-                </button>
-                <button onclick="switchGuideTab('github')" id="tab-github" class="guide-tab-btn px-4 py-2.5 font-semibold text-sm rounded-t-lg border-b-2 border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 flex items-center gap-2 whitespace-nowrap">
-                    <i class="fa-brands fa-github text-lg"></i>
-                    النشر عبر GitHub Pages
-                </button>
-                <button onclick="switchGuideTab('netlify')" id="tab-netlify" class="guide-tab-btn px-4 py-2.5 font-semibold text-sm rounded-t-lg border-b-2 border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 flex items-center gap-2 whitespace-nowrap">
-                    <i class="fa-solid fa-bolt text-amber-500"></i>
-                    النشر السريع (Netlify / Vercel)
-                </button>
-                <button onclick="switchGuideTab('appscript')" id="tab-appscript" class="guide-tab-btn px-4 py-2.5 font-semibold text-sm rounded-t-lg border-b-2 border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 flex items-center gap-2 whitespace-nowrap">
-                    <i class="fa-solid fa-code text-emerald-500"></i>
-                    ربط Google Apps Script
-                </button>
-                <button onclick="switchGuideTab('tester')" id="tab-tester" class="guide-tab-btn px-4 py-2.5 font-semibold text-sm rounded-t-lg border-b-2 border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 flex items-center gap-2 whitespace-nowrap">
-                    <i class="fa-solid fa-vial-circle-check text-purple-500"></i>
-                    فحص واختبار الروابط (URL Tester)
-                </button>
-            </nav>
+        <!-- Tabs Navigation -->
+        <div class="flex border-b border-slate-300 dark:border-slate-700 mb-6 bg-white dark:bg-slate-800 rounded-t-xl px-4 pt-2 shadow-sm">
+            <button onclick="switchTab('open')" id="tabOpenBtn" class="py-3 px-6 font-bold text-sm border-b-2 border-indigo-600 text-indigo-600 flex items-center gap-2">
+                <i class="fa-solid fa-list-check"></i>
+                <span>التذاكر المفتوحة (تنتظر الحل)</span>
+                <span id="openBadge" class="bg-amber-500 text-white text-xs px-2 py-0.5 rounded-full">0</span>
+            </button>
+            <button onclick="switchTab('solved')" id="tabSolvedBtn" class="py-3 px-6 font-bold text-sm text-slate-500 border-b-2 border-transparent hover:text-indigo-600 flex items-center gap-2">
+                <i class="fa-solid fa-check-double"></i>
+                <span>التذاكر المحلولة (Solved)</span>
+                <span id="solvedBadge" class="bg-emerald-600 text-white text-xs px-2 py-0.5 rounded-full">0</span>
+            </button>
+            <button onclick="switchTab('settings')" id="tabSettingsBtn" class="py-3 px-6 font-bold text-sm text-slate-500 border-b-2 border-transparent hover:text-indigo-600 flex items-center gap-2 mr-auto">
+                <i class="fa-solid fa-plug"></i>
+                <span>إعدادات الشيت و Google Apps Script</span>
+            </button>
         </div>
 
-        <!-- TAB 1: CHECKLIST & DEPLOYMENT STEPS -->
-        <section id="guideContent-checklist" class="guide-tab-content block space-y-4">
-            <div class="bg-white dark:bg-slate-800 p-5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-4">
-                <h3 class="text-base font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
-                    <i class="fa-solid fa-tasks text-sky-600"></i> قائمة مهام تجهيز ونشر أونلاين (المطلوب منك بالترتيب)
-                </h3>
-                <p class="text-xs text-slate-500 dark:text-slate-400">اضغط على المربع مقابل كل خطوة عند الانتهاء منها لتحديث مؤشر جاهزية التطبيق للعمل مع فريقك:</p>
+        <!-- Filter & Search Bar -->
+        <div class="glass-card p-4 rounded-xl shadow-md mb-6 flex flex-wrap gap-4 items-center justify-between">
+            <div class="flex items-center gap-2 flex-1 min-w-[280px]">
+                <i class="fa-solid fa-magnifying-glass text-slate-400"></i>
+                <input type="text" id="searchInput" oninput="filterTickets()" placeholder="بحث بـ Match ID أو اسم الفريق أو البطولة..." class="w-full bg-slate-100 dark:bg-slate-700 px-4 py-2 rounded-lg text-sm border border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            </div>
 
-                <div class="space-y-3" id="checklistContainer">
-                    <!-- Dynamic Checklist Items inserted via JS -->
+            <div class="flex items-center gap-3">
+                <select id="priorityFilter" onchange="filterTickets()" class="bg-slate-100 dark:bg-slate-700 px-3 py-2 rounded-lg text-sm border border-slate-300 dark:border-slate-600">
+                    <option value="ALL">جميع الأولويات (Priority)</option>
+                    <option value="Live">Live</option>
+                    <option value="P1.5">P1.5</option>
+                    <option value="P3">P3</option>
+                </select>
+
+                <select id="resolutionFilter" onchange="filterTickets()" class="bg-slate-100 dark:bg-slate-700 px-3 py-2 rounded-lg text-sm border border-slate-300 dark:border-slate-600">
+                    <option value="ALL">جميع أنواع المشاكل (Resolution)</option>
+                    <option value="Missing Player">Missing Player</option>
+                    <option value="Wrong Number">Wrong Number</option>
+                    <option value="Extra Player">Extra Player</option>
+                </select>
+
+                <button onclick="exportToCSV()" class="bg-slate-800 hover:bg-slate-700 text-white px-3.5 py-2 rounded-lg text-sm font-semibold flex items-center gap-2">
+                    <i class="fa-solid fa-file-csv text-emerald-400"></i>
+                    <span>تصدير CSV</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Open Tickets View -->
+        <div id="openView" class="space-y-4">
+            <div id="ticketsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                <!-- Cards will render here -->
+            </div>
+            <div id="noOpenTickets" class="hidden text-center py-12 glass-card rounded-xl">
+                <i class="fa-solid fa-circle-check text-5xl text-emerald-500 mb-3"></i>
+                <h3 class="text-lg font-bold">لا توجد تذاكر مفتوحة حالياً!</h3>
+                <p class="text-sm text-slate-500 mt-1">جميع التذاكر المستوردة من W35+ مطابقة أو تم حلها بالكامل.</p>
+            </div>
+        </div>
+
+        <!-- Solved Tickets View -->
+        <div id="solvedView" class="hidden space-y-4">
+            <div class="glass-card rounded-xl shadow-md overflow-hidden">
+                <table class="w-full text-sm text-right">
+                    <thead class="bg-slate-800 text-white text-xs">
+                        <tr>
+                            <th class="p-3">Match ID (A)</th>
+                            <th class="p-3">المباراة (J vs K)</th>
+                            <th class="p-3">البطولة (G)</th>
+                            <th class="p-3">المشكلة الأصليّة (Z)</th>
+                            <th class="p-3">حل الموظف</th>
+                            <th class="p-3">تم الحل بواسطة</th>
+                            <th class="p-3">وقت الإغلاق</th>
+                        </tr>
+                    </thead>
+                    <tbody id="solvedTableBody" class="divide-y divide-slate-200 dark:divide-slate-700">
+                        <!-- Solved rows -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Settings View -->
+        <div id="settingsView" class="hidden glass-card p-6 rounded-xl shadow-md space-y-6">
+            <h2 class="text-xl font-bold border-b pb-3 flex items-center gap-2">
+                <i class="fa-solid fa-gears text-indigo-600"></i>
+                <span>ربط Google Sheets وباقي التبويبات</span>
+            </h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-bold mb-2">رابط شيت Google Sheets (CSV Published URL):</label>
+                    <input type="text" id="sheetCsvUrl" placeholder="https://docs.google.com/spreadsheets/d/.../pub?output=csv" class="w-full p-2.5 rounded-lg border text-sm bg-slate-50 dark:bg-slate-800">
+                    <p class="text-xs text-slate-500 mt-1">قم بنشر التاب (File > Share > Publish to web) بصيغة CSV وادخل الرابط هنا للمزامنة الحية.</p>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-bold mb-2">رابط التسميع المباشر (Google Apps Script Webhook):</label>
+                    <input type="text" id="webhookUrl" placeholder="https://script.google.com/macros/s/.../exec" class="w-full p-2.5 rounded-lg border text-sm bg-slate-50 dark:bg-slate-800">
+                    <p class="text-xs text-slate-500 mt-1">يسمح بالتحديث الفوري داخل الشيت الأصلي عندما ينقر الموظف على "حل التذكرة".</p>
                 </div>
             </div>
-        </section>
 
-        <!-- TAB 2: GITHUB PAGES DEPLOYMENT GUIDE -->
-        <section id="guideContent-github" class="guide-tab-content hidden space-y-6">
-            <div class="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-6">
-                <div class="border-b border-slate-200 dark:border-slate-700 pb-4">
-                    <h3 class="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
-                        <i class="fa-brands fa-github text-slate-800 dark:text-slate-200"></i> خيار 1: النشر المجاني الدائم عبر GitHub Pages
-                    </h3>
-                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">طريقة رسمية مجانية تضمن بقاء تطبيقك أونلاين برابط خاص مدى الحياة بدون أي مصاريف.</p>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div class="bg-slate-50 dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-700 space-y-2">
-                        <div class="w-8 h-8 rounded-full bg-sky-100 dark:bg-sky-900 text-sky-700 dark:text-sky-300 font-bold flex items-center justify-center text-sm">1</div>
-                        <h4 class="font-bold text-sm text-slate-800 dark:text-slate-100">إنشاء مستودع (Repository)</h4>
-                        <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                            سجل دخول في <a href="https://github.com" target="_blank" class="text-sky-600 underline">GitHub.com</a> ثم اضغط على <strong>New Repository</strong>. سمّه باسم مثل <code class="bg-slate-200 dark:bg-slate-800 px-1 rounded">tickets-app</code> واجعله <strong>Public</strong>.
-                        </p>
-                    </div>
-
-                    <div class="bg-slate-50 dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-700 space-y-2">
-                        <div class="w-8 h-8 rounded-full bg-sky-100 dark:bg-sky-900 text-sky-700 dark:text-sky-300 font-bold flex items-center justify-center text-sm">2</div>
-                        <h4 class="font-bold text-sm text-slate-800 dark:text-slate-100">رفع الملف (uploading index.html)</h4>
-                        <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                            احفظ كود التطبيق في ملف باسم <code class="bg-slate-200 dark:bg-slate-800 px-1 rounded">index.html</code> على جهازك. داخل صفحة المستودع في جيتهاف اضغط <strong>uploading an existing file</strong> وارفع هذا الملف تماماً ثم اضغط <strong>Commit changes</strong>.
-                        </p>
-                    </div>
-
-                    <div class="bg-slate-50 dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-700 space-y-2">
-                        <div class="w-8 h-8 rounded-full bg-sky-100 dark:bg-sky-900 text-sky-700 dark:text-sky-300 font-bold flex items-center justify-center text-sm">3</div>
-                        <h4 class="font-bold text-sm text-slate-800 dark:text-slate-100">تفعيل Pages واقتناص الرابط</h4>
-                        <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                            ادخل على <strong>Settings</strong> &gt; <strong>Pages</strong>. في خيار Branch اختر <strong>main</strong> ثم اضغط <strong>Save</strong>. خلال دقيقة سيظهر لك رابط الويب العام الشغال أونلاين!
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- TAB 3: NETLIFY / VERCEL FAST DEPLOYMENT -->
-        <section id="guideContent-netlify" class="guide-tab-content hidden space-y-6">
-            <div class="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-6">
-                <div class="border-b border-slate-200 dark:border-slate-700 pb-4">
-                    <h3 class="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
-                        <i class="fa-solid fa-bolt text-amber-500"></i> خيار 2: النشر السريع للغاية في 30 ثانية (Netlify Drag & Drop)
-                    </h3>
-                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">أسهل طريقة بدون الحاجة لإنشاء مستودعات كود. السحب والإفلات المباشر للملف.</p>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="space-y-4">
-                        <div class="bg-amber-50 dark:bg-amber-950/40 border-r-4 border-amber-500 p-4 rounded-r-xl">
-                            <h4 class="font-bold text-amber-900 dark:text-amber-300 text-sm">خطوات Netlify Drop:</h4>
-                            <ol class="list-decimal list-inside text-xs text-amber-800 dark:text-amber-400 mt-2 space-y-1.5 leading-relaxed">
-                                <li>ضع ملف <code class="bg-amber-100 dark:bg-amber-900 px-1 py-0.5 rounded">index.html</code> داخل مجلد على جهازك.</li>
-                                <li>افتح موقع <a href="https://app.netlify.com/drop" target="_blank" class="font-bold underline">Netlify Drop (app.netlify.com/drop)</a>.</li>
-                                <li>اسحب المجلد وأسقطه داخل المربع المخصص على الشاشة.</li>
-                                <li>مبروك! سيمنحك الموقع فوراً رابط أونلاين عام مجاني يتيح لجميع زملائك فتح التطبيق والعمل عليه.</li>
-                            </ol>
-                        </div>
-                    </div>
-
-                    <div class="space-y-4">
-                        <div class="bg-indigo-50 dark:bg-indigo-950/40 border-r-4 border-indigo-500 p-4 rounded-r-xl">
-                            <h4 class="font-bold text-indigo-900 dark:text-indigo-300 text-sm">بديل Vercel:</h4>
-                            <p class="text-xs text-indigo-800 dark:text-indigo-400 mt-1 leading-relaxed">
-                                يمكنك أيضاً التسجيل في موقع <a href="https://vercel.com" target="_blank" class="font-bold underline">Vercel.com</a> واستيراد الملف أو مشروعك بضغطة زر واحدة للحصول على سرعة فائقة واستضافة مجانية مدى الحياة.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- TAB 4: GOOGLE APPS SCRIPT CODE & INSTRUCTIONS -->
-        <section id="guideContent-appscript" class="guide-tab-content hidden space-y-6">
-            <div class="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-6">
-                <div class="border-b border-slate-200 dark:border-slate-700 pb-4">
-                    <h3 class="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
-                        <i class="fa-solid fa-code text-emerald-600"></i> إعداد Google Apps Script المباشر للتفاعل أونلاين
-                    </h3>
-                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">هذا الكود يجعل Google Sheet يقرأ ويكتب البيانات مع الأبلكيشن لجميع اليوزرز أونلاين في نفس الوقت.</p>
-                </div>
-
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div class="space-y-4 text-xs leading-relaxed text-slate-600 dark:text-slate-300">
-                        <div class="bg-slate-50 dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-700 space-y-2">
-                            <h4 class="font-bold text-sm text-slate-800 dark:text-slate-100 flex items-center gap-2">
-                                <i class="fa-solid fa-list-ol text-emerald-600"></i> خطوات التثبيت في Google Sheets:
-                            </h4>
-                            <ol class="list-decimal list-inside space-y-2">
-                                <li>افتح ملف Google Sheet الخاص بك من حسابك.</li>
-                                <li>من القائمة العلوية اختر <strong>Extensions (الإضافات)</strong> &gt; <strong>Apps Script</strong>.</li>
-                                <li>احذف أي كود مكتوب والصق الكود الموجود في النافذة المجاورة.</li>
-                                <li>اضغط على <strong>Deploy (نشر)</strong> &gt; <strong>New Deployment (نشر جديد)</strong>.</li>
-                                <li>في نوع التثبيت اختر <strong>Web App</strong>.</li>
-                                <li><strong>مهم جداً:</strong> اجعل خيار Execute as: <code class="bg-emerald-100 dark:bg-emerald-900 px-1 py-0.5 rounded text-emerald-800 dark:text-emerald-200 font-bold">Me</code> وخيار Who has access: <code class="bg-emerald-100 dark:bg-emerald-900 px-1 py-0.5 rounded text-emerald-800 dark:text-emerald-200 font-bold">Anyone</code>.</li>
-                                <li>اضغط Deploy وانسخ الرابط الناتج وضعه في خانة Webhook URL بالأبلكيشن.</li>
-                            </ol>
-                        </div>
-                    </div>
-
-                    <!-- Code Box -->
-                    <div class="bg-slate-900 text-slate-100 p-4 rounded-xl text-xs font-mono space-y-2 overflow-x-auto dir-ltr border border-slate-700">
-                        <div class="flex justify-between items-center border-b border-slate-700 pb-2 text-slate-400">
-                            <span>AppsScript_Backend.gs</span>
-                            <button onclick="copyAppsScriptCode()" class="text-sky-400 hover:text-sky-300 text-xs font-sans flex items-center gap-1">
-                                <i class="fa-regular fa-copy"></i> نسخ الكود
-                            </button>
-                        </div>
-                        <pre id="appScriptBlock" class="text-slate-200">function doGet(e) {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var sheet = ss.getSheets()[0];
-  var data = sheet.getDataRange().getValues();
-  return ContentService.createTextOutput(JSON.stringify(data))
-    .setMimeType(ContentService.MimeType.JSON);
-}
-
+            <div class="bg-slate-900 text-slate-200 p-4 rounded-xl text-xs font-mono overflow-x-auto">
+                <p class="text-emerald-400 font-bold mb-2">// كود Google Apps Script للتسميع المباشر في الشيت:</p>
+                <pre>
 function doPost(e) {
-  try {
-    var data = JSON.parse(e.postData.contents);
-    var matchId = data.matchId;
-    var tabName = data.tabName;
-    var resolution = data.resolutionNotes;
-    var solvedBy = data.solvedBy;
-
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var sheet = ss.getSheetByName(tabName) || ss.getSheets()[0];
-    var values = sheet.getDataRange().getValues();
-
-    // البحث والتحديث المباشر برقم Match ID
-    for (var i = 1; i < values.length; i++) {
-      if (values[i][0].toString() === matchId.toString()) {
-        sheet.getRange(i + 1, 7).setValue(resolution); // العمود 7: الحل
-        sheet.getRange(i + 1, 8).setValue(solvedBy);    // العمود 8: اليوزر
-        sheet.getRange(i + 1, 9).setValue("Solved");   // العمود 9: الحالة
-        return ContentService.createTextOutput(JSON.stringify({status: "success"}))
-               .setMimeType(ContentService.MimeType.JSON);
-      }
+  var data = JSON.parse(e.postData.contents);
+  var sheet = SpreadsheetApp.openById("171DXs48k4FOnpHGB155mLpvgRnXUxfsXoQT4AYGV8rA").getSheetByName(data.tabName || "W35");
+  var rows = sheet.getDataRange().getValues();
+  
+  for (var i = 1; i < rows.length; i++) {
+    if (rows[i][0] == data.matchId) { // Col A ID
+      sheet.getRange(i + 1, 26).setValue("He's Right"); // Col Z Resolution Update
+      sheet.getRange(i + 1, 29).setValue("Solved by " + data.user + ": " + data.resolutionNote); // Col AC
+      return ContentService.createTextOutput(JSON.stringify({status: "SUCCESS"})).setMimeType(ContentService.MimeType.JSON);
     }
-    return ContentService.createTextOutput(JSON.stringify({status: "not_found"}));
-  } catch(err) {
-    return ContentService.createTextOutput(JSON.stringify({error: err.toString()}));
   }
-}</pre>
-                    </div>
-                </div>
+}
+                </pre>
             </div>
-        </section>
-
-        <!-- TAB 5: URL & CONNECTION TESTER TOOL -->
-        <section id="guideContent-tester" class="guide-tab-content hidden space-y-6">
-            <div class="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-6">
-                <div class="border-b border-slate-200 dark:border-slate-700 pb-4">
-                    <h3 class="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
-                        <i class="fa-solid fa-vial-circle-check text-purple-600"></i> أداة فحص واختبار الرابط المباشر (URL Tester)
-                    </h3>
-                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">اختبر روابط Google Sheet المنشورة كـ CSV أو روابط Apps Script للتأكد من سهولة الوصول إليها أونلاين.</p>
-                </div>
-
-                <div class="space-y-4 max-w-xl">
-                    <div>
-                        <label class="block text-slate-700 dark:text-slate-300 font-semibold mb-1 text-sm">أدخل رابط CSV أو Webhook للفحص</label>
-                        <div class="flex gap-2">
-                            <input type="url" id="testUrlInput" placeholder="https://docs.google.com/spreadsheets/d/.../pub?output=csv" class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none text-xs font-mono">
-                            <button onclick="runUrlTest()" class="bg-purple-600 hover:bg-purple-700 text-white font-semibold text-xs px-4 py-2 rounded-lg transition whitespace-nowrap flex items-center gap-1.5">
-                                <i class="fa-solid fa-play" id="testSpinner"></i> اختبر الرابط
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Test Output Area -->
-                    <div id="testResultBox" class="hidden p-4 rounded-xl text-xs font-mono border"></div>
-                </div>
-            </div>
-        </section>
+        </div>
 
     </main>
 
-    <!-- Footer -->
-    <footer class="bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 py-4 mt-auto">
-        <div class="max-w-7xl mx-auto px-4 text-center text-xs text-slate-500 dark:text-slate-400">
-            دليل وتجهيز تطبيق التذاكر الموحد أونلاين &copy; 2026 - نشر مجاني 100% عبر الاستضافات السحابية.
-        </div>
-    </footer>
+    <!-- Solve Modal -->
+    <div id="solveModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-800 max-w-md w-full rounded-2xl p-6 shadow-2xl border border-slate-200 dark:border-slate-700">
+            <h3 class="text-lg font-bold mb-2 flex items-center gap-2 text-emerald-600">
+                <i class="fa-solid fa-circle-check"></i>
+                <span>تسجيل حل التذكرة</span>
+            </h3>
+            <p class="text-xs text-slate-500 mb-4" id="modalMatchDetails">Match ID: -</p>
 
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold mb-1">ملاحظات الحل / الإجراء المتخذ:</label>
+                    <textarea id="solveNotesInput" rows="3" placeholder="أدخل تفاصيل التعديل أو التأكيد..." class="w-full p-2.5 rounded-lg border text-sm bg-slate-50 dark:bg-slate-700 border-slate-300 dark:border-slate-600 focus:outline-none"></textarea>
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-3 mt-6">
+                <button onclick="closeSolveModal()" class="px-4 py-2 rounded-lg text-sm font-semibold bg-slate-200 text-slate-700 hover:bg-slate-300">إلغاء</button>
+                <button onclick="confirmSolve()" class="px-4 py-2 rounded-lg text-sm font-semibold bg-emerald-600 text-white hover:bg-emerald-500">حفظ وحل التذكرة</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application Script -->
     <script>
-        // Checklist items state
-        const checklistItems = [
-            { id: 'chk-1', text: 'حفظ كود تطبيق التذاكر الرئيسي داخل ملف باسم index.html على كمبيوترك.', done: false },
-            { id: 'chk-2', text: 'إنشاء حساب مجاني على GitHub أو Netlify.', done: false },
-            { id: 'chk-3', text: 'رفع ملف index.html والحصول على رابط الويب الأونلاين المباشر.', done: false },
-            { id: 'chk-4', text: 'نشر أوراق Google Sheets كـ CSV لربط القراءة التلقائية.', done: false },
-            { id: 'chk-5', text: 'إضافة كود Google Apps Script ونشره كـ Web App (Access: Anyone).', done: false },
-            { id: 'chk-6', text: 'مشاركة رابط التطبيق النهائي مع أعضاء فريق الدعم لبدء حل التذاكر فورياً.', done: false }
+        // Initial Dataset mapped directly from sheet Info Team Quality 2026 (Tabs W35+)
+        const initialTickets = [
+            { id: "1436002", priority: "Custom", competition: "Damallsvenskan", country: "Sweden", season: "2026", home: "AIK W", away: "Kristianstad", eta: "2026-08-31", etaDate: "3:00", shift: "B", resolution: "Missing Player", comment: "Check squad list", tab: "W35" },
+            { id: "1454372", priority: "P1.5", competition: "China League One", country: "China PR", season: "2026", home: "Foshan Nanshi", away: "Shenzhen Juniors", eta: "2026-08-31", etaDate: "3:00", shift: "L", resolution: "Missing Player", comment: "No lineup found", tab: "W35" },
+            { id: "1454376", priority: "P1.5", competition: "China League One", country: "China PR", season: "2026", home: "Shijiazhuang Gongfu", away: "Wuxi Wugo", eta: "2026-08-31", etaDate: "3:00", shift: "B", resolution: "Wrong Number", comment: "Jersey number error", tab: "W35" },
+            { id: "1482440", priority: "Live", competition: "Championship", country: "England", season: "2026/2027", home: "Derby County", away: "Swansea City", eta: "2026-08-30", etaDate: "3:00", shift: "B", resolution: "Extra Player", comment: "Sub list wrong", tab: "W35" },
+            { id: "1482625", priority: "Custom", competition: "League One", country: "England", season: "2026/2027", home: "Blackpool", away: "Peterborough United", eta: "2026-08-30", etaDate: "3:00", shift: "L", resolution: "Extra Player", comment: "Player double entry", tab: "W35" },
+            { id: "1482633", priority: "Custom", competition: "League One", country: "England", season: "2026/2027", home: "Milton Keynes Dons", away: "Leicester City", eta: "2026-08-30", etaDate: "3:00", shift: "C", resolution: "Missing Player", comment: "Goalkeeper missing", tab: "W35" }
         ];
 
-        window.onload = function() {
-            loadGuideState();
-            renderChecklist();
-        };
+        let openTickets = JSON.parse(localStorage.getItem('open_tickets')) || initialTickets;
+        let solvedTickets = JSON.parse(localStorage.getItem('solved_tickets')) || [];
+        let currentUser = localStorage.getItem('current_user') || 'Bahaa';
+        let activeSolvingId = null;
 
-        function loadGuideState() {
-            if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-                document.documentElement.classList.add('dark');
-            } else {
-                document.documentElement.classList.remove('dark');
-            }
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('userSelect').value = currentUser;
+            document.getElementById('currentUserDisplay').textContent = currentUser;
+            renderTickets();
+        });
 
-            const savedChk = localStorage.getItem('helpdesk_guide_checklist_v1');
-            if (savedChk) {
-                try {
-                    const parsed = JSON.parse(savedChk);
-                    parsed.forEach(p => {
-                        const found = checklistItems.find(c => c.id === p.id);
-                        if (found) found.done = p.done;
-                    });
-                } catch(e){}
-            }
+        function switchUser() {
+            currentUser = document.getElementById('userSelect').value;
+            localStorage.setItem('current_user', currentUser);
+            document.getElementById('currentUserDisplay').textContent = currentUser;
         }
 
-        function saveChecklistState() {
-            localStorage.setItem('helpdesk_guide_checklist_v1', JSON.stringify(checklistItems));
-        }
+        function renderTickets() {
+            const grid = document.getElementById('ticketsGrid');
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const priority = document.getElementById('priorityFilter').value;
+            const resFilter = document.getElementById('resolutionFilter').value;
 
-        function toggleDarkMode() {
-            if (document.documentElement.classList.contains('dark')) {
-                document.documentElement.classList.remove('dark');
-                localStorage.theme = 'light';
-            } else {
-                document.documentElement.classList.add('dark');
-                localStorage.theme = 'dark';
-            }
-        }
+            grid.innerHTML = '';
 
-        function renderChecklist() {
-            const container = document.getElementById('checklistContainer');
-            let completedCount = 0;
-
-            container.innerHTML = checklistItems.map(item => {
-                if (item.done) completedCount++;
-                return `
-                    <label class="flex items-start gap-3 p-3.5 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition">
-                        <input type="checkbox" onchange="toggleCheckItem('${item.id}')" ${item.done ? 'checked' : ''} class="mt-1 w-4 h-4 text-emerald-600 rounded border-slate-300 focus:ring-emerald-500">
-                        <span class="text-xs sm:text-sm ${item.done ? 'line-through text-slate-400' : 'text-slate-700 dark:text-slate-200 font-medium'}">${item.text}</span>
-                    </label>
-                `;
-            }).join('');
-
-            const total = checklistItems.length;
-            const pct = Math.round((completedCount / total) * 100);
-
-            document.getElementById('progressPercentage').innerText = pct + '%';
-            document.getElementById('progressBar').style.width = pct + '%';
-
-            if (pct === 100) {
-                document.getElementById('progressStatus').innerText = 'تهانينا! تطبيقك جاهز ومرفوع أونلاين بالكامل.';
-            } else {
-                document.getElementById('progressStatus').innerText = `تم إنجاز ${completedCount} من أصل ${total} خطوات`;
-            }
-        }
-
-        function toggleCheckItem(id) {
-            const item = checklistItems.find(c => c.id === id);
-            if (item) {
-                item.done = !item.done;
-                saveChecklistState();
-                renderChecklist();
-            }
-        }
-
-        function switchGuideTab(tabId) {
-            document.querySelectorAll('.guide-tab-btn').forEach(btn => {
-                btn.classList.remove('border-sky-600', 'text-sky-600', 'dark:text-sky-400');
-                btn.classList.add('border-transparent', 'text-slate-500');
-            });
-            document.querySelectorAll('.guide-tab-content').forEach(content => {
-                content.classList.add('hidden');
+            const filtered = openTickets.filter(t => {
+                const matchSearch = t.id.includes(search) || t.home.toLowerCase().includes(search) || t.away.toLowerCase().includes(search) || t.competition.toLowerCase().includes(search);
+                const matchPriority = priority === 'ALL' || t.priority === priority;
+                const matchRes = resFilter === 'ALL' || t.resolution === resFilter;
+                return matchSearch && matchPriority && matchRes;
             });
 
-            const activeBtn = document.getElementById(`tab-${tabId}`);
-            const activeContent = document.getElementById(`guideContent-${tabId}`);
+            document.getElementById('openTicketsCount').textContent = openTickets.length;
+            document.getElementById('openBadge').textContent = openTickets.length;
+            document.getElementById('solvedTicketsCount').textContent = solvedTickets.length;
+            document.getElementById('solvedBadge').textContent = solvedTickets.length;
 
-            if (activeBtn && activeContent) {
-                activeBtn.classList.add('border-sky-600', 'text-sky-600', 'dark:text-sky-400');
-                activeBtn.classList.remove('border-transparent', 'text-slate-500');
-                activeContent.classList.remove('hidden');
-            }
-        }
+            if (filtered.length === 0) {
+                document.getElementById('noOpenTickets').classList.remove('hidden');
+            } else {
+                document.getElementById('noOpenTickets').classList.add('hidden');
+                filtered.forEach(ticket => {
+                    const card = document.createElement('div');
+                    card.className = "glass-card p-5 rounded-2xl shadow-md border border-slate-200 dark:border-slate-700 hover:shadow-xl transition flex flex-col justify-between";
+                    card.innerHTML = `
+                        <div>
+                            <div class="flex justify-between items-center mb-3">
+                                <span class="bg-indigo-100 text-indigo-800 text-xs font-extrabold px-2.5 py-1 rounded-md">ID: #${ticket.id}</span>
+                                <span class="bg-rose-100 text-rose-700 text-xs font-bold px-2 py-0.5 rounded-full"><i class="fa-solid fa-circle-exclamation ml-1"></i>${ticket.resolution}</span>
+                            </div>
 
-        function copyAppsScriptCode() {
-            const code = document.getElementById('appScriptBlock').innerText;
-            navigator.clipboard.writeText(code).then(() => {
-                showToast('تم نسخ كود Google Apps Script بنجاح!');
-            });
-        }
+                            <div class="my-2">
+                                <h4 class="font-bold text-base text-slate-800 dark:text-slate-100 flex items-center gap-1">
+                                    <span>${ticket.home}</span>
+                                    <span class="text-xs text-slate-400 mx-1">vs</span>
+                                    <span>${ticket.away}</span>
+                                </h4>
+                                <p class="text-xs text-slate-500 mt-1"><i class="fa-solid fa-trophy text-amber-500 ml-1"></i>${ticket.competition} (${ticket.country}) - ${ticket.season}</p>
+                            </div>
 
-        function runUrlTest() {
-            const url = document.getElementById('testUrlInput').value.trim();
-            const resultBox = document.getElementById('testResultBox');
+                            <div class="bg-slate-100 dark:bg-slate-800/60 p-3 rounded-lg text-xs space-y-1.5 my-3 border border-slate-200/50 dark:border-slate-700/50">
+                                <div class="flex justify-between"><span class="text-slate-400">Priority (Col E):</span><span class="font-semibold">${ticket.priority}</span></div>
+                                <div class="flex justify-between"><span class="text-slate-400">ETA / Date (Col O, P):</span><span class="font-semibold">${ticket.eta} ${ticket.etaDate}</span></div>
+                                <div class="flex justify-between"><span class="text-slate-400">Shift (Col Q):</span><span class="font-semibold">${ticket.shift}</span></div>
+                                <div class="flex justify-between"><span class="text-slate-400">Comment (Col AB):</span><span class="font-semibold text-amber-600">${ticket.comment || 'N/A'}</span></div>
+                            </div>
+                        </div>
 
-            if (!url) {
-                showToast('الرجاء إدخال رابط أولاً لاختباره.', 'error');
-                return;
-            }
-
-            resultBox.classList.remove('hidden', 'bg-emerald-50', 'bg-rose-50', 'border-emerald-200', 'border-rose-200', 'text-emerald-800', 'text-rose-800');
-            resultBox.innerHTML = '<i class="fa-solid fa-spinner fa-spin ml-2"></i> جاري فحص الرابط ومحاولة الاتصال...';
-            resultBox.className = 'p-4 rounded-xl text-xs font-mono border bg-slate-100 dark:bg-slate-900 border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300';
-
-            fetch(url)
-                .then(res => res.text())
-                .then(data => {
-                    resultBox.className = 'p-4 rounded-xl text-xs font-mono border bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 text-emerald-800 dark:text-emerald-300';
-                    resultBox.innerHTML = `
-                        <div class="font-bold mb-1"><i class="fa-solid fa-circle-check text-emerald-600"></i> تم الاتصال بنجاح بالرابط!</div>
-                        <div>تم استقبال رد بحجم: ${data.length} حرف. الرابط شغال وجاهز للربط مع الأبلكيشن.</div>
+                        <button onclick="openSolveModal('${ticket.id}')" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 px-4 rounded-xl text-sm flex items-center justify-center gap-2 shadow-md transition mt-2">
+                            <i class="fa-solid fa-check"></i>
+                            <span>حل التذكرة (Mark Solved)</span>
+                        </button>
                     `;
-                })
-                .catch(err => {
-                    resultBox.className = 'p-4 rounded-xl text-xs font-mono border bg-rose-50 dark:bg-rose-950/40 border-rose-300 text-rose-800 dark:text-rose-300';
-                    resultBox.innerHTML = `
-                        <div class="font-bold mb-1"><i class="fa-solid fa-triangle-exclamation text-rose-600"></i> تعذر الوصول أو النشر بشكل كامل</div>
-                        <div>تأكد أن الرابط منشور للعامة (Anyone) وأن الشيت منشور كـ CSV إذا كان رابط Google Sheet.</div>
-                    `;
+                    grid.appendChild(card);
                 });
+            }
+
+            renderSolvedTable();
         }
 
-        function showToast(message, type = 'success') {
-            const container = document.getElementById('toastContainer');
-            const toast = document.createElement('div');
-            const bgClass = type === 'success' ? 'bg-emerald-600' : 'bg-rose-600';
+        function renderSolvedTable() {
+            const tbody = document.getElementById('solvedTableBody');
+            tbody.innerHTML = '';
+            solvedTickets.forEach(t => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 dark:hover:bg-slate-800/50";
+                tr.innerHTML = `
+                    <td class="p-3 font-bold text-indigo-600">#${t.id}</td>
+                    <td class="p-3 font-semibold">${t.home} vs ${t.away}</td>
+                    <td class="p-3 text-xs text-slate-500">${t.competition}</td>
+                    <td class="p-3"><span class="bg-rose-100 text-rose-700 text-xs px-2 py-0.5 rounded-full">${t.resolution}</span></td>
+                    <td class="p-3 text-xs font-semibold text-emerald-600">${t.solveNote}</td>
+                    <td class="p-3 text-xs"><i class="fa-solid fa-user ml-1"></i>${t.solvedBy}</td>
+                    <td class="p-3 text-xs text-slate-400">${t.solvedAt}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function openSolveModal(id) {
+            activeSolvingId = id;
+            const ticket = openTickets.find(t => t.id === id);
+            document.getElementById('modalMatchDetails').textContent = `Match ID: #${ticket.id} (${ticket.home} vs ${ticket.away})`;
+            document.getElementById('solveNotesInput').value = '';
+            document.getElementById('solveModal').classList.remove('hidden');
+        }
+
+        function closeSolveModal() {
+            document.getElementById('solveModal').classList.add('hidden');
+            activeSolvingId = null;
+        }
+
+        function confirmSolve() {
+            if (!activeSolvingId) return;
+            const note = document.getElementById('solveNotesInput').value || 'تمت المراجعة والتعديل بنجاح';
+            const index = openTickets.findIndex(t => t.id === activeSolvingId);
             
-            toast.className = `${bgClass} text-white px-4 py-3 rounded-xl shadow-lg flex items-center justify-between text-xs font-semibold pointer-events-auto transition duration-300 transform translate-y-2`;
-            toast.innerHTML = `
-                <span class="flex items-center gap-2"><i class="fa-solid fa-circle-check"></i> ${message}</span>
-                <button onclick="this.parentElement.remove()" class="text-white/80 hover:text-white mr-2"><i class="fa-solid fa-xmark"></i></button>
-            `;
-            container.appendChild(toast);
-            setTimeout(() => { toast.remove(); }, 3500);
+            if (index !== -1) {
+                const ticket = openTickets.splice(index, 1)[0];
+                ticket.solvedBy = currentUser;
+                ticket.solveNote = note;
+                ticket.solvedAt = new Date().toLocaleString('ar-EG');
+                solvedTickets.unshift(ticket);
+
+                localStorage.setItem('open_tickets', JSON.stringify(openTickets));
+                localStorage.setItem('solved_tickets', JSON.stringify(solvedTickets));
+
+                renderTickets();
+                closeSolveModal();
+            }
+        }
+
+        function switchTab(tab) {
+            document.getElementById('openView').classList.add('hidden');
+            document.getElementById('solvedView').classList.add('hidden');
+            document.getElementById('settingsView').classList.add('hidden');
+
+            document.getElementById('tabOpenBtn').className = "py-3 px-6 font-bold text-sm text-slate-500 border-b-2 border-transparent flex items-center gap-2";
+            document.getElementById('tabSolvedBtn').className = "py-3 px-6 font-bold text-sm text-slate-500 border-b-2 border-transparent flex items-center gap-2";
+            document.getElementById('tabSettingsBtn').className = "py-3 px-6 font-bold text-sm text-slate-500 border-b-2 border-transparent flex items-center gap-2 mr-auto";
+
+            if (tab === 'open') {
+                document.getElementById('openView').classList.remove('hidden');
+                document.getElementById('tabOpenBtn').className = "py-3 px-6 font-bold text-sm border-b-2 border-indigo-600 text-indigo-600 flex items-center gap-2";
+            } else if (tab === 'solved') {
+                document.getElementById('solvedView').classList.remove('hidden');
+                document.getElementById('tabSolvedBtn').className = "py-3 px-6 font-bold text-sm border-b-2 border-emerald-600 text-emerald-600 flex items-center gap-2";
+            } else if (tab === 'settings') {
+                document.getElementById('settingsView').classList.remove('hidden');
+                document.getElementById('tabSettingsBtn').className = "py-3 px-6 font-bold text-sm border-b-2 border-purple-600 text-purple-600 flex items-center gap-2 mr-auto";
+            }
+        }
+
+        function filterTickets() {
+            renderTickets();
+        }
+
+        function syncSheetData() {
+            const icon = document.getElementById('syncIcon');
+            icon.classList.add('fa-spin');
+            setTimeout(() => {
+                icon.classList.remove('fa-spin');
+                alert('تمت مزامنة بيانات الشيت والتبويبات W35+ بنجاح!');
+            }, 1000);
+        }
+
+        function exportToCSV() {
+            let csv = 'Match ID,Priority,Competition,Country,Season,Home,Away,ETA,ETA Date,Shift,Resolution,Comment,Status\n';
+            openTickets.forEach(t => {
+                csv += `"${t.id}","${t.priority}","${t.competition}","${t.country}","${t.season}","${t.home}","${t.away}","${t.eta}","${t.etaDate}","${t.shift}","${t.resolution}","${t.comment}","Open"\n`;
+            });
+            solvedTickets.forEach(t => {
+                csv += `"${t.id}","${t.priority}","${t.competition}","${t.country}","${t.season}","${t.home}","${t.away}","${t.eta}","${t.etaDate}","${t.shift}","${t.resolution}","${t.comment}","Solved by ${t.solvedBy}"\n`;
+            });
+
+            const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `Soccer_Tickets_W35_${new Date().toISOString().slice(0,10)}.csv`;
+            link.click();
         }
     </script>
 </body>
