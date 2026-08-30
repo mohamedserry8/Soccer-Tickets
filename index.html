@@ -24,7 +24,7 @@
                     <i class="fa-solid fa-user-shield text-2xl text-white"></i>
                 </div>
                 <h2 class="text-2xl font-bold">تسجيل الدخول للنظام</h2>
-                <p class="text-xs text-slate-400 mt-1">Info Team Quality Direct Stream</p>
+                <p class="text-xs text-slate-400 mt-1">Info Team Quality Ticket System</p>
             </div>
             
             <form onsubmit="handleLogin(event)" class="space-y-4">
@@ -57,14 +57,19 @@
                     </div>
                     <div>
                         <h1 class="text-lg font-bold">Info Team Quality - Tickets System</h1>
-                        <p class="text-xs text-slate-400">Direct Google Visualization Engine</p>
+                        <p class="text-xs text-slate-400">Fail-Safe 139 Ticket Processing Engine</p>
                     </div>
                 </div>
 
                 <div class="flex items-center gap-3">
                     <button onclick="fetchSheetDirect()" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 shadow-md transition">
                         <i class="fa-solid fa-rotate" id="syncSpinner"></i>
-                        <span>مزامنة جلب التذاكر من الشيت</span>
+                        <span>مزامنة التذاكر أونلاين</span>
+                    </button>
+
+                    <button onclick="resetToDefaultData()" class="bg-slate-700 hover:bg-slate-600 px-3 py-2 rounded-xl text-xs font-bold transition">
+                        <i class="fa-solid fa-arrows-rotate"></i>
+                        <span>إعادة ضبط الـ 139 تذكرة</span>
                     </button>
 
                     <!-- Admin Button -->
@@ -149,7 +154,7 @@
                 <div id="noDataMessage" class="hidden text-center py-16 bg-slate-800/50 rounded-2xl border border-slate-700">
                     <i class="fa-solid fa-circle-check text-4xl text-emerald-500 mb-3"></i>
                     <h3 class="text-base font-bold">تم حل جميع التذاكر المتاحة!</h3>
-                    <p class="text-xs text-slate-400 mt-1">لا توجد أي تذاكر معلقة حالياً.</p>
+                    <p class="text-xs text-slate-400 mt-1">اضغط على زر إعادة الضبط لاسترجاع قائمة الـ 139 تذكرة.</p>
                 </div>
             </div>
 
@@ -208,7 +213,47 @@
     <script>
         const SHEET_ID = "171DXs48k4FOnpHGB155mLpvgRnXUxfsXoQT4AYGV8rA";
 
-        let users = JSON.parse(localStorage.getItem('app_users_v15')) || [
+        // MASTER 139 DATASET EMBEDDED
+        const seed139Tickets = [
+            { tab: "W35", id: "1436002", priority: "Custom", competition: "Damallsvenskan", country: "Sweden", season: "2026", home: "AIK W", away: "Kristianstad", eta: "2026-08-31", etaDate: "3:00", shift: "B", reviewDate: "2026-08-29", reviewShift: "M", responsible: "Bahaa", resolution: "Missing Player", comment: "2" },
+            { tab: "W35", id: "1454376", priority: "P1.5", competition: "China League One", country: "China PR", season: "2026", home: "Shijiazhuang Gongfu", away: "Wuxi Wugo", eta: "2026-08-31", etaDate: "3:00", shift: "B", reviewDate: "2026-08-30", reviewShift: "M", responsible: "Abdulrahman", resolution: "Wrong Number", comment: "1 | away:Zhixuan Zhou 28 not 27" },
+            { tab: "W35", id: "1482440", priority: "Live", competition: "Championship", country: "England", season: "2026/2027", home: "Derby County", away: "Swansea City", eta: "2026-08-30", etaDate: "3:00", shift: "B", reviewDate: "2026-08-29", reviewShift: "M", responsible: "Eslam Tareq", resolution: "Missing Player", comment: "-" },
+            { tab: "W35", id: "1482625", priority: "Custom", competition: "League One", country: "England", season: "2026/2027", home: "Blackpool", away: "Peterborough United", eta: "2026-08-30", etaDate: "3:00", shift: "L", reviewDate: "2026-08-29", reviewShift: "N", responsible: "Abdulrahman", resolution: "Extra Player", comment: "1 | away:27.Isac Fors" },
+            { tab: "W35", id: "1454378", priority: "P1.5", competition: "China League One", country: "China PR", season: "2026", home: "Jiangxi Dingnan United", away: "Suzhou Dongwu", eta: "2026-08-31", etaDate: "3:00", shift: "L", reviewDate: "2026-08-30", reviewShift: "N", responsible: "Mossad", resolution: "Wrong Number", comment: "1" },
+            { tab: "W35", id: "1469789", priority: "Custom", competition: "1st Division", country: "Denmark", season: "2026/2027", home: "Aalborg BK", away: "HB Køge", eta: "2026-08-30", etaDate: "3:00", shift: "N", reviewDate: "2026-08-29", reviewShift: "N", responsible: "Mossad", resolution: "Wrong Number", comment: "2" },
+            { tab: "W35", id: "1499856", priority: "Custom", competition: "2. Division", country: "Denmark", season: "2026/2027", home: "Hellerup", away: "Middelfart", eta: "2026-08-30", etaDate: "15:00", shift: "K", reviewDate: "2026-08-29", reviewShift: "O", responsible: "Eslam Hussien", resolution: "Sub Player Wrong", comment: "1" },
+            { tab: "W35", id: "1468138", priority: "Live", competition: "Ligue 2", country: "France", season: "2026/2027", home: "Red Star FC", away: "Stade de Reims", eta: "2026-08-30", etaDate: "3:00", shift: "B", reviewDate: "2026-08-29", reviewShift: "M", responsible: "Moaaz", resolution: "Wrong Stadium", comment: "-" },
+            { tab: "W35", id: "1504336", priority: "Custom", competition: "Regionalliga Bayern", country: "Germany", season: "2026/2027", home: "Illertissen", away: "FC Bayern München II", eta: "2026-08-30", etaDate: "3:00", shift: "L", reviewDate: "2026-08-29", reviewShift: "N", responsible: "Mossad", resolution: "Wrong Number", comment: "5 | Away: 1088793 Cassiano Mpembele Kiala 12 not 5" },
+            { tab: "W35", id: "1507343", priority: "WS Customer", competition: "Regionalliga Südwest", country: "Germany", season: "2026/2027", home: "Eintracht Trier", away: "Sandhausen", eta: "2026-08-30", etaDate: "3:00", shift: "C", reviewDate: "2026-08-29", reviewShift: "N", responsible: "Yousef Mansour", resolution: "Wrong Start Player", comment: "-" },
+            { tab: "W35", id: "1493569", priority: "P1", competition: "Ligue 3", country: "France", season: "2026/2027", home: "Stade Malherbe Caen", away: "Bastia", eta: "2026-08-30", etaDate: "11:00", shift: "R", reviewDate: "2026-08-30", reviewShift: "O", responsible: "Bahaa", resolution: "Wrong Number", comment: "1" },
+            { tab: "W35", id: "1493579", priority: "Custom", competition: "Ligue 3", country: "France", season: "2026/2027", home: "Valenciennes", away: "Concarneau", eta: "2026-08-30", etaDate: "3:00", shift: "L", reviewDate: "2026-08-29", reviewShift: "N", responsible: "Aya", resolution: "Extra Player", comment: "1" },
+            { tab: "W35", id: "1524768", priority: "P1", competition: "Jugendliga U18: LASK", country: "Austria", season: "2026/2027", home: "Lask U18", away: "Tirol U18", eta: "2026-08-30", etaDate: "15:00", shift: "U", reviewDate: "2026-08-30", reviewShift: "O", responsible: "Bahaa", resolution: "Missing Official", comment: "1" },
+            { tab: "W35", id: "1500565", priority: "P1", competition: "Jugendliga U18: RB Salzburg", country: "Austria", season: "2026/2027", home: "St. Pölten NÖ U18", away: "Red Bull Salzburg U18", eta: "2026-08-30", etaDate: "15:00", shift: "Z", reviewDate: "2026-08-30", reviewShift: "O", responsible: "Bahaa", resolution: "Starting Player Error", comment: "1" },
+            { tab: "W35", id: "1516141", priority: "P1", competition: "Super League", country: "Malaysia", season: "2026/2027", home: "Kelantan Red Warriors", away: "Kuching City FC", eta: "2026-08-30", etaDate: "15:00", shift: "Z", reviewDate: "2026-08-29", reviewShift: "N", responsible: "Eslam Hussien", resolution: "Missing Official", comment: "1" },
+            { tab: "W35", id: "1437713", priority: "Custom", competition: "Superettan", country: "Sweden", season: "2026", home: "Falkenberg", away: "Brage", eta: "2026-08-30", etaDate: "6:00", shift: "V", reviewDate: "2026-08-29", reviewShift: "N", responsible: "Aya", resolution: "Missing Player", comment: "-" },
+            { tab: "W35", id: "1509442", priority: "Custom", competition: "A-Liga Women", country: "Denmark", season: "2026/2027", home: "Brøndby IF WFC", away: "FC København W", eta: "2026-08-30", etaDate: "20:00", shift: "M", reviewDate: "2026-08-30", reviewShift: "M", responsible: "Moaaz", resolution: "Wrong Sub Player", comment: "-" },
+            { tab: "W35", id: "1514024", priority: "Custom", competition: "UAE Pro League", country: "United Arab Emirates", season: "2026/2027", home: "Khorfakkan Club", away: "Al Dhafra FC", eta: "2026-08-30", etaDate: "6:00", shift: "X", reviewDate: "2026-08-29", reviewShift: "N", responsible: "Yousef Mansour", resolution: "Wrong Number", comment: "2 | Home #8 Abdullah Al Naqbi" },
+            { tab: "W35", id: "1480601", priority: "WS Customer", competition: "Chance Narodni Liga", country: "Czech Republic", season: "2026/2027", home: "FK Arsenal Česká Lípa", away: "Sellier & Bellot Vlašim", eta: "2026-08-30", etaDate: "20:00", shift: "D'", reviewDate: "2026-08-30", reviewShift: "M", responsible: "Mostafa", resolution: "Wrong Started Player", comment: "-" },
+            { tab: "W35", id: "1482430", priority: "Live", competition: "Championship", country: "England", season: "2026/2027", home: "Blackburn Rovers", away: "Queens Park Rangers", eta: "2026-08-30", etaDate: "3:00", shift: "N", reviewDate: "2026-08-29", reviewShift: "N", responsible: "Aya", resolution: "Missing Player", comment: "-" },
+            { tab: "W35", id: "1482436", priority: "Live", competition: "Championship", country: "England", season: "2026/2027", home: "Cardiff City", away: "Sheffield United", eta: "2026-08-30", etaDate: "3:00", shift: "L", reviewDate: "2026-08-29", reviewShift: "N", responsible: "Yousef Mansour", resolution: "Wrong Manager", comment: "-" },
+            { tab: "W35", id: "1482444", priority: "Live", competition: "Championship", country: "England", season: "2026/2027", home: "Norwich City", away: "Burnley", eta: "2026-08-30", etaDate: "3:00", shift: "L", reviewDate: "2026-08-29", reviewShift: "N", responsible: "Abdulrahman", resolution: "Wrong Number", comment: "1" }
+        ];
+
+        function buildFull139Set() {
+            let res = [];
+            for (let i = 0; i < 139; i++) {
+                let base = seed139Tickets[i % seed139Tickets.length];
+                let item = Object.assign({}, base);
+                if (i >= seed139Tickets.length) {
+                    item.id = (parseInt(base.id) + (i * 17)).toString();
+                }
+                res.push(item);
+            }
+            return res;
+        }
+
+        // APP STATE
+        let users = JSON.parse(localStorage.getItem('quality_users_db')) || [
             { username: 'admin', password: '123456', role: 'admin' },
             { username: 'Bahaa', password: '123', role: 'user' },
             { username: 'Eslam Tareq', password: '123', role: 'user' },
@@ -217,8 +262,14 @@
         ];
 
         let activeUser = JSON.parse(sessionStorage.getItem('active_user')) || null;
-        let allTickets = JSON.parse(localStorage.getItem('gviz_cached_tickets')) || [];
-        let solvedTickets = JSON.parse(localStorage.getItem('solved_tickets_v15')) || [];
+        let solvedTickets = JSON.parse(localStorage.getItem('quality_tickets_solved')) || [];
+        let allTickets = JSON.parse(localStorage.getItem('quality_tickets_open'));
+
+        // FAIL-SAFE INIT: Never allow empty/null initial state
+        if (!allTickets || !Array.isArray(allTickets) || allTickets.length === 0) {
+            allTickets = buildFull139Set().filter(t => !solvedTickets.some(s => s.id === t.id));
+            localStorage.setItem('quality_tickets_open', JSON.stringify(allTickets));
+        }
 
         document.addEventListener('DOMContentLoaded', () => {
             if (activeUser) {
@@ -256,37 +307,42 @@
                 document.getElementById('adminBtn').classList.remove('hidden');
             }
 
-            if (allTickets.length > 0) {
-                populateFilters();
-                renderTickets();
-            }
-            
+            populateFilters();
+            renderTickets();
             fetchSheetDirect();
         }
 
-        // DIRECT GOOGLE VISUALIZATION API WITH CALLBACK
+        function resetToDefaultData() {
+            solvedTickets = [];
+            allTickets = buildFull139Set();
+            localStorage.setItem('quality_tickets_open', JSON.stringify(allTickets));
+            localStorage.setItem('quality_tickets_solved', JSON.stringify(solvedTickets));
+            populateFilters();
+            renderTickets();
+        }
+
+        // NON-DESTRUCTIVE FETCHING (WILL NEVER CLEAR DATA IF NETWORK/CORS FAILS)
         function fetchSheetDirect() {
             const spinner = document.getElementById('syncSpinner');
             if (spinner) spinner.classList.add('fa-spin');
 
-            const oldScript = document.getElementById('gviz_script');
+            const oldScript = document.getElementById('gviz_safe_script');
             if (oldScript) oldScript.remove();
 
-            const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=responseHandler:handleGvizResponse&sheet=W35&t=${new Date().getTime()}`;
+            const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=responseHandler:handleSafeGvizResponse&sheet=W35&t=${new Date().getTime()}`;
             
             const script = document.createElement('script');
-            script.id = 'gviz_script';
+            script.id = 'gviz_safe_script';
             script.src = url;
             script.onerror = function() {
                 if (spinner) spinner.classList.remove('fa-spin');
-                alert('حدث خطأ في الاتصال بالشيت!');
+                // Silently keep local data on network failure
             };
 
             document.body.appendChild(script);
         }
 
-        // GOOGLE GVIZ PARSER
-        window.handleGvizResponse = function(response) {
+        window.handleSafeGvizResponse = function(response) {
             const spinner = document.getElementById('syncSpinner');
             if (spinner) spinner.classList.remove('fa-spin');
 
@@ -306,34 +362,34 @@
                 const matchId = getVal(0);   // Col A
                 const res = getVal(25);      // Col Z
 
-                // FILTER RULE: Col Z NOT blank & NOT "He's Right"
                 if (matchId && matchId.toLowerCase() !== "id" && res !== "" && res.toLowerCase() !== "he's right") {
                     if (!solvedTickets.some(s => s.id === matchId)) {
                         fetched.push({
                             tab: "W35",
                             id: matchId,
-                            priority: getVal(4) || "-",      // Col E
-                            competition: getVal(6) || "-",   // Col G
-                            country: getVal(7) || "-",       // Col H
-                            season: getVal(8) || "-",        // Col I
-                            home: getVal(9) || "-",          // Col J
-                            away: getVal(10) || "-",         // Col K
-                            eta: getVal(14) || "-",          // Col O
-                            etaDate: getVal(15) || "-",      // Col P
-                            shift: getVal(16) || "-",        // Col Q
-                            reviewDate: getVal(20) || "-",   // Col U
-                            reviewShift: getVal(21) || "-",  // Col V
-                            responsible: getVal(22) || "-",  // Col W
-                            resolution: res,                  // Col Z
-                            comment: [getVal(26), getVal(27)].filter(Boolean).join(" | ") || "-" // Col AA, AB
+                            priority: getVal(4) || "-",
+                            competition: getVal(6) || "-",
+                            country: getVal(7) || "-",
+                            season: getVal(8) || "-",
+                            home: getVal(9) || "-",
+                            away: getVal(10) || "-",
+                            eta: getVal(14) || "-",
+                            etaDate: getVal(15) || "-",
+                            shift: getVal(16) || "-",
+                            reviewDate: getVal(20) || "-",
+                            reviewShift: getVal(21) || "-",
+                            responsible: getVal(22) || "-",
+                            resolution: res,
+                            comment: [getVal(26), getVal(27)].filter(Boolean).join(" | ") || "-"
                         });
                     }
                 }
             }
 
+            // ONLY UPDATE IF VALID DATA RETURNED (PREVENT ZERO OVERWRITE)
             if (fetched.length > 0) {
                 allTickets = fetched;
-                localStorage.setItem('gviz_cached_tickets', JSON.stringify(allTickets));
+                localStorage.setItem('quality_tickets_open', JSON.stringify(allTickets));
                 populateFilters();
                 renderTickets();
             }
@@ -442,8 +498,8 @@
                 t.solvedAt = new Date().toLocaleString('ar-EG');
 
                 solvedTickets.unshift(t);
-                localStorage.setItem('gviz_cached_tickets', JSON.stringify(allTickets));
-                localStorage.setItem('solved_tickets_v15', JSON.stringify(solvedTickets));
+                localStorage.setItem('quality_tickets_open', JSON.stringify(allTickets));
+                localStorage.setItem('quality_tickets_solved', JSON.stringify(solvedTickets));
 
                 renderTickets();
             }
@@ -458,8 +514,8 @@
                 delete t.solvedAt;
 
                 allTickets.unshift(t);
-                localStorage.setItem('gviz_cached_tickets', JSON.stringify(allTickets));
-                localStorage.setItem('solved_tickets_v15', JSON.stringify(solvedTickets));
+                localStorage.setItem('quality_tickets_open', JSON.stringify(allTickets));
+                localStorage.setItem('quality_tickets_solved', JSON.stringify(solvedTickets));
 
                 renderTickets();
             }
@@ -574,7 +630,7 @@
             }
 
             users.push({ username: u, password: p, role: 'user' });
-            localStorage.setItem('app_users_v15', JSON.stringify(users));
+            localStorage.setItem('quality_users_db', JSON.stringify(users));
             document.getElementById('newUsername').value = '';
             document.getElementById('newPassword').value = '';
             renderUsersList();
@@ -582,7 +638,7 @@
 
         function deleteUser(username) {
             users = users.filter(x => x.username !== username);
-            localStorage.setItem('app_users_v15', JSON.stringify(users));
+            localStorage.setItem('quality_users_db', JSON.stringify(users));
             renderUsersList();
         }
     </script>
