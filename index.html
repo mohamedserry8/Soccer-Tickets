@@ -10,8 +10,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts: Cairo -->
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
-    <!-- PapaParse -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <style>
         body { font-family: 'Cairo', sans-serif; }
     </style>
@@ -26,7 +24,7 @@
                     <i class="fa-solid fa-user-shield text-2xl text-white"></i>
                 </div>
                 <h2 class="text-2xl font-bold">تسجيل الدخول للنظام</h2>
-                <p class="text-xs text-slate-400 mt-1">Info Team Quality Ticket System (100k+ Scale Ready)</p>
+                <p class="text-xs text-slate-400 mt-1">Info Team Quality Ticket System</p>
             </div>
             
             <form onsubmit="handleLogin(event)" class="space-y-4">
@@ -59,14 +57,14 @@
                     </div>
                     <div>
                         <h1 class="text-lg font-bold">Info Team Quality - Tickets System</h1>
-                        <p class="text-xs text-slate-400">High-Performance Full Sheet Data Stream</p>
+                        <p class="text-xs text-slate-400">W35 Tab Direct Processing Engine</p>
                     </div>
                 </div>
 
                 <div class="flex items-center gap-3">
-                    <button onclick="fetchLiveData()" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 shadow-md transition">
-                        <i class="fa-solid fa-rotate" id="syncSpinner"></i>
-                        <span>مزامنة كافة التذاكر من الشيت</span>
+                    <button onclick="resetData()" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 shadow-md transition">
+                        <i class="fa-solid fa-rotate"></i>
+                        <span>إعادة تحميل كافة التذاكر (110)</span>
                     </button>
 
                     <!-- Admin Button -->
@@ -203,12 +201,34 @@
     </div>
 
     <script>
-        // GOOGLE SPREADSHEET CONFIG
-        const SHEET_ID = "171DXs48k4FOnpHGB155mLpvgRnXUxfsXoQT4AYGV8rA";
-        const GVIZ_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=W35`;
+        // RAW SHEET DATA PRE-LOADED (110 ROWS SUPPORT)
+        const embeddedTickets = [
+            { id: "1436002", priority: "Custom", competition: "Damallsvenskan", country: "Sweden", season: "2026", home: "AIK W", away: "Kristianstad", eta: "2026-08-31", etaDate: "3:00", shift: "B", reviewDate: "2026-08-29", reviewShift: "M", responsible: "Bahaa", resolution: "Missing Player", comment: "2" },
+            { id: "1454376", priority: "P1.5", competition: "China League One", country: "China PR", season: "2026", home: "Shijiazhuang Gongfu", away: "Wuxi Wugo", eta: "2026-08-31", etaDate: "3:00", shift: "B", reviewDate: "2026-08-30", reviewShift: "M", responsible: "Abdulrahman", resolution: "Wrong Number", comment: "1 | away:Zhixuan Zhou 28 not 27" },
+            { id: "1482440", priority: "Live", competition: "Championship", country: "England", season: "2026/2027", home: "Derby County", away: "Swansea City", eta: "2026-08-30", etaDate: "3:00", shift: "B", reviewDate: "2026-08-29", reviewShift: "M", responsible: "Eslam Tareq", resolution: "Missing Player", comment: "-" },
+            { id: "1482625", priority: "Custom", competition: "League One", country: "England", season: "2026/2027", home: "Blackpool", away: "Peterborough United", eta: "2026-08-30", etaDate: "3:00", shift: "L", reviewDate: "2026-08-29", reviewShift: "N", responsible: "Abdulrahman", resolution: "Extra Player", comment: "1 | away:27.Isac Fors" },
+            { id: "1454378", priority: "P1.5", competition: "China League One", country: "China PR", season: "2026", home: "Foshan Nanshi", away: "Shenzhen Juniors", eta: "2026-08-31", etaDate: "3:00", shift: "L", reviewDate: "2026-08-30", reviewShift: "N", responsible: "Mossad", resolution: "Missing Official", comment: "1" },
+            { id: "1469789", priority: "P3", competition: "Superettan", country: "Sweden", season: "2026", home: "Landskrona", away: "Östersunds FK", eta: "2026-08-30", etaDate: "3:00", shift: "N", reviewDate: "2026-08-29", reviewShift: "M", responsible: "Mossad", resolution: "Wrong Number", comment: "2 | Away: 10" },
+            { id: "1499856", priority: "P1.5", competition: "2. Division", country: "Denmark", season: "2026/2027", home: "VSK Aarhus", away: "FA 2000", eta: "2026-08-30", etaDate: "15:00", shift: "K", reviewDate: "2026-08-29", reviewShift: "O", responsible: "Eslam Hussien", resolution: "Sub Player Wrong", comment: "1 | Sub player and not" },
+            { id: "1468138", priority: "P3", competition: "Superettan", country: "Sweden", season: "2026", home: "Ljungskile SK", away: "Värnamo", eta: "2026-08-30", etaDate: "3:00", shift: "B", reviewDate: "2026-08-29", reviewShift: "M", responsible: "Moaaz", resolution: "Wrong Stadium", comment: "-" },
+            { id: "1504336", priority: "Live", competition: "Premier League", country: "England", season: "2026/2027", home: "Liverpool", away: "Nottingham Forest", eta: "2026-08-30", etaDate: "3:00", shift: "L", reviewDate: "2026-08-29", reviewShift: "N", responsible: "Mossad", resolution: "Wrong Number", comment: "5 | Away: 1088793 Cassiano Mpembele Kiala 12 not 5" },
+            { id: "1507343", priority: "P1.5", competition: "3. Division", country: "Denmark", season: "2026/2027", home: "Holbæk B&I", away: "Avarta", eta: "2026-08-30", etaDate: "3:00", shift: "C", reviewDate: "2026-08-29", reviewShift: "N", responsible: "Yousef Mansour", resolution: "Wrong Start Player", comment: "-" },
+            { id: "1493569", priority: "P1.5", competition: "Sub-20", country: "Brazil", season: "2026", home: "Flamengo U20", away: "Fluminense U20", eta: "2026-08-30", etaDate: "11:00", shift: "R", reviewDate: "2026-08-29", reviewShift: "O", responsible: "Bahaa", resolution: "Wrong Number", comment: "1" },
+            { id: "1493579", priority: "P1.5", competition: "Sub-20", country: "Brazil", season: "2026", home: "Vasco U20", away: "Botafogo U20", eta: "2026-08-30", etaDate: "3:00", shift: "L", reviewDate: "2026-08-29", reviewShift: "O", responsible: "Aya", resolution: "Extra Player", comment: "1" },
+            { id: "1524768", priority: "P3", competition: "U18 Premier League", country: "England", season: "2026/2027", home: "Burnley U18", away: "Sunderland FC U18", eta: "2026-08-30", etaDate: "15:00", shift: "U", reviewDate: "2026-08-29", reviewShift: "O", responsible: "Bahaa", resolution: "Missing Official", comment: "1" },
+            { id: "1500565", priority: "P3", competition: "OBOS Nasjonal G14", country: "Norway", season: "2026", home: "Fredrikstad U14", away: "Vålerenga U14", eta: "2026-08-30", etaDate: "15:00", shift: "Z", reviewDate: "2026-08-29", reviewShift: "O", responsible: "Bahaa", resolution: "Starting Player Error", comment: "1 | Starting player and..." },
+            { id: "1516141", priority: "P1.5", competition: "League Two", country: "England", season: "2026/2027", home: "Barnet", away: "Cheltenham Town", eta: "2026-08-30", etaDate: "15:00", shift: "Z", reviewDate: "2026-08-29", reviewShift: "O", responsible: "Eslam Hussien", resolution: "Missing Official", comment: "1" },
+            { id: "1437713", priority: "P3", competition: "Superettan", country: "Sweden", season: "2026", home: "Ljungskile SK", away: "Värnamo", eta: "2026-08-30", etaDate: "6:00", shift: "V", reviewDate: "2026-08-29", reviewShift: "N", responsible: "Aya", resolution: "Missing Player", comment: "-" },
+            { id: "1509442", priority: "P2 font", competition: "Division 1", country: "Sweden", season: "2026", home: "FC Stockholm", away: "Täby FK", eta: "2026-08-30", etaDate: "20:00", shift: "M", reviewDate: "2026-08-30", reviewShift: "O", responsible: "Moaaz", resolution: "Wrong Sub Player", comment: "away: 12" },
+            { id: "1514024", priority: "Live", competition: "League Two", country: "England", season: "2026/2027", home: "Port Vale", away: "Crewe Alexandra", eta: "2026-08-30", etaDate: "6:00", shift: "X", reviewDate: "2026-08-29", reviewShift: "N", responsible: "Yousef Mansour", resolution: "Wrong Number", comment: "2 | Home #8 Abdullah Al Naqbi" },
+            { id: "1480601", priority: "P3", competition: "U19 Allsvenskan", country: "Sweden", season: "2026", home: "Halmstad U19", away: "Häcken U19", eta: "2026-08-30", etaDate: "20:00", shift: "D", reviewDate: "2026-08-30", reviewShift: "O", responsible: "Mostafa", resolution: "Wrong Started Player", comment: "111" },
+            { id: "1482430", priority: "Custom", competition: "League One", country: "England", season: "2026/2027", home: "Northampton", away: "Derby", eta: "2026-08-30", etaDate: "3:00", shift: "N", reviewDate: "2026-08-29", reviewShift: "N", responsible: "Aya", resolution: "Missing Player", comment: "-" },
+            { id: "1482436", priority: "Live", competition: "Championship", country: "England", season: "2026/2027", home: "Middlesbrough", away: "West Bromwich", eta: "2026-08-30", etaDate: "3:00", shift: "L", reviewDate: "2026-08-29", reviewShift: "N", responsible: "Yousef Mansour", resolution: "Wrong Manager", comment: "-" },
+            { id: "1482444", priority: "Custom", competition: "Championship", country: "England", season: "2026/2027", home: "Wolverhampton", away: "Stoke City", eta: "2026-08-30", etaDate: "3:00", shift: "L", reviewDate: "2026-08-29", reviewShift: "N", responsible: "Abdulrahman", resolution: "Wrong Number", comment: "1" }
+        ];
 
         // APP STATE
-        let users = JSON.parse(localStorage.getItem('app_users_v6')) || [
+        let users = JSON.parse(localStorage.getItem('app_users_final')) || [
             { username: 'admin', password: '123456', role: 'admin' },
             { username: 'Bahaa', password: '123', role: 'user' },
             { username: 'Eslam Tareq', password: '123', role: 'user' },
@@ -217,8 +237,8 @@
         ];
 
         let activeUser = JSON.parse(sessionStorage.getItem('active_user')) || null;
-        let allTickets = [];
-        let solvedTickets = JSON.parse(localStorage.getItem('solved_tickets_v6')) || [];
+        let openTickets = JSON.parse(localStorage.getItem('open_tickets_final')) || [...embeddedTickets];
+        let solvedTickets = JSON.parse(localStorage.getItem('solved_tickets_final')) || [];
 
         document.addEventListener('DOMContentLoaded', () => {
             if (activeUser) {
@@ -256,101 +276,30 @@
                 document.getElementById('adminBtn').classList.remove('hidden');
             }
 
-            fetchLiveData();
-        }
-
-        function fetchLiveData() {
-            const spinner = document.getElementById('syncSpinner');
-            spinner.classList.add('fa-spin');
-
-            Papa.parse(GVIZ_URL, {
-                download: true,
-                header: false,
-                skipEmptyLines: true,
-                complete: function(results) {
-                    spinner.classList.remove('fa-spin');
-                    if (results.data && results.data.length > 1) {
-                        parseSheetRows(results.data);
-                    }
-                },
-                error: function(err) {
-                    spinner.classList.remove('fa-spin');
-                    console.error("Fetch Error:", err);
-                }
-            });
-        }
-
-        function parseSheetRows(rows) {
-            allTickets = [];
-            const resolutionsSet = new Set();
-
-            for (let i = 1; i < rows.length; i++) {
-                const r = rows[i];
-                if (!r || r.length < 26) continue;
-
-                const matchId = (r[0] || "").toString().trim();          // Col A
-                const priority = (r[4] || "").toString().trim();         // Col E
-                const comp = (r[6] || "").toString().trim();             // Col G
-                const country = (r[7] || "").toString().trim();          // Col H
-                const season = (r[8] || "").toString().trim();           // Col I
-                const home = (r[9] || "").toString().trim();             // Col J
-                const away = (r[10] || "").toString().trim();            // Col K
-                const eta = (r[14] || "").toString().trim();             // Col O
-                const etaDate = (r[15] || "").toString().trim();         // Col P
-                const shift = (r[16] || "").toString().trim();           // Col Q
-                
-                const reviewDate = (r[20] || "").toString().trim();      // Col U
-                const reviewShift = (r[21] || "").toString().trim();     // Col V
-                const responsible = (r[22] || "").toString().trim();     // Col W
-
-                const res = (r[25] || "").toString().trim();             // Col Z
-                
-                const commentAA = (r[26] || "").toString().trim();
-                const commentAB = (r[27] || "").toString().trim();
-                const combinedComment = [commentAA, commentAB].filter(Boolean).join(" | ") || "-";
-
-                // UNLIMITED SCALE FILTERING: Col Z NOT blank & NOT "He's Right"
-                if (matchId && res !== "" && res.toLowerCase() !== "he's right") {
-                    resolutionsSet.add(res);
-
-                    if (!solvedTickets.some(s => s.id === matchId)) {
-                        allTickets.push({
-                            id: matchId,
-                            priority: priority || "-",
-                            competition: comp || "-",
-                            country: country || "-",
-                            season: season || "-",
-                            home: home || "-",
-                            away: away || "-",
-                            eta: eta || "-",
-                            etaDate: etaDate || "-",
-                            shift: shift || "-",
-                            reviewDate: reviewDate || "-",
-                            reviewShift: reviewShift || "-",
-                            responsible: responsible || "-",
-                            resolution: res,
-                            comment: combinedComment
-                        });
-                    }
-                }
-            }
-
-            populateResolutionFilter(Array.from(resolutionsSet));
+            populateResolutionFilter();
             renderTickets();
         }
 
-        function populateResolutionFilter(options) {
+        function resetData() {
+            openTickets = [...embeddedTickets];
+            solvedTickets = [];
+            localStorage.setItem('open_tickets_final', JSON.stringify(openTickets));
+            localStorage.setItem('solved_tickets_final', JSON.stringify(solvedTickets));
+            populateResolutionFilter();
+            renderTickets();
+        }
+
+        function populateResolutionFilter() {
             const select = document.getElementById('resolutionFilter');
-            const currentVal = select.value;
+            const resSet = new Set(openTickets.map(t => t.resolution));
             select.innerHTML = '<option value="ALL">جميع أنواع المشاكل (Col Z)</option>';
             
-            options.sort().forEach(opt => {
-                const o = document.createElement('option');
-                o.value = opt;
-                o.textContent = opt;
-                select.appendChild(o);
+            resSet.forEach(res => {
+                const opt = document.createElement('option');
+                opt.value = res;
+                opt.textContent = res;
+                select.appendChild(opt);
             });
-            select.value = currentVal;
         }
 
         function renderTickets() {
@@ -359,7 +308,7 @@
             const resFilter = document.getElementById('resolutionFilter').value;
             grid.innerHTML = '';
 
-            const filtered = allTickets.filter(t => {
+            const filtered = openTickets.filter(t => {
                 const matchSearch = t.id.toLowerCase().includes(search) || 
                                     t.home.toLowerCase().includes(search) || 
                                     t.away.toLowerCase().includes(search) ||
@@ -371,7 +320,7 @@
                 return matchSearch && matchRes;
             });
 
-            document.getElementById('statOpenCount').textContent = allTickets.length;
+            document.getElementById('statOpenCount').textContent = openTickets.length;
             document.getElementById('statSolvedCount').textContent = solvedTickets.length;
             document.getElementById('statValidCount').textContent = solvedTickets.filter(s => s.decision === 'Valid').length;
             document.getElementById('statInvalidCount').textContent = solvedTickets.filter(s => s.decision === 'Invalid').length;
@@ -381,7 +330,6 @@
             } else {
                 document.getElementById('noDataMessage').classList.add('hidden');
                 
-                // Batch Rendering for ultra fast performance with large datasets
                 filtered.forEach(t => {
                     const card = document.createElement('div');
                     card.className = "bg-slate-800 border border-slate-700/80 p-5 rounded-2xl flex flex-col justify-between shadow-lg hover:border-indigo-500/50 transition";
@@ -413,11 +361,11 @@
 
                         <!-- DIRECT ACTION BUTTONS (VALID / INVALID) -->
                         <div class="grid grid-cols-2 gap-2 mt-3 pt-2 border-t border-slate-700/60">
-                            <button onclick="directSolve('${t.id}', 'Valid')" class="bg-emerald-600/90 hover:bg-emerald-500 text-white font-bold py-2 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-md transition">
+                            <button onclick="directSolve('${t.id}', 'Valid')" class="bg-emerald-600/90 hover:bg-emerald-500 text-white font-bold py-2.5 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-md transition">
                                 <i class="fa-solid fa-thumbs-up"></i>
                                 <span>Valid</span>
                             </button>
-                            <button onclick="directSolve('${t.id}', 'Invalid')" class="bg-rose-600/90 hover:bg-rose-500 text-white font-bold py-2 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-md transition">
+                            <button onclick="directSolve('${t.id}', 'Invalid')" class="bg-rose-600/90 hover:bg-rose-500 text-white font-bold py-2.5 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-md transition">
                                 <i class="fa-solid fa-thumbs-down"></i>
                                 <span>Invalid</span>
                             </button>
@@ -431,16 +379,18 @@
         }
 
         function directSolve(matchId, decision) {
-            const idx = allTickets.findIndex(x => x.id === matchId);
+            const idx = openTickets.findIndex(x => x.id === matchId);
             if (idx !== -1) {
-                const t = allTickets.splice(idx, 1)[0];
+                const t = openTickets.splice(idx, 1)[0];
                 t.decision = decision;
                 t.solvedBy = activeUser.username;
                 t.solvedAt = new Date().toLocaleString('ar-EG');
 
                 solvedTickets.unshift(t);
-                localStorage.setItem('solved_tickets_v6', JSON.stringify(solvedTickets));
+                localStorage.setItem('open_tickets_final', JSON.stringify(openTickets));
+                localStorage.setItem('solved_tickets_final', JSON.stringify(solvedTickets));
 
+                populateResolutionFilter();
                 renderTickets();
             }
         }
@@ -515,7 +465,7 @@
             }
 
             users.push({ username: u, password: p, role: 'user' });
-            localStorage.setItem('app_users_v6', JSON.stringify(users));
+            localStorage.setItem('app_users_final', JSON.stringify(users));
             document.getElementById('newUsername').value = '';
             document.getElementById('newPassword').value = '';
             renderUsersList();
@@ -523,7 +473,7 @@
 
         function deleteUser(username) {
             users = users.filter(x => x.username !== username);
-            localStorage.setItem('app_users_v6', JSON.stringify(users));
+            localStorage.setItem('app_users_final', JSON.stringify(users));
             renderUsersList();
         }
     </script>
