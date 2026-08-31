@@ -69,6 +69,11 @@
                         <span>مزامنة حية من الشيت</span>
                     </button>
 
+                    <button onclick="clearSolvedCache()" class="bg-slate-700 hover:bg-slate-600 px-3 py-2 rounded-xl text-xs font-bold transition" title="إعادة إظهار التذاكر المحلولة سابقاً">
+                        <i class="fa-solid fa-trash-arrow-up text-amber-400"></i>
+                        <span>تفريغ الأرشيف المحلي</span>
+                    </button>
+
                     <!-- Admin Button -->
                     <button id="adminBtn" onclick="toggleAdminPanel()" class="hidden bg-purple-600 hover:bg-purple-500 px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition">
                         <i class="fa-solid fa-chart-pie"></i>
@@ -187,7 +192,6 @@
                         </div>
                     </div>
 
-                    <!-- Export CSV Button -->
                     <button onclick="exportToCSV()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition whitespace-nowrap">
                         <i class="fa-solid fa-file-csv text-emerald-400 text-sm"></i>
                         <span>تصدير CSV</span>
@@ -251,7 +255,7 @@
 
                     <!-- 1. ADMIN VISUALS DASHBOARD TAB -->
                     <div id="secAdminVisuals" class="space-y-6">
-                        <!-- TOP KPI METRICS CARDS (5 Cards) -->
+                        <!-- TOP KPI METRICS CARDS -->
                         <div class="grid grid-cols-2 lg:grid-cols-5 gap-3">
                             <div class="bg-slate-900 p-3.5 rounded-xl border border-slate-700">
                                 <p class="text-[11px] text-slate-400 font-bold">إجمالي مباريات الويك</p>
@@ -277,7 +281,6 @@
 
                         <!-- CHARTS SECTION -->
                         <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
-                            <!-- CHART 1: WEEKLY MATCHES DISTRIBUTION -->
                             <div class="bg-slate-900 p-4 rounded-xl border border-slate-700/80">
                                 <h4 class="text-xs font-bold text-slate-200 mb-3 flex items-center gap-2">
                                     <i class="fa-solid fa-chart-column text-indigo-400"></i>
@@ -288,7 +291,6 @@
                                 </div>
                             </div>
 
-                            <!-- CHART 2: ERROR CATEGORY VALID vs INVALID -->
                             <div class="bg-slate-900 p-4 rounded-xl border border-slate-700/80">
                                 <h4 class="text-xs font-bold text-slate-200 mb-3 flex items-center gap-2">
                                     <i class="fa-solid fa-chart-bar text-rose-400"></i>
@@ -348,8 +350,7 @@
     <script>
         const SHEET_ID = "171DXs48k4FOnpHGB155mLpvgRnXUxfsXoQT4AYGV8rA";
 
-        // Bumped version keys to ensure clean cache
-        let users = JSON.parse(localStorage.getItem('quality_users_db_v6')) || [
+        let users = JSON.parse(localStorage.getItem('quality_users_db_v7')) || [
             { username: 'admin', password: '123456', role: 'admin' },
             { username: 'Bahaa', password: '123', role: 'user' },
             { username: 'Eslam Tareq', password: '123', role: 'user' },
@@ -358,11 +359,10 @@
         ];
 
         let activeUser = JSON.parse(sessionStorage.getItem('active_user')) || null;
-        let solvedTickets = JSON.parse(localStorage.getItem('quality_tickets_solved_v6')) || [];
-        let allTickets = JSON.parse(localStorage.getItem('quality_tickets_open_v6')) || [];
+        let solvedTickets = JSON.parse(localStorage.getItem('quality_tickets_solved_v7')) || [];
+        let allTickets = JSON.parse(localStorage.getItem('quality_tickets_open_v7')) || [];
 
-        // Raw stats tracking
-        let rawSheetStats = JSON.parse(localStorage.getItem('raw_sheet_stats_v6')) || {
+        let rawSheetStats = JSON.parse(localStorage.getItem('raw_sheet_stats_v7')) || {
             totalMatches: 0,
             hesRightCount: 0,
             errorsCount: 0,
@@ -420,6 +420,15 @@
             location.reload();
         }
 
+        function clearSolvedCache() {
+            if (confirm("هل تريد مسح الأرشيف المحلي وإعادة إظهار جميع التذاكر من الشيت؟")) {
+                solvedTickets = [];
+                localStorage.removeItem('quality_tickets_solved_v7');
+                localStorage.removeItem('quality_tickets_open_v7');
+                fetchSheetDirect(true);
+            }
+        }
+
         function initApp() {
             document.getElementById('loginOverlay').classList.add('hidden');
             document.getElementById('mainApp').classList.remove('hidden');
@@ -437,6 +446,7 @@
             fetchSheetDirect();
         }
 
+        // FULL 10000 LIMIT GVIZ FETCH ENGINE
         function fetchSheetDirect(manual = false) {
             const spinner = document.getElementById('syncSpinner');
             if (spinner) spinner.classList.add('fa-spin');
@@ -444,7 +454,8 @@
             const oldScript = document.getElementById('gviz_live_script');
             if (oldScript) oldScript.remove();
 
-            const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=responseHandler:handleGvizLiveResponse&sheet=W35&t=${new Date().getTime()}`;
+            const query = encodeURIComponent("select * limit 10000");
+            const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=responseHandler:handleGvizLiveResponse&tq=${query}&sheet=W35&t=${new Date().getTime()}`;
             
             const script = document.createElement('script');
             script.id = 'gviz_live_script';
@@ -524,11 +535,11 @@
                 blankCount: blankCounter,
                 weeklyBreakdown: { 'W35': { total: totalMatchesCounter, hesRight: hesRightCounter, errors: errorsCounter, blank: blankCounter } }
             };
-            localStorage.setItem('raw_sheet_stats_v6', JSON.stringify(rawSheetStats));
+            localStorage.setItem('raw_sheet_stats_v7', JSON.stringify(rawSheetStats));
 
             if (fetched.length > 0) {
                 allTickets = fetched;
-                localStorage.setItem('quality_tickets_open_v6', JSON.stringify(allTickets));
+                localStorage.setItem('quality_tickets_open_v7', JSON.stringify(allTickets));
                 populateFilters();
                 renderTickets();
             }
@@ -711,8 +722,8 @@
                 t.solvedAt = new Date().toLocaleString('ar-EG');
 
                 solvedTickets.unshift(t);
-                localStorage.setItem('quality_tickets_open_v6', JSON.stringify(allTickets));
-                localStorage.setItem('quality_tickets_solved_v6', JSON.stringify(solvedTickets));
+                localStorage.setItem('quality_tickets_open_v7', JSON.stringify(allTickets));
+                localStorage.setItem('quality_tickets_solved_v7', JSON.stringify(solvedTickets));
 
                 populateFilters();
                 renderTickets();
@@ -729,8 +740,8 @@
                 delete t.solvedAt;
 
                 allTickets.unshift(t);
-                localStorage.setItem('quality_tickets_open_v6', JSON.stringify(allTickets));
-                localStorage.setItem('quality_tickets_solved_v6', JSON.stringify(solvedTickets));
+                localStorage.setItem('quality_tickets_open_v7', JSON.stringify(allTickets));
+                localStorage.setItem('quality_tickets_solved_v7', JSON.stringify(solvedTickets));
 
                 populateFilters();
                 renderTickets();
@@ -946,7 +957,7 @@
             }
 
             users.push({ username: u, password: p, role: 'user' });
-            localStorage.setItem('quality_users_db_v6', JSON.stringify(users));
+            localStorage.setItem('quality_users_db_v7', JSON.stringify(users));
             document.getElementById('newUsername').value = '';
             document.getElementById('newPassword').value = '';
             renderUsersList();
@@ -954,7 +965,7 @@
 
         function deleteUser(username) {
             users = users.filter(x => x.username !== username);
-            localStorage.setItem('quality_users_db_v6', JSON.stringify(users));
+            localStorage.setItem('quality_users_db_v7', JSON.stringify(users));
             renderUsersList();
         }
 
